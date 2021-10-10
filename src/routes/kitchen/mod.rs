@@ -4,12 +4,14 @@ mod components;
 mod ingredients;
 mod shaders;
 
-use wasm_bindgen::JsCast;
-use web_sys::{HtmlCanvasElement, WebGlRenderingContext as GL};
+use wasm_bindgen::{Clamped, JsCast};
+use web_sys::{HtmlCanvasElement, ImageData, WebGlRenderingContext as GL};
 use yew::services::render::RenderTask;
-use yew::services::{ConsoleService, RenderService};
+use yew::services::RenderService;
 use yew::{html, prelude::*, Component, ComponentLink, Html, NodeRef, ShouldRender};
 use yewtil::store::{Bridgeable, ReadOnly, StoreWrapper};
+
+use crate::components::FileInput;
 
 use agents::{NodeId, NodeStore, Request};
 use components::{Node, Nodes};
@@ -26,6 +28,7 @@ pub enum Msg {
     AddNode(Nodes),
     IngredientStoreMsg(ReadOnly<NodeStore>),
     Render(f64),
+    File(Vec<u8>),
 }
 
 pub struct Kitchen {
@@ -124,6 +127,37 @@ impl Component for Kitchen {
                     false
                 }
             }
+            Msg::File(mut bytes) => {
+                let image_data = ImageData::new_with_u8_clamped_array_and_sh(
+                    Clamped(&mut bytes),
+                    self.canvas.as_ref().unwrap().width(),
+                    self.canvas.as_ref().unwrap().height(),
+                );
+                // let canvas = self.node_ref.cast::<HtmlCanvasElement>().unwrap();
+                // let context: CanvasRenderingContextWebGl = canvas
+                //     .get_context("2d")
+                //     .expect("Can't find 2d context")
+                //     .expect("No context")
+                //     .dyn_into()
+                //     .expect("Can't dyn into");
+                let gl = self.gl.as_ref().expect("GL Context not initialized!");
+                let texture = gl.create_texture().expect("Couldn't ccreate texture");
+                gl.bind_texture(GL::TEXTURE_2D, Some(&texture));
+                gl.tex_image_2d_with_i32_and_i32_and_i32_and_format_and_type_and_opt_u8_array(
+                    GL::TEXTURE_2D,
+                    0,
+                    GL::RGBA as i32,
+                    self.canvas.as_ref().unwrap().width() as i32,
+                    self.canvas.as_ref().unwrap().height() as i32,
+                    0,
+                    GL::RGBA,
+                    GL::UNSIGNED_BYTE,
+                    Some(&bytes),
+                )
+                .expect("Should put image data on Canvas");
+
+                false
+            }
         }
     }
 
@@ -131,6 +165,7 @@ impl Component for Kitchen {
         html! {
             <div>
                 <canvas ref=self.node_ref.clone() />
+                <FileInput label="" onload=self.link.callback(|bytes| Msg::File(bytes))/>
                 { for self.node_ids.iter().map(|&id| html! {<Node key=id id=id/>}) }
                 <button onclick=self.link.callback(|_| Msg::AddNode(DEFAULT_NODE))>{"+"}</button>
             </div>

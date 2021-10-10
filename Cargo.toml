@@ -23,6 +23,8 @@ wasm-logger = "0.2.0"
 wee_alloc = "0.4.5"
 web-sys = "0.3.55"
 js-sys = "0.3.55"
+console_error_panic_hook = "0.1.6"
+image = "0.23.14"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.14"
@@ -41,6 +43,7 @@ features = [
     'HtmlElement',
     'HtmlImageElement',
     'HtmlInputElement',
+    'ImageData',
     'InputEvent',
     'MouseEvent',
     'Node',
