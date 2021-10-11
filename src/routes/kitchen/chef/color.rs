@@ -1,11 +1,10 @@
 use wasm_bindgen::JsValue;
-use web_sys::{WebGlRenderingContext};
 use std::collections::HashMap;
 use super::{ShaderType, Shader};
 
 use super::super::chef::{Compile, Cook};
 use super::super::ingredients::Color;
-use web_sys::{WebGlRenderingContext as GL};
+use web_sys::{WebGlRenderingContext, WebGlRenderingContext as GL};
 
 
 static COLOR_2D_VS: &'static str = include_str!("../shaders/color/color_2d.vert");

@@ -4,7 +4,7 @@ use wasm_bindgen::JsValue;
 use web_sys::*;
 
 use yew::{
-    html, html::IntoPropValue, prelude::*, Component, ComponentLink, Html, Properties, ShouldRender,
+    html, prelude::*, Component, ComponentLink, Html, Properties, ShouldRender,
 };
 use yewtil::store::{Bridgeable, ReadOnly, StoreWrapper};
 use yewtil::NeqAssign;

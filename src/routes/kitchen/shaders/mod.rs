@@ -1,7 +1,6 @@
 use wasm_bindgen::JsValue;
-use web_sys::WebGlRenderingContext as Gl;
 use web_sys::*;
-use web_sys::{WebGlProgram, WebGlRenderingContext};
+use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlRenderingContext as GL};
 
 pub struct Shader {
     program: WebGlProgram,
@@ -14,8 +13,8 @@ impl Shader {
         vert_shader: &str,
         frag_shader: &str,
     ) -> Result<Self, JsValue> {
-        let vert_shader = compile_shader(&gl, WebGlRenderingContext::VERTEX_SHADER, vert_shader)?;
-        let frag_shader = compile_shader(&gl, WebGlRenderingContext::FRAGMENT_SHADER, frag_shader)?;
+        let vert_shader = compile_shader(&gl, GL::VERTEX_SHADER, vert_shader)?;
+        let frag_shader = compile_shader(&gl, GL::FRAGMENT_SHADER, frag_shader)?;
         let program = link_program(&gl, &vert_shader, &frag_shader)?;
 
         Ok(Self { program })
@@ -40,7 +39,7 @@ pub fn link_program(
     gl.link_program(&program);
 
     if gl
-        .get_program_parameter(&program, Gl::LINK_STATUS)
+        .get_program_parameter(&program, GL::LINK_STATUS)
         .as_bool()
         .unwrap_or(false)
     {
@@ -65,7 +64,7 @@ pub fn compile_shader(
     gl.compile_shader(&shader);
 
     if gl
-        .get_shader_parameter(&shader, Gl::COMPILE_STATUS)
+        .get_shader_parameter(&shader, GL::COMPILE_STATUS)
         .as_bool()
         .unwrap_or(false)
     {

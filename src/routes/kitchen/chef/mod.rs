@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use wasm_bindgen::JsValue;
-use web_sys::WebGlRenderingContext as Gl;
+use web_sys::WebGlRenderingContext as GL;
 use web_sys::*;
 
 use super::ingredients::Color;
@@ -21,7 +21,7 @@ impl Chef {
     }
     pub fn render<C: Cook>(&self, gl: &WebGlRenderingContext, ingredients: &Vec<C>) {
         gl.clear_color(0.0, 0.0, 0.0, 1.);
-        gl.clear(Gl::COLOR_BUFFER_BIT | Gl::DEPTH_BUFFER_BIT);
+        gl.clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
 
         for ingredient in ingredients.iter() {
             ingredient.prep(gl).unwrap();

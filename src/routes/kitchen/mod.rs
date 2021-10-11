@@ -4,8 +4,8 @@ mod components;
 mod ingredients;
 mod shaders;
 
-use wasm_bindgen::{Clamped, JsCast};
-use web_sys::{HtmlCanvasElement, ImageData, WebGlRenderingContext as GL};
+use wasm_bindgen::JsCast;
+use web_sys::{HtmlCanvasElement, WebGlRenderingContext as GL};
 use yew::services::render::RenderTask;
 use yew::services::RenderService;
 use yew::{html, prelude::*, Component, ComponentLink, Html, NodeRef, ShouldRender};
@@ -28,7 +28,7 @@ pub enum Msg {
     AddNode(Nodes),
     IngredientStoreMsg(ReadOnly<NodeStore>),
     Render(f64),
-    File(Vec<u8>),
+    File(String),
 }
 
 pub struct Kitchen {
@@ -91,7 +91,7 @@ impl Component for Kitchen {
         self.canvas = Some(canvas);
 
         if first_render {
-            self.chef = Some(Chef::new(self.gl.as_ref().expect("Gl not initialized")));
+            self.chef = Some(Chef::new(self.gl.as_ref().expect("gl context initialized")));
             // The callback to request animation frame is passed a time value which can be used for
             // rendering motion independent of the framerate which may vary.
             let render_frame = self.link.callback(Msg::Render);
@@ -127,34 +127,39 @@ impl Component for Kitchen {
                     false
                 }
             }
-            Msg::File(mut bytes) => {
-                let image_data = ImageData::new_with_u8_clamped_array_and_sh(
-                    Clamped(&mut bytes),
-                    self.canvas.as_ref().unwrap().width(),
-                    self.canvas.as_ref().unwrap().height(),
-                );
-                // let canvas = self.node_ref.cast::<HtmlCanvasElement>().unwrap();
-                // let context: CanvasRenderingContextWebGl = canvas
-                //     .get_context("2d")
-                //     .expect("Can't find 2d context")
-                //     .expect("No context")
-                //     .dyn_into()
-                //     .expect("Can't dyn into");
-                let gl = self.gl.as_ref().expect("GL Context not initialized!");
-                let texture = gl.create_texture().expect("Couldn't ccreate texture");
+            Msg::File(data_url) => {
+                let img = web_sys::HtmlImageElement::new().unwrap();
+                img.set_src(&data_url);
+                // let image_data = ImageData::new_with_u8_clamped_array_and_sh(
+                //     img,
+                //     self.canvas.as_ref().unwrap().width(),
+                //     self.canvas.as_ref().unwrap().height(),
+                // ).expect("Couldn't create ImageData from bytes");
+
+                let canvas = self.node_ref.cast::<HtmlCanvasElement>().unwrap();
+                let width = img.width();
+                let height = img.height();
+                canvas.set_width(width);
+                canvas.set_height(height);
+
+                let gl = self.gl.as_ref().expect("gl context initialized");
+
+                let texture = gl.create_texture().expect("create texture");
                 gl.bind_texture(GL::TEXTURE_2D, Some(&texture));
-                gl.tex_image_2d_with_i32_and_i32_and_i32_and_format_and_type_and_opt_u8_array(
+
+                let level = 0;
+                let internal_format = GL::RGBA;
+                let src_format = GL::RGBA;
+                let src_type = GL::UNSIGNED_BYTE;
+                gl.tex_image_2d_with_u32_and_u32_and_image(
                     GL::TEXTURE_2D,
-                    0,
-                    GL::RGBA as i32,
-                    self.canvas.as_ref().unwrap().width() as i32,
-                    self.canvas.as_ref().unwrap().height() as i32,
-                    0,
-                    GL::RGBA,
-                    GL::UNSIGNED_BYTE,
-                    Some(&bytes),
+                    level,
+                    internal_format as i32,
+                    src_format,
+                    src_type,
+                    &img,
                 )
-                .expect("Should put image data on Canvas");
+                .expect("create texture image");
 
                 false
             }
@@ -165,7 +170,7 @@ impl Component for Kitchen {
         html! {
             <div>
                 <canvas ref=self.node_ref.clone() />
-                <FileInput label="" onload=self.link.callback(|bytes| Msg::File(bytes))/>
+                <FileInput label="" onload=self.link.callback(|data_url| Msg::File(data_url))/>
                 { for self.node_ids.iter().map(|&id| html! {<Node key=id id=id/>}) }
                 <button onclick=self.link.callback(|_| Msg::AddNode(DEFAULT_NODE))>{"+"}</button>
             </div>
@@ -175,10 +180,10 @@ impl Component for Kitchen {
 
 impl Kitchen {
     fn render_gl(&mut self) {
-        let gl = self.gl.as_ref().expect("GL Context not initialized!");
+        let gl = self.gl.as_ref().expect("gl context initialized");
         self.chef
             .as_ref()
-            .expect("Chef not initialized!")
+            .expect("chef initialized")
             .render(&gl, &self.nodes);
 
         let render_frame = self.link.callback(Msg::Render);
