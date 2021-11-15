@@ -2,38 +2,36 @@ use std::collections::HashMap;
 use yew::agent::AgentLink;
 use yewtil::store::{Store, StoreWrapper};
 
-use super::components::Nodes;
+use super::components::nodes::Nodes;
 
 pub type NodeId = u32;
 
 #[derive(Debug)]
-pub enum Request {
+pub enum NodeStoreRequest {
     CreateNode(Nodes),
     UpdateNode(NodeId, Nodes),
     RemoveNode(NodeId),
 }
 
 #[derive(Debug)]
-pub enum Action {
+pub enum NodeStoreAction {
     SetNode(Option<NodeId>, Nodes),
     RemoveNode(NodeId),
 }
 
 pub struct NodeStore {
     pub nodes: HashMap<NodeId, Nodes>,
-
-    // Stores can have private state too
     id_counter: NodeId,
 }
 
 impl Store for NodeStore {
-    type Action = Action;
-    type Input = Request;
+    type Action = NodeStoreAction;
+    type Input = NodeStoreRequest;
 
     fn new() -> Self {
         let nodes: HashMap<NodeId, Nodes> = HashMap::new();
 
-        NodeStore {
+        Self {
             nodes,
             id_counter: 1,
         }
@@ -41,25 +39,25 @@ impl Store for NodeStore {
 
     fn handle_input(&self, link: AgentLink<StoreWrapper<Self>>, msg: Self::Input) {
         match msg {
-            Request::CreateNode(node) => {
-                link.send_message(Action::SetNode(None, node));
+            NodeStoreRequest::CreateNode(node) => {
+                link.send_message(NodeStoreAction::SetNode(None, node));
             }
-            Request::UpdateNode(id, node) => {
-                link.send_message(Action::SetNode(Some(id), node));
+            NodeStoreRequest::UpdateNode(id, node) => {
+                link.send_message(NodeStoreAction::SetNode(Some(id), node));
             }
-            Request::RemoveNode(id) => {
-                link.send_message(Action::RemoveNode(id));
+            NodeStoreRequest::RemoveNode(id) => {
+                link.send_message(NodeStoreAction::RemoveNode(id));
             }
         }
     }
 
     fn reduce(&mut self, msg: Self::Action) {
         match msg {
-            Action::SetNode(id, node) => {
+            NodeStoreAction::SetNode(id, node) => {
                 let id = id.unwrap_or_else(|| self.next_id());
                 self.nodes.insert(id, node);
             }
-            Action::RemoveNode(id) => {
+            NodeStoreAction::RemoveNode(id) => {
                 self.nodes.remove(&id);
             }
         }

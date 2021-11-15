@@ -5,30 +5,29 @@ mod ingredients;
 mod shaders;
 
 use wasm_bindgen::JsCast;
-use web_sys::{HtmlCanvasElement, WebGlRenderingContext as GL};
+use web_sys::{Window, HtmlCanvasElement, WebGlRenderingContext as GL};
 use yew::services::render::RenderTask;
 use yew::services::RenderService;
 use yew::{html, prelude::*, Component, ComponentLink, Html, NodeRef, ShouldRender};
 use yewtil::store::{Bridgeable, ReadOnly, StoreWrapper};
 
-use crate::components::FileInput;
-
-use agents::{NodeId, NodeStore, Request};
-use components::{Node, Nodes};
+use agents::{NodeId, NodeStore, NodeStoreRequest};
+use components::nodes::{Node, Nodes};
 
 use chef::Chef;
 use ingredients::Color;
+use ingredients::Pierogi;
 
-pub static CANVAS_WIDTH: i32 = 512;
-pub static CANVAS_HEIGHT: i32 = 512;
+pub static CANVAS_WIDTH: u32 = 512;
+pub static CANVAS_HEIGHT: u32 = 512;
 
-const DEFAULT_NODE: Nodes = Nodes::Color(Color { r: 0, g: 0, b: 0 });
+const DEFAULT_NODE: Nodes = Nodes::Pierogi(Pierogi { src: None });
+// const DEFAULT_NODE: Nodes = Nodes::Color(Color { r: 0, g: 0, b: 0 });
 
 pub enum Msg {
     AddNode(Nodes),
-    IngredientStoreMsg(ReadOnly<NodeStore>),
     Render(f64),
-    File(String),
+    NodeStoreMsg(ReadOnly<NodeStore>),
 }
 
 pub struct Kitchen {
@@ -48,7 +47,7 @@ impl Component for Kitchen {
     type Properties = ();
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let callback = link.callback(Msg::IngredientStoreMsg);
+        let callback = link.callback(Msg::NodeStoreMsg);
 
         Self {
             link,
@@ -67,11 +66,12 @@ impl Component for Kitchen {
         false
     }
 
+    //noinspection RsWrongGenericArgumentsNumber
     fn rendered(&mut self, first_render: bool) {
         let canvas = self.node_ref.cast::<HtmlCanvasElement>().unwrap();
 
-        canvas.set_width(CANVAS_WIDTH as u32);
-        canvas.set_height(CANVAS_HEIGHT as u32);
+        canvas.set_width(CANVAS_WIDTH);
+        canvas.set_height(CANVAS_HEIGHT);
 
         let gl: GL = canvas
             .get_context("webgl")
@@ -85,7 +85,7 @@ impl Component for Kitchen {
         gl.clear_color(0.0, 0.0, 0.0, 1.0);
         gl.clear_depth(1.0);
 
-        gl.viewport(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        gl.viewport(0, 0, CANVAS_WIDTH as i32, CANVAS_HEIGHT as i32);
 
         self.gl = Some(gl);
         self.canvas = Some(canvas);
@@ -114,10 +114,10 @@ impl Component for Kitchen {
                 false
             }
             Msg::AddNode(node) => {
-                self.node_store.send(Request::CreateNode(node));
+                self.node_store.send(NodeStoreRequest::CreateNode(node));
                 false
             }
-            Msg::IngredientStoreMsg(state) => {
+            Msg::NodeStoreMsg(state) => {
                 let state = state.borrow();
                 self.nodes = state.nodes.values().cloned().collect();
                 if state.nodes.len() != self.node_ids.len() {
@@ -127,42 +127,6 @@ impl Component for Kitchen {
                     false
                 }
             }
-            Msg::File(data_url) => {
-                let img = web_sys::HtmlImageElement::new().unwrap();
-                img.set_src(&data_url);
-                // let image_data = ImageData::new_with_u8_clamped_array_and_sh(
-                //     img,
-                //     self.canvas.as_ref().unwrap().width(),
-                //     self.canvas.as_ref().unwrap().height(),
-                // ).expect("Couldn't create ImageData from bytes");
-
-                let canvas = self.node_ref.cast::<HtmlCanvasElement>().unwrap();
-                let width = img.width();
-                let height = img.height();
-                canvas.set_width(width);
-                canvas.set_height(height);
-
-                let gl = self.gl.as_ref().expect("gl context initialized");
-
-                let texture = gl.create_texture().expect("create texture");
-                gl.bind_texture(GL::TEXTURE_2D, Some(&texture));
-
-                let level = 0;
-                let internal_format = GL::RGBA;
-                let src_format = GL::RGBA;
-                let src_type = GL::UNSIGNED_BYTE;
-                gl.tex_image_2d_with_u32_and_u32_and_image(
-                    GL::TEXTURE_2D,
-                    level,
-                    internal_format as i32,
-                    src_format,
-                    src_type,
-                    &img,
-                )
-                .expect("create texture image");
-
-                false
-            }
         }
     }
 
@@ -170,7 +134,6 @@ impl Component for Kitchen {
         html! {
             <div>
                 <canvas ref=self.node_ref.clone() />
-                <FileInput label="" onload=self.link.callback(|data_url| Msg::File(data_url))/>
                 { for self.node_ids.iter().map(|&id| html! {<Node key=id id=id/>}) }
                 <button onclick=self.link.callback(|_| Msg::AddNode(DEFAULT_NODE))>{"+"}</button>
             </div>

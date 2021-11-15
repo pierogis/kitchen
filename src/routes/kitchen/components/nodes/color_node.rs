@@ -5,14 +5,14 @@ use crate::components::Slider;
 use crate::routes::kitchen::ingredients::Color;
 use super::Nodes;
 
-pub enum ColorMsg {
+pub enum Msg {
     UpdateR(u8),
     UpdateG(u8),
     UpdateB(u8),
 }
 
 #[derive(Properties, Clone, PartialEq)]
-pub struct ColorProps {
+pub struct Props {
     pub color: Color,
     pub update_callback: Callback<Nodes>,
 }
@@ -24,8 +24,8 @@ pub struct ColorNode {
 }
 
 impl Component for ColorNode {
-    type Message = ColorMsg;
-    type Properties = ColorProps;
+    type Message = Msg;
+    type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
@@ -41,13 +41,13 @@ impl Component for ColorNode {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            ColorMsg::UpdateR(r) => {
+            Msg::UpdateR(r) => {
                 self.color.r = r;
             }
-            ColorMsg::UpdateG(g) => {
+            Msg::UpdateG(g) => {
                 self.color.g = g;
             }
-            ColorMsg::UpdateB(b) => {
+            Msg::UpdateB(b) => {
                 self.color.b = b;
             }
         }
@@ -60,17 +60,17 @@ impl Component for ColorNode {
             <div>
                 <Slider label="r"
                     min=0.0 max=255.0 step=1.0
-                    onchange={self.link.callback(|r| ColorMsg::UpdateR(r as u8))}
+                    onchange={self.link.callback(|r| Msg::UpdateR(r as u8))}
                     value={self.color.r as f64}
                 />
                 <Slider label="g"
                     min=0.0 max=255.0 step=1.0
-                    onchange={self.link.callback(|r| ColorMsg::UpdateG(r as u8))}
+                    onchange={self.link.callback(|r| Msg::UpdateG(r as u8))}
                     value={self.color.g as f64}
                 />
                 <Slider label="b"
                     min=0.0 max=255.0 step=1.0
-                    onchange={self.link.callback(|r| ColorMsg::UpdateB(r as u8))}
+                    onchange={self.link.callback(|r| Msg::UpdateB(r as u8))}
                     value={self.color.b as f64}
                 />
             </div>

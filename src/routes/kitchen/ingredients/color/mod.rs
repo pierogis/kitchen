@@ -6,18 +6,14 @@ pub struct Color {
 }
 
 impl Color {
-    // pub fn r(&self) -> u8 {
-    //     self.r
-    // }
-    // pub fn g(&self) -> u8 {
-    //     self.g
-    // }
-    // pub fn b(&self) -> u8 {
-    //     self.b
-    // }
-
     pub fn set_r(&mut self, red: u8) {
         self.r = red;
+    }
+    pub fn set_g(&mut self, green: u8) {
+        self.g = green;
+    }
+    pub fn set_b(&mut self, blue: u8) {
+        self.b = blue;
     }
 }
 

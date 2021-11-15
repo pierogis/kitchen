@@ -1,7 +1,7 @@
 mod checkbox;
 mod file_input;
 pub mod nav;
-mod select;
+// mod select;
 mod slider;
 
 pub use checkbox::Checkbox;
