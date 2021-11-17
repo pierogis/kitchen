@@ -1,6 +1,6 @@
 {
-  "author": "Jet Li <jing.i.qin@icloud.com>",
-  "name": "yew-app",
+  "author": "Kyle Moore <kyle@pierogis.live>",
+  "name": "pierogis-kitchen",
   "version": "0.1.0",
   "scripts": {
     "build": "cross-env WASM_PACK_PROFILE=release parcel build static/index.html --public-url ./",

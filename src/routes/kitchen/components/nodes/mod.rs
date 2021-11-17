@@ -14,6 +14,7 @@ use kitchen::ingredients::{Color, Pierogi};
 
 mod color_node;
 mod pierogi_node;
+
 use color_node::ColorNode;
 use pierogi_node::PierogiNode;
 
@@ -108,8 +109,9 @@ impl Component for Node {
     }
 
     fn view(&self) -> Html {
-        let mut options = HashMap::new();
-        options.insert("color", Nodes::Color(Color { r: 0, g: 0, b: 0 }));
+        let mut options: HashMap<String, Nodes> = HashMap::new();
+        options.insert(String::from("color"), Nodes::Color(Color { r: 0, g: 0, b: 0 }));
+        options.insert(String::from("pierogi"), Nodes::Pierogi(Pierogi { src: None }));
         let inner_html = match &self.node {
             Some(Nodes::Color(color)) => {
                 html! {
@@ -132,23 +134,24 @@ impl Component for Node {
             None => html! {"<pending>"},
         };
 
+        let select_node = self.link.callback(move |e: ChangeData| {
+            let mut node = Nodes::Color(Color { r: 0, g: 0, b: 0 });
+            if let ChangeData::Select(change) = e {
+                let node = options.get(&change.value()).unwrap();
+                Msg::UpdateNode(node.clone())
+            } else {
+                unreachable!("Only used on select field")
+            }
+        });
+
         return html! {
             <div>
             <style width=200px></style>
                 <legend>
                     <style font-size={"medium"}></style>
-                    <select>
-                        {for options.iter().map(|(&name, node)| html! {
-                            <option value=name onchange=self.link.callback(|data| {
-                                let mut node = Nodes::Color(Color { r: 0, g: 0, b: 0 });
-                                if let ChangeData::Select(change) = data {
-                                    let node = options.get(&change.value()).unwrap();
-                                }
-                                Msg::UpdateNode(node)
-                            })>
-                                {name}
-                            </option>
-                        })}
+                    <select onchange={select_node}>
+                        <option selected=true>{"pierogi"}</option>
+                        <option>{"color"}</option>
                     </select>
                 </legend>
                 {inner_html}
