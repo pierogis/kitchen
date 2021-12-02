@@ -2,7 +2,7 @@ name: pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -11,12 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
       - name: install cross-env
         run: npm install --save-dev cross-env
-      
+
+      - name: install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       - name: build
         run: npm run build
-      
+
       - name: GitHub Pages action
         uses: peaceiris/actions-gh-pages@v3.7.3
         with:
