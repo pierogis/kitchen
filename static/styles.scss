@@ -1,15 +1,24 @@
+:root {
+  --tp-button-background-color: hsla(0, 0%, 70%, 1);
+  --tp-button-background-color-hover: hsla(0, 0%, 85%, 1);
+  --tp-base-background-color: hsla(160, 20%, 75%, 0.8);
+  --tp-label-foreground-color: hsla(230, 5%, 30%, 0.7);
+  --close-color: hsla(0, 80%, 70%, 0.8);
+  --node-header-height: 12px;
+}
+
 body {
-    padding: 10px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: #282c34;
-  }
-  
+  padding: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #282c34;
+}
+
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
@@ -64,4 +73,61 @@ nav li {
   to {
     transform: rotate(360deg);
   }
+}
+
+.node {
+  position: absolute;
+  z-index: 9;
+  display: block;
+}
+
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.node-header {
+  display: flex;
+  height: var(--node-header-height);
+  margin-bottom: 5px;
+}
+
+.grab {
+  background-color: var(--tp-base-background-color);
+  border-radius: 6px 0px 0px 6px;
+  cursor: grab;
+
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.grab:hover {
+  filter: brightness(90%) saturate(150%);
+}
+
+.grab-dot {
+  background-color: var(--tp-button-background-color-hover);
+  border-radius: 50%;
+  height: 4px;
+  width: 4px;
+  margin: 2px;
+}
+
+.dragging {
+  cursor: grabbing;
+}
+
+.close {
+  background-color: var(--close-color);
+  border-radius: 0px 6px 6px 0px;
+  width: var(--node-header-height);
+  margin-left: 5px;
+}
+
+.close:hover {
+  filter: brightness(90%) saturate(150%);
+  cursor: pointer;
 }

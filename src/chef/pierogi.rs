@@ -3,10 +3,9 @@ use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlRenderingContext as GL};
 
-use super::{compile_shader, link_program, Cook, Shader, ShaderType};
-use crate::routes::kitchen::ingredients::Pierogi;
-
-use crate::routes::kitchen::{CANVAS_HEIGHT, CANVAS_WIDTH};
+use super::{compile_shader, link_program, ShaderType};
+use crate::chef::{Cook, Shader};
+use crate::ingredients::Pierogi;
 
 static PIEROGI_VS: &'static str = include_str!("../ingredients/pierogi/pierogi.vert");
 static PIEROGI_FS: &'static str = include_str!("../ingredients/pierogi/pierogi.frag");
@@ -46,22 +45,22 @@ impl Cook for Pierogi {
 
                 let resolution = width as f32 / height as f32;
 
-                if width > height {
-                    width = std::cmp::min(CANVAS_WIDTH, width);
-                    height = (width as f32 / resolution).round() as u32;
-                } else {
-                    height = std::cmp::min(CANVAS_HEIGHT, height);
-                    width = (height as f32 * resolution).round() as u32;
-                }
-                img.set_width(width);
-                img.set_height(height);
+                // if width > height {
+                //     width = std::cmp::min(CANVAS_WIDTH, width);
+                //     height = (width as f32 / resolution).round() as u32;
+                // } else {
+                //     height = std::cmp::min(CANVAS_HEIGHT, height);
+                //     width = (height as f32 * resolution).round() as u32;
+                // }
+                // img.set_width(width);
+                // img.set_height(height);
 
-                gl.viewport(
-                    ((CANVAS_WIDTH - width) as f32 / 2.0).round() as i32,
-                    ((CANVAS_HEIGHT - height) as f32 / 2.0).round() as i32,
-                    width as i32,
-                    height as i32,
-                );
+                // gl.viewport(
+                //     ((CANVAS_WIDTH - width) as f32 / 2.0).round() as i32,
+                //     ((CANVAS_HEIGHT - height) as f32 / 2.0).round() as i32,
+                //     width as i32,
+                //     height as i32,
+                // );
 
                 // let shader = Shader::new(gl, COLOR_2D_VS, COLOR_2D_FS).unwrap();
                 let program = shaders.get(&Self::shader_type()).expect("color shader");

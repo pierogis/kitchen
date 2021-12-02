@@ -4,32 +4,32 @@ use wasm_bindgen::JsValue;
 use web_sys::WebGlRenderingContext as GL;
 use web_sys::*;
 
-use super::ingredients::Color;
-use super::ingredients::Pierogi;
+use super::ingredients::{Color, Ingredients, Pierogi};
 
 mod color;
 mod pierogi;
 mod recipe;
 
 pub struct Chef {
+    gl: WebGlRenderingContext,
     shaders: HashMap<ShaderType, WebGlProgram>,
 }
 
 impl Chef {
-    pub fn new(gl: &WebGlRenderingContext) -> Self {
-        let shaders = compile_shaders(gl).expect("Compilation failed");
+    pub fn new(gl: WebGlRenderingContext) -> Self {
+        let shaders = compile_shaders(&gl).expect("Compilation failed");
 
-        Self { shaders }
+        Self { gl, shaders }
     }
-    pub fn render<C: Cook>(&self, gl: &WebGlRenderingContext, ingredients: &Vec<C>) {
-        gl.clear_color(0.0, 0.0, 0.0, 1.);
-        gl.clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
+    pub fn render<C: Cook>(&self, ingredients: &Vec<C>) {
+        self.gl.clear_color(0.0, 0.0, 0.0, 1.);
+        self.gl.clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
 
         for ingredient in ingredients.iter() {
-            ingredient.prep(gl).unwrap();
+            ingredient.prep(&self.gl).unwrap();
         }
         for ingredient in ingredients.iter() {
-            ingredient.cook(gl, &self.shaders).unwrap();
+            ingredient.cook(&self.gl, &self.shaders).unwrap();
             // gl.copy_tex_image_2d(Gl::TEXTURE_2D, 0, Gl::RGB, 0, 0, )
         }
     }
@@ -44,6 +44,16 @@ pub trait Shader {
     fn shader_type() -> ShaderType;
 }
 
+pub fn compile_shaders(
+    gl: &WebGlRenderingContext,
+) -> Result<HashMap<ShaderType, WebGlProgram>, JsValue> {
+    let mut shader_map = HashMap::new();
+    shader_map.insert(Color::shader_type(), Color::compile(gl)?);
+    shader_map.insert(Pierogi::shader_type(), Pierogi::compile(gl)?);
+
+    Ok(shader_map)
+}
+
 pub trait Cook {
     fn prep(&self, gl: &WebGlRenderingContext) -> Result<(), JsValue>;
     fn cook(
@@ -53,14 +63,23 @@ pub trait Cook {
     ) -> Result<(), JsValue>;
 }
 
-pub fn compile_shaders(
-    gl: &WebGlRenderingContext,
-) -> Result<HashMap<ShaderType, WebGlProgram>, JsValue> {
-    let mut shader_map = HashMap::new();
-    shader_map.insert(Color::shader_type(), Color::compile(gl)?);
-    shader_map.insert(Pierogi::shader_type(), Pierogi::compile(gl)?);
-
-    Ok(shader_map)
+impl Cook for Ingredients {
+    fn prep(&self, gl: &WebGlRenderingContext) -> Result<(), JsValue> {
+        match self {
+            Ingredients::Color(color) => color.prep(gl),
+            Ingredients::Pierogi(pierogi) => pierogi.prep(gl),
+        }
+    }
+    fn cook(
+        &self,
+        gl: &WebGlRenderingContext,
+        shaders: &HashMap<ShaderType, WebGlProgram>,
+    ) -> Result<(), JsValue> {
+        match self {
+            Ingredients::Color(color) => color.cook(gl, shaders),
+            Ingredients::Pierogi(pierogi) => pierogi.cook(gl, shaders),
+        }
+    }
 }
 
 pub fn link_program(

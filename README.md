@@ -1,6 +1,6 @@
-# pierogis-kitchen
+# kitchen
 
-This is the official base template for [Create Yew App](https://github.com/jetli/create-yew-app).
+ingredient based
 
 ## How to install
 
