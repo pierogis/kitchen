@@ -11,6 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
+      - name: install cross-env
+        run: npm install --save-dev cross-env
+      
       - name: build
         run: npm run build
       
