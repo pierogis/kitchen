@@ -7,6 +7,7 @@ on:
 
 jobs:
   build:
+    environment: github-pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -25,7 +26,9 @@ jobs:
         run: npm run build
 
       - name: create CNAME
-        run: echo "$DOMAIN" > dist/CNAME
+        run: echo "$domain" > dist/CNAME
+        env:
+          domain: ${{ secrets.DOMAIN }}
 
       - name: GitHub Pages action
         uses: peaceiris/actions-gh-pages@v3.7.3
