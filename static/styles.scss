@@ -3,6 +3,7 @@
   --tp-button-background-color-hover: hsla(0, 0%, 85%, 1);
   --tp-base-background-color: hsla(160, 20%, 75%, 0.8);
   --tp-label-foreground-color: hsla(230, 5%, 30%, 0.7);
+  --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
   --close-color: hsla(0, 80%, 70%, 0.8);
   --node-header-height: 12px;
 }
@@ -96,13 +97,17 @@ nav li {
 
 .grab {
   background-color: var(--tp-base-background-color);
+
+  box-shadow: 0 2px 4px var(--tp-base-shadow-color);
+
   border-radius: 6px 0px 0px 6px;
-  cursor: grab;
 
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  cursor: grab;
 }
 .grab:hover {
   filter: brightness(90%) saturate(150%);
@@ -122,7 +127,10 @@ nav li {
 
 .close {
   background-color: var(--close-color);
+  box-shadow: 0 2px 4px var(--tp-base-shadow-color);
+
   border-radius: 0px 6px 6px 0px;
+
   width: var(--node-header-height);
   margin-left: 5px;
 }

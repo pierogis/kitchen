@@ -1,4 +1,6 @@
-#[derive(Debug, Clone)]
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pierogi {
     pub src: Option<String>,
 }

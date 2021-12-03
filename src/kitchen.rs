@@ -1,3 +1,5 @@
+extern crate console_error_panic_hook;
+
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlCanvasElement, WebGlRenderingContext as GL, WebGlRenderingContext};
@@ -7,9 +9,9 @@ use super::ingredients::{Color, Ingredients};
 
 #[wasm_bindgen]
 #[derive(Copy, Clone, Debug)]
-pub enum Ingredient {
-    Color = "color",
-    Pierogi = "pierogi",
+pub enum IngredientType {
+    Color,
+    Pierogi,
 }
 
 #[wasm_bindgen]
@@ -24,6 +26,8 @@ pub struct Kitchen {
 impl Kitchen {
     #[wasm_bindgen(constructor)]
     pub fn new(canvas: HtmlCanvasElement) -> Self {
+        console_error_panic_hook::set_once();
+
         let gl: GL = canvas
             .get_context("webgl")
             .unwrap()
@@ -47,28 +51,48 @@ impl Kitchen {
     }
 
     pub fn cook(&self, recipe: Recipe) {
-        let mut ingredients = Vec::new();
-        ingredients.push(Ingredients::Color(Color {
-            r: recipe.r,
-            g: recipe.g,
-            b: recipe.b,
-        }));
-
-        self.chef.render(&ingredients);
+        self.chef.render(&recipe.ingredients);
     }
 }
 
+// use serde::{Serialize, Deserialize};
+
+// #[derive(Serialize, Deserialize)]
+// struct IngredientDescription {
+//     ingredient_type: IngredientType,
+//     fields: JsValue,
+// }
+
+// #[wasm_bindgen]
+// impl IngredientDescription {
+//     #[wasm_bindgen(constructor)]
+//     pub fn new(ingredient_type: IngredientType, fields: JsValue) -> Self {
+//         Self {
+//             ingredient_type,
+//             fields
+//         }
+//     }
+// }
+
 #[wasm_bindgen]
 pub struct Recipe {
-    r: u8,
-    g: u8,
-    b: u8,
+    ingredients: Vec<Ingredients>,
 }
 
 #[wasm_bindgen]
 impl Recipe {
     #[wasm_bindgen(constructor)]
-    pub fn new(r: u8, g: u8, b: u8) -> Self {
-        Self { r, g, b }
+    pub fn new() -> Self {
+        Self {
+            ingredients: Vec::new(),
+        }
+    }
+
+    pub fn add(&mut self, ingredient_type: IngredientType, val: &JsValue) {
+        let ingredient = match ingredient_type {
+            IngredientType::Color => Ingredients::Color(val.into_serde().unwrap()),
+            IngredientType::Pierogi => Ingredients::Pierogi(val.into_serde().unwrap()),
+        };
+        self.ingredients.push(ingredient);
     }
 }

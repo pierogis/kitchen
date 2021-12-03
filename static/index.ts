@@ -1,5 +1,5 @@
-import { Kitchen, Recipe } from "../Cargo.toml";
-import { IngredientNode, Ingredients } from "./nodes";
+import { Kitchen, Recipe, IngredientType } from "../Cargo.toml";
+import { IngredientNode } from "./ingredientNode";
 
 const canvas = document.createElement("canvas");
 canvas.style.position = "fixed";
@@ -21,7 +21,7 @@ window.onresize = function () {
 
 function addNode(top: number, left: number) {
   let nodeId = currentNodeId;
-  let node = new IngredientNode(Ingredients.color, top, left, () =>
+  let node = new IngredientNode(IngredientType.Color, top, left, () =>
     deleteNode(nodeId)
   );
   nodes[nodeId] = node;
@@ -35,14 +35,12 @@ function deleteNode(nodeId: number) {
 }
 
 function gatherRecipe(): Recipe {
-  let r: number = 255,
-    g: number = 255,
-    b: number = 255;
+  let recipe = new Recipe();
   for (var key in nodes) {
-    ({ r, g, b } = nodes[key].emit());
+    recipe.add(nodes[key].type, nodes[key].emit());
   }
 
-  return new Recipe(r, g, b);
+  return recipe;
 }
 var onLongPress;
 var timer;

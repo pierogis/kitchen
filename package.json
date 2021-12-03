@@ -2,6 +2,11 @@
   "author": "Kyle Moore <kyle@pierogis.live>",
   "name": "pierogis-kitchen",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pierogis/kitchen.git"
+  },
+  "license" : "AGPL-3.0",
   "scripts": {
     "build": "cross-env WASM_PACK_PROFILE=release parcel build static/index.html --public-url ./",
     "start": "cross-env WASM_PACK_PROFILE=dev parcel static/index.html -p 8000 --open",

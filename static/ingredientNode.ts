@@ -1,25 +1,31 @@
-import { BladeController, View } from "@tweakpane/core";
-import { BladeApi, Pane } from "tweakpane";
-import * as ImagePlugin from "tweakpane-image-plugin";
-// import { Ingredient } from "../Cargo.toml";
+import { Pane } from "tweakpane";
+import { IIngredientControl, ColorControl, PierogiControl } from "./controls";
+import TweakpaneSearchListPlugin from "tweakpane-plugin-search-list";
+import { IngredientType } from "../Cargo.toml";
+import { EBADF } from "constants";
 
-export enum Ingredients {
-  color = "color",
-  pierogi = "pierogi",
+// export enum IngredientType {
+//   Color = "color",
+//   Pierogi = "pierogi",
+// }
+
+const ingredientTypeMap = {
+  "color": IngredientType.Color,
+  "pierogi": IngredientType.Pierogi
 }
 
 export class IngredientNode {
-  type: Ingredients;
+  type: IngredientType;
   top: number;
   left: number;
   pane: Pane;
-  control: IIngredientControl<Ingredients>;
+  control: IIngredientControl<IngredientType>;
   closeCallback: () => void;
 
   container: HTMLElement;
 
   constructor(
-    type: Ingredients,
+    type: IngredientType,
     top: number,
     left: number,
     closeCallback: () => void
@@ -77,29 +83,25 @@ export class IngredientNode {
   }
 
   attachBaseInput(pane: Pane): void {
+    // pane.registerPlugin(TweakpaneSearchListPlugin);
     pane
       .addInput({ type: this.type }, "type", {
         view: "search-list",
-        options: {
-          color: "color",
-          pierogi: "pierogi",
-        },
+        options: ingredientTypeMap,
       })
       .on("change", (ev) => {
-        let type: Ingredients = <Ingredients>ev.value;
-        this.changeType(type);
+        this.changeType(ev.value);
       });
   }
-  attachInput(pane: Pane, type: Ingredients): void {
-    let control: IIngredientControl<Ingredients>;
-
+  attachInput(pane: Pane, type: IngredientType): void {
+    let control: IIngredientControl<IngredientType>;
     switch (type) {
-      case Ingredients.color: {
+      case IngredientType.Color: {
         control = new ColorControl();
         control.attach(pane);
         break;
       }
-      case Ingredients.pierogi: {
+      case IngredientType.Pierogi: {
         control = new PierogiControl();
         control.attach(pane);
         break;
@@ -109,7 +111,7 @@ export class IngredientNode {
     this.control = control;
   }
 
-  changeType(type: Ingredients) {
+  changeType(type: IngredientType) {
     if (type == this.type) return;
     this.control.detach(this.pane);
     this.type = type;
@@ -167,79 +169,5 @@ export class IngredientNode {
       e.preventDefault();
       this.closeCallback();
     };
-  }
-}
-
-interface IIngredientControl<T extends Ingredients> {
-  attach(pane: Pane): void;
-  detach(pane: Pane): void;
-
-  emit(): any;
-}
-
-abstract class IngredientControl<T extends Ingredients>
-  implements IIngredientControl<T>
-{
-  type: T;
-  input: BladeApi<BladeController<View>>;
-  abstract attach(pane: Pane);
-
-  detach(pane: Pane) {
-    pane.remove(this.input);
-  }
-
-  abstract emit();
-}
-
-class ColorControl extends IngredientControl<Ingredients.color> {
-  type: Ingredients.color;
-  r: number;
-  g: number;
-  b: number;
-
-  constructor() {
-    super();
-    this.r = 120;
-    this.g = 150;
-    this.b = 190;
-  }
-
-  attach(pane: Pane) {
-    this.input = pane
-      .addInput({ color: { r: this.r, g: this.g, b: this.b } }, "color")
-      .on("change", (ev) => {
-        this.r = ev.value.r;
-        this.g = ev.value.g;
-        this.b = ev.value.b;
-      });
-  }
-
-  emit() {
-    return { r: this.r, g: this.g, b: this.b };
-  }
-}
-
-class PierogiControl extends IngredientControl<Ingredients.pierogi> {
-  type: Ingredients.pierogi;
-  image: string;
-
-  attach(pane: Pane) {
-    pane.registerPlugin(ImagePlugin);
-
-    const params = {
-      image: new Image(),
-    };
-
-    this.input = pane
-      .addInput(params, "image", {
-        extensions: ".jpg, .gif",
-      })
-      .on("change", (ev) => {
-        console.log(ev.value);
-      });
-  }
-
-  emit() {
-    return { image: this.image };
   }
 }
