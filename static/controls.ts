@@ -3,7 +3,22 @@ import { BladeApi, Pane } from "tweakpane";
 import { IngredientType } from "../Cargo.toml";
 import * as ImagePlugin from "tweakpane-image-plugin";
 
-export interface IIngredientControl<T extends IngredientType> {
+export interface INodeControl {
+  attach(pane: Pane): void;
+  detach(pane: Pane): void;
+}
+
+abstract class NodeControl {
+  input: BladeApi<BladeController<View>>;
+  abstract attach(pane: Pane);
+
+  detach(pane: Pane) {
+    pane.remove(this.input);
+  }
+}
+
+export interface IIngredientControl<T extends IngredientType>
+  extends INodeControl {
   attach(pane: Pane): void;
   detach(pane: Pane): void;
 
@@ -11,15 +26,10 @@ export interface IIngredientControl<T extends IngredientType> {
 }
 
 abstract class IngredientControl<T extends IngredientType>
+  extends NodeControl
   implements IIngredientControl<T>
 {
   type: T;
-  input: BladeApi<BladeController<View>>;
-  abstract attach(pane: Pane);
-
-  detach(pane: Pane) {
-    pane.remove(this.input);
-  }
 
   abstract emit();
 }
@@ -48,7 +58,11 @@ export class ColorControl extends IngredientControl<IngredientType.Color> {
   }
 
   emit() {
-    return { r: Math.round(this.r), g: Math.round(this.g), b: Math.round(this.b) };
+    return {
+      r: Math.round(this.r),
+      g: Math.round(this.g),
+      b: Math.round(this.b),
+    };
   }
 }
 
@@ -75,5 +89,47 @@ export class PierogiControl extends IngredientControl<IngredientType.Pierogi> {
 
   emit() {
     return { src: this.src };
+  }
+}
+
+export class PlateControl extends NodeControl {
+  width: number;
+  height: number;
+  resolutionChangeCallback: (width: number, height: number) => void;
+
+  constructor(
+    width: number,
+    height: number,
+    resolutionChangeCallback: (width: number, height: number) => void
+  ) {
+    super();
+    this.width = width;
+    this.height = height;
+    this.resolutionChangeCallback = resolutionChangeCallback;
+  }
+
+  attach(pane: Pane) {
+    const params = {
+      width: this.width,
+      height: this.height,
+    };
+
+    this.input = pane
+      .addInput(params, "width", {
+        step: 1,
+      })
+      .on("change", (ev) => {
+        this.width = ev.value;
+        this.resolutionChangeCallback(this.width, this.height);
+      });
+
+    this.input = pane
+      .addInput(params, "height", {
+        step: 1,
+      })
+      .on("change", (ev) => {
+        this.height = ev.value;
+        this.resolutionChangeCallback(this.width, this.height);
+      });
   }
 }

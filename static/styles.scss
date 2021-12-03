@@ -34,48 +34,6 @@ nav li {
   padding: 10px;
 }
 
-.app {
-  text-align: center;
-}
-
-.app-logo {
-  display: block;
-  pointer-events: none;
-  width: 200px;
-  height: 200px;
-  background: url(./logo.svg);
-  background-size: 200px 200px;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .app-logo {
-    animation: app-logo-spin infinite 20s linear;
-  }
-}
-
-.app-header {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.app-link {
-  color: #61dafb;
-}
-
-@keyframes app-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .node {
   position: absolute;
   z-index: 9;
@@ -138,4 +96,17 @@ nav li {
 .close:hover {
   filter: brightness(90%) saturate(150%);
   cursor: pointer;
+}
+
+.cursor-circle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background-color: hsla(0, 0%, 100%, 0.3);
+  opacity: 30%;
+  width: 0px;
+  height: 0px;
+  margin-top: 0px;
+  margin-left: 0px;
+  filter: blur(2px);
 }

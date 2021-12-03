@@ -1,23 +1,30 @@
+import { Pane } from "tweakpane";
 import { Kitchen, Recipe, IngredientType } from "../Cargo.toml";
+import { PlateControl } from "./controls";
 import { IngredientNode } from "./ingredientNode";
 
 const canvas = document.createElement("canvas");
-canvas.style.position = "fixed";
-canvas.style.left = "0";
-canvas.style.right = "0";
-canvas.style.width = "100%";
-canvas.style.height = "100%";
-// canvas.width = window.width;
-// canvas.height = window.;
 document.body.appendChild(canvas);
-let kitchen = new Kitchen(canvas);
 
 const nodes: { [key: number]: IngredientNode } = {};
 
-window.onresize = function () {
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-};
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let kitchen = new Kitchen(canvas);
+
+let plateControl = new PlateControl(
+  canvas.width,
+  canvas.height,
+  (width, height) => {
+    let gl = canvas.getContext("webgl");
+    gl.viewport(0, 0, width, height);
+  }
+);
+
+let platePane = new Pane();
+
+plateControl.attach(platePane);
 
 function addNode(top: number, left: number) {
   let nodeId = currentNodeId;
@@ -42,34 +49,89 @@ function gatherRecipe(): Recipe {
 
   return recipe;
 }
+
+let cursorCircle = document.createElement("div");
+cursorCircle.classList.add("cursor-circle");
+
 var onLongPress;
-var timer;
+var longPressTimer;
+var moveCancelsTimer;
 var touchduration = 500; //length of time we want the user to touch before we do something
 
-function pressStart(ev: MouseEvent) {
-  ev.preventDefault();
-  if (!timer) {
-    timer = setTimeout(onLongPress, touchduration, ev);
+cursorCircle.style.transition = `width ${touchduration / 1.5}ms, height ${
+  touchduration / 1.5
+}ms, margin ${touchduration / 1.5}ms`;
+document.body.append(cursorCircle);
+
+document.addEventListener("mousemove", (ev) => {
+  moveCursorCircle(ev);
+});
+
+function moveCursorCircle(ev: MouseEvent) {
+  cursorCircle.style.left = ev.clientX + "px";
+  cursorCircle.style.top = ev.clientY + "px";
+}
+
+function pressStart(ev: MouseEvent | Touch) {
+  cursorCircle.style.width = "20px";
+  cursorCircle.style.height = "20px";
+  cursorCircle.style.marginTop = "-10px";
+  cursorCircle.style.marginLeft = "-10px";
+  if (!moveCancelsTimer) {
+    moveCancelsTimer = setTimeout(() => {
+      canvas.onmousemove = pressEnd;
+    }, 300);
+  }
+  if (!longPressTimer) {
+    longPressTimer = setTimeout(onLongPress, touchduration, ev);
   }
 }
 
 function pressEnd() {
-  //stops short touches from firing the event
-  if (timer) {
-    clearTimeout(timer);
-    timer = null;
+  cursorCircle.style.width = "0px";
+  cursorCircle.style.height = "0px";
+  cursorCircle.style.marginTop = "0px";
+  cursorCircle.style.marginLeft = "0px";
+  if (moveCancelsTimer) {
+    canvas.onmousemove = null;
+    clearTimeout(moveCancelsTimer);
+    moveCancelsTimer = null;
+  }
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
   }
 }
 
 var currentNodeId = 0;
 
-onLongPress = function (ev: MouseEvent) {
-  timer = null;
+onLongPress = function (ev: MouseEvent | Touch) {
+  if (moveCancelsTimer) {
+    canvas.onmousemove = null;
+    clearTimeout(moveCancelsTimer);
+    moveCancelsTimer = null;
+  }
+  longPressTimer = null;
+  cursorCircle.style.width = "0px";
+  cursorCircle.style.height = "0px";
+  cursorCircle.style.marginTop = "0px";
+  cursorCircle.style.marginLeft = "0px";
   addNode(ev.clientY, ev.clientX);
 };
 
-canvas.onmousedown = pressStart;
+canvas.onmousedown = (ev) => {
+  if (ev.button == 0) {
+    ev.preventDefault();
+    pressStart(ev);
+  }
+};
 canvas.onmouseup = pressEnd;
+
+canvas.ontouchstart = (ev) => {
+  ev.preventDefault();
+  pressStart(ev.touches.item(0));
+};
+canvas.ontouchcancel = pressEnd;
 
 function render() {
   let recipe = gatherRecipe();

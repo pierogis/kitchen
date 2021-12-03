@@ -1,5 +1,5 @@
 import { Pane } from "tweakpane";
-import { IIngredientControl, ColorControl, PierogiControl } from "./controls";
+import { INodeControl, ColorControl, PierogiControl, IIngredientControl } from "./controls";
 import TweakpaneSearchListPlugin from "tweakpane-plugin-search-list";
 import { IngredientType } from "../Cargo.toml";
 import { EBADF } from "constants";

@@ -28,7 +28,7 @@ impl Kitchen {
     pub fn new(canvas: HtmlCanvasElement) -> Self {
         console_error_panic_hook::set_once();
 
-        let gl: GL = canvas
+        let gl: WebGlRenderingContext = canvas
             .get_context("webgl")
             .unwrap()
             .unwrap()
@@ -39,8 +39,6 @@ impl Kitchen {
         gl.blend_func(GL::SRC_ALPHA, GL::ONE_MINUS_SRC_ALPHA);
         gl.clear_color(0.0, 0.0, 0.0, 1.0);
         gl.clear_depth(1.0);
-
-        gl.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
 
         Self {
             canvas,
