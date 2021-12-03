@@ -11,16 +11,39 @@ const nodes: { [key: number]: IngredientNode } = {};
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+let viewportWidth = canvas.width;
+let viewportHeight = canvas.height;
+
+window.onresize = (ev: UIEvent) => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  centerVewport();
+};
+
 let kitchen = new Kitchen(canvas);
 
+function centerVewport() {
+  let gl = canvas.getContext("webgl");
+  let left = (canvas.width - viewportWidth) / 2;
+  let top = (canvas.height - viewportHeight) / 2;
+  gl.viewport(left, top, viewportWidth, viewportHeight);
+}
+
 let plateControl = new PlateControl(
-  canvas.width,
-  canvas.height,
+  viewportWidth,
+  viewportHeight,
   (width, height) => {
-    let gl = canvas.getContext("webgl");
-    gl.viewport(0, 0, width, height);
+    viewportWidth = width;
+    viewportHeight = height;
+    centerVewport();
   }
 );
+
+function onScroll() {
+  window.scrollTo(0, 0);
+}
+
+window.onscroll = () => onScroll;
 
 let platePane = new Pane();
 
