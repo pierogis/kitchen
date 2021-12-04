@@ -53,25 +53,6 @@ impl Kitchen {
     }
 }
 
-// use serde::{Serialize, Deserialize};
-
-// #[derive(Serialize, Deserialize)]
-// struct IngredientDescription {
-//     ingredient_type: IngredientType,
-//     fields: JsValue,
-// }
-
-// #[wasm_bindgen]
-// impl IngredientDescription {
-//     #[wasm_bindgen(constructor)]
-//     pub fn new(ingredient_type: IngredientType, fields: JsValue) -> Self {
-//         Self {
-//             ingredient_type,
-//             fields
-//         }
-//     }
-// }
-
 #[wasm_bindgen]
 pub struct Recipe {
     ingredients: Vec<Ingredients>,

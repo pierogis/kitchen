@@ -1,6 +1,8 @@
 import { Pane } from "tweakpane";
+
 import { Kitchen, Recipe, IngredientType } from "../Cargo.toml";
-import { PlateControl } from "./controls";
+
+import { PlateControl } from "./controls/plate-control";
 import { IngredientNode } from "./ingredientNode";
 
 const canvas = document.createElement("canvas");
@@ -45,7 +47,13 @@ function onScroll() {
 
 window.onscroll = () => onScroll;
 
-let platePane = new Pane();
+let plateNode = document.createElement("div");
+plateNode.classList.add("plate-node");
+plateNode.classList.add("no-select");
+
+document.body.append(plateNode)
+
+let platePane = new Pane({ container: plateNode });
 
 plateControl.attach(platePane);
 

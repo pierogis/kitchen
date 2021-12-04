@@ -1,8 +1,7 @@
 import { Pane } from "tweakpane";
-import { INodeControl, ColorControl, PierogiControl, IIngredientControl } from "./controls";
-import TweakpaneSearchListPlugin from "tweakpane-plugin-search-list";
+
 import { IngredientType } from "../Cargo.toml";
-import { EBADF } from "constants";
+import { ColorControl, PierogiControl, IIngredientControl } from "./controls";
 
 // export enum IngredientType {
 //   Color = "color",
@@ -10,9 +9,9 @@ import { EBADF } from "constants";
 // }
 
 const ingredientTypeMap = {
-  "color": IngredientType.Color,
-  "pierogi": IngredientType.Pierogi
-}
+  color: IngredientType.Color,
+  pierogi: IngredientType.Pierogi,
+};
 
 export class IngredientNode {
   type: IngredientType;
@@ -38,7 +37,7 @@ export class IngredientNode {
 
   render() {
     let container = document.createElement("div");
-    container.classList.add("node");
+    container.classList.add("ingredient-node");
     container.classList.add("no-select");
     container.style.top = this.top - 10 + "px";
     container.style.left = this.left - 100 + "px";
