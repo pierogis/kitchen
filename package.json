@@ -13,21 +13,21 @@
     "test": "wasm-pack test --headless --chrome"
   },
   "devDependencies": {
-    "@tweakpane/core": "^1.0.7",
     "cross-env": "^7.0.3",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-wasm.rs": "^1.2.16",
+    "typescript": "^3.7.4",
     "sass": "^1.24.2",
-    "typescript": "^3.7.4"
+    "@tweakpane/core": "^1.0.7"
   },
   "dependencies": {
+    "ansi-regex": ">=5.0.1",
+    "glob-parent": ">=5.1.2",
+    "json-schema": ">=0.4.0",
+    "nth-check": ">=2.0.1",
+    "striptags": ">=3.2.0",
     "tweakpane": "^3.0.6",
     "tweakpane-image-plugin": "github:ayamflow/tweakpane-image-plugin",
-    "tweakpane-plugin-search-list": "^0.0.10",
-    "striptags": ">=3.2.0",
-    "glob-parent": ">=5.1.2",
-    "nth-check": ">=2.0.1",
-    "ansi-regex": ">=5.0.1",
-    "json-schema": ">=0.4.0"
+    "tweakpane-plugin-search-list": "^0.0.10"
   }
 }

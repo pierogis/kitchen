@@ -1,3 +1,5 @@
+import { Cable } from "./cable";
+
 const nearTerminalRackDistance = 8;
 
 export enum TerminalType {
@@ -12,6 +14,24 @@ export class TerminalRack {
   addTerminal(terminalType: TerminalType) {
     let terminal = document.createElement("div");
     terminal.classList.add("terminal-" + terminalType);
+
+    terminal.onmousedown = (ev: MouseEvent) => {
+      if (ev.button == 0) {
+        let x1 = ev.clientX;
+        let y1 = ev.clientY;
+
+        let cable = new Cable(terminal);
+
+        document.body.addEventListener("mousemove", (ev: MouseEvent) => {
+          cable.draw(x1, y1, ev.clientX, ev.clientY);
+        });
+
+        document.body.addEventListener("mouseup", (ev: MouseEvent) => {
+          
+          cable.dispose();
+        });
+      }
+    };
 
     this.terminals.push(terminal);
     this.terminalRack.appendChild(terminal);

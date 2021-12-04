@@ -3,7 +3,7 @@ import { BladeApi, Pane } from "tweakpane";
 
 import { IngredientType } from "../Cargo.toml";
 
-import { TerminalType, TerminalRack } from "./terminal";
+import { TerminalType, TerminalRack } from "../terminal";
 
 export interface INodeControl {
   attach(pane: Pane): void;

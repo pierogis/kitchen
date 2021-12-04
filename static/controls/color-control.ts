@@ -3,7 +3,7 @@ import { Pane } from "tweakpane";
 import { IngredientType } from "../Cargo.toml";
 
 import { IngredientControl } from "./common";
-import { TerminalType } from "./terminal";
+import { TerminalType } from "../terminal";
 
 export class ColorControl extends IngredientControl<IngredientType.Color> {
   type: IngredientType.Color;
