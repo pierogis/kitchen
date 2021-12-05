@@ -3,7 +3,7 @@ import { Pane } from "tweakpane";
 import { IngredientType } from "../Cargo.toml";
 
 import { IngredientControl } from "./common";
-import { TerminalType } from "../terminal";
+import { Terminal, TerminalDirection, TerminalRack } from "../terminal";
 
 export class ColorControl extends IngredientControl<IngredientType.Color> {
   type: IngredientType.Color;
@@ -11,14 +11,15 @@ export class ColorControl extends IngredientControl<IngredientType.Color> {
   g: number;
   b: number;
 
-  constructor() {
-    super();
+  constructor(
+    pane: Pane,
+    addTerminalCallback: (terminalRack: TerminalRack) => void
+  ) {
+    super(addTerminalCallback);
     this.r = 120;
     this.g = 150;
     this.b = 190;
-  }
 
-  attach(pane: Pane) {
     let colorInput = pane
       .addInput({ color: { r: this.r, g: this.g, b: this.b } }, "color")
       .on("change", (ev) => {
@@ -31,12 +32,12 @@ export class ColorControl extends IngredientControl<IngredientType.Color> {
 
     this.attachTerminalRack(
       colorInput.controller_.view.element,
-      TerminalType.in
+      TerminalDirection.in
     );
 
     this.attachTerminalRack(
       colorInput.controller_.view.element,
-      TerminalType.out
+      TerminalDirection.out
     );
   }
 

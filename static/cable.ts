@@ -1,12 +1,13 @@
 export class Cable {
-  start: HTMLElement;
-  end: HTMLElement;
+  x1: number;
+  y1: number;
 
   svg: SVGSVGElement;
   path: SVGPathElement;
 
-  constructor(base: HTMLElement) {
-    this.start = base;
+  constructor(x1: number, y1: number) {
+    this.x1 = x1;
+    this.y1 = y1;
 
     this.svg = this.createSvg();
     document.body.appendChild(this.svg);
@@ -28,8 +29,7 @@ export class Cable {
   }
 
   draw(x1: number, y1: number, x2: number, y2: number) {
-    let xMidpoint = (x1 + x2) / 2;
-
+    this.svg.classList.add("dragging");
     let width = Math.abs(x2 - x1);
     let height = Math.abs(y2 - y1);
 
@@ -66,7 +66,6 @@ export class Cable {
       width / 2
     } ${endY}, ${width} ${endY}`;
 
-    console.log(x1, x2, y1, y2);
     this.svg.style.width = width + "px";
     this.svg.style.height = Math.abs(y2 - y1) + "px";
 

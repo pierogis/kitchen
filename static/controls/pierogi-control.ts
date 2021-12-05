@@ -4,7 +4,7 @@ import * as ImagePlugin from "tweakpane-image-plugin";
 import { IngredientType } from "../Cargo.toml";
 
 import { IngredientControl } from "./common";
-import { TerminalType } from "../terminal";
+import { Terminal, TerminalDirection, TerminalRack } from "../terminal";
 
 export class PierogiControl extends IngredientControl<IngredientType.Pierogi> {
   type: IngredientType.Pierogi;
@@ -12,7 +12,12 @@ export class PierogiControl extends IngredientControl<IngredientType.Pierogi> {
   width: number = 0;
   height: number = 0;
 
-  attach(pane: Pane) {
+  constructor(
+    pane: Pane,
+    addTerminalCallback: (terminalRack: TerminalRack) => void,
+  ) {
+    super(addTerminalCallback);
+
     pane.registerPlugin(ImagePlugin);
 
     const params = {
@@ -42,32 +47,32 @@ export class PierogiControl extends IngredientControl<IngredientType.Pierogi> {
 
     this.attachTerminalRack(
       imageInput.controller_.view.element,
-      TerminalType.in
+      TerminalDirection.in
     );
 
     this.attachTerminalRack(
       imageInput.controller_.view.element,
-      TerminalType.out
+      TerminalDirection.out
     );
 
     this.attachTerminalRack(
       widthMonitor.controller_.view.element,
-      TerminalType.in
+      TerminalDirection.in
     );
 
     this.attachTerminalRack(
       widthMonitor.controller_.view.element,
-      TerminalType.out
+      TerminalDirection.out
     );
 
     this.attachTerminalRack(
       heightMonitor.controller_.view.element,
-      TerminalType.in
+      TerminalDirection.in
     );
 
     this.attachTerminalRack(
       heightMonitor.controller_.view.element,
-      TerminalType.out
+      TerminalDirection.out
     );
   }
 

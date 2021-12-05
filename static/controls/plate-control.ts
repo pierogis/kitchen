@@ -1,7 +1,7 @@
 import { Pane } from "tweakpane";
 
 import { NodeControl } from "./common";
-import { TerminalType } from "../terminal";
+import { Terminal, TerminalDirection, TerminalRack } from "../terminal";
 
 export class PlateControl extends NodeControl {
   width: number;
@@ -9,17 +9,17 @@ export class PlateControl extends NodeControl {
   resolutionChangeCallback: (width: number, height: number) => void;
 
   constructor(
+    pane: Pane,
     width: number,
     height: number,
-    resolutionChangeCallback: (width: number, height: number) => void
+    resolutionChangeCallback: (width: number, height: number) => void,
+    addTerminalCallback: (terminalRack: TerminalRack) => void
   ) {
-    super();
+    super(addTerminalCallback);
     this.width = width;
     this.height = height;
     this.resolutionChangeCallback = resolutionChangeCallback;
-  }
 
-  attach(pane: Pane) {
     const params = {
       width: this.width,
       height: this.height,
@@ -49,12 +49,12 @@ export class PlateControl extends NodeControl {
 
     this.attachTerminalRack(
       widthInput.controller_.view.element,
-      TerminalType.in
+      TerminalDirection.in
     );
 
     this.attachTerminalRack(
       heightInput.controller_.view.element,
-      TerminalType.in
+      TerminalDirection.in
     );
   }
 }

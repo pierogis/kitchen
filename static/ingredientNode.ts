@@ -1,50 +1,43 @@
 import { Pane } from "tweakpane";
 
 import { IngredientType } from "../Cargo.toml";
+import { Cable } from "./cable";
 import { ColorControl, PierogiControl, IIngredientControl } from "./controls";
-
-// export enum IngredientType {
-//   Color = "color",
-//   Pierogi = "pierogi",
-// }
+import { TerminalRack, Terminal } from "./terminal";
+import { View, NodeView } from "./controls";
 
 const ingredientTypeMap = {
   color: IngredientType.Color,
   pierogi: IngredientType.Pierogi,
 };
 
-export class IngredientNode {
-  type: IngredientType;
+class IngredientNodeView {
+  element: HTMLElement;
+  pane: Pane;
   top: number;
   left: number;
-  pane: Pane;
-  control: IIngredientControl<IngredientType>;
   closeCallback: () => void;
-
-  container: HTMLElement;
+  getMatchingTerminalsCallback: (Terminal) => Terminal[];
 
   constructor(
-    type: IngredientType,
+    ingredientType: IngredientType,
     top: number,
     left: number,
     closeCallback: () => void
   ) {
-    this.type = type;
     this.top = top;
     this.left = left;
     this.closeCallback = closeCallback;
-  }
 
-  render() {
-    let container = document.createElement("div");
-    container.classList.add("ingredient-node");
-    container.classList.add("no-select");
-    container.style.top = this.top - 10 + "px";
-    container.style.left = this.left - 100 + "px";
+    let element = document.createElement("div");
+    element.classList.add("ingredient-node");
+    element.classList.add("no-select");
+    element.style.top = this.top - 10 + "px";
+    element.style.left = this.left - 100 + "px";
 
     let header = document.createElement("div");
     header.classList.add("node-header");
-    container.appendChild(header);
+    element.appendChild(header);
 
     let grabButton = document.createElement("div");
     grabButton.classList.add("grab");
@@ -61,67 +54,20 @@ export class IngredientNode {
     header.appendChild(grabButton);
     header.appendChild(closeButton);
 
-    this.makeDraggable(grabButton, container);
+    this.makeDraggable(grabButton, element);
     this.makeClosable(closeButton);
 
     const pane = new Pane({
-      container: container,
+      container: element,
     });
     this.pane = pane;
 
-    this.attachBaseInput(pane);
-    this.attachInput(pane, this.type);
+    document.body.appendChild(element);
 
-    document.body.appendChild(container);
-
-    this.container = container;
+    this.element = element;
   }
 
-  dispose() {
-    this.container.remove();
-  }
-
-  attachBaseInput(pane: Pane): void {
-    // pane.registerPlugin(TweakpaneSearchListPlugin);
-    pane
-      .addInput({ type: this.type }, "type", {
-        view: "search-list",
-        options: ingredientTypeMap,
-      })
-      .on("change", (ev) => {
-        this.changeType(ev.value);
-      });
-  }
-  attachInput(pane: Pane, type: IngredientType): void {
-    let control: IIngredientControl<IngredientType>;
-    switch (type) {
-      case IngredientType.Color: {
-        control = new ColorControl();
-        control.attach(pane);
-        break;
-      }
-      case IngredientType.Pierogi: {
-        control = new PierogiControl();
-        control.attach(pane);
-        break;
-      }
-    }
-
-    this.control = control;
-  }
-
-  changeType(type: IngredientType) {
-    if (type == this.type) return;
-    this.control.detach(this.pane);
-    this.type = type;
-    this.attachInput(this.pane, type);
-  }
-
-  emit() {
-    return this.control.emit();
-  }
-
-  makeDraggable(target: HTMLElement, draggable: HTMLElement) {
+  private makeDraggable(target: HTMLElement, draggable: HTMLElement) {
     var pos1 = 0,
       pos2 = 0,
       pos3 = 0,
@@ -163,10 +109,90 @@ export class IngredientNode {
     }
   }
 
-  makeClosable(target: HTMLElement) {
+  private makeClosable(target: HTMLElement) {
     target.onclick = (e: MouseEvent) => {
       e.preventDefault();
       this.closeCallback();
     };
+  }
+}
+
+export class IngredientNode {
+  ingredientType: IngredientType;
+  view: IngredientNodeView;
+  top: number;
+  left: number;
+  control: IIngredientControl<IngredientType>;
+  closeCallback: () => void;
+  addTerminalCallback: (terminal: Terminal) => void;
+  getMatchingTerminalsCallback: (terminal: Terminal) => Terminal[];
+
+  constructor(
+    ingredientType: IngredientType,
+    top: number,
+    left: number,
+    closeCallback: () => void,
+    addTerminalCallback: (terminal: Terminal) => void,
+    getMatchingTerminalsCallback: (terminal: Terminal) => Terminal[]
+  ) {
+    this.ingredientType = ingredientType;
+    this.top = top;
+    this.left = left;
+    this.closeCallback = closeCallback;
+    this.addTerminalCallback = addTerminalCallback;
+    this.getMatchingTerminalsCallback = getMatchingTerminalsCallback;
+
+    this.view = new IngredientNodeView(
+      ingredientType,
+      top,
+      left,
+      closeCallback
+    );
+
+    this.attachBaseInput();
+    this.attachInput(ingredientType);
+  }
+
+  dispose() {
+    this.view.element.remove();
+  }
+
+  attachBaseInput(): void {
+    // pane.registerPlugin(TweakpaneSearchListPlugin);
+    this.view.pane
+      .addInput({ type: this.ingredientType }, "type", {
+        view: "search-list",
+        options: ingredientTypeMap,
+      })
+      .on("change", (ev) => {
+        this.changeType(ev.value);
+      });
+  }
+
+  attachInput(type: IngredientType): void {
+    let control: IIngredientControl<IngredientType>;
+    switch (type) {
+      case IngredientType.Color: {
+        control = new ColorControl(this.view.pane, () => this.addTerminal);
+        break;
+      }
+      case IngredientType.Pierogi: {
+        control = new PierogiControl(this.view.pane, () => this.addTerminal);
+        break;
+      }
+    }
+
+    this.control = control;
+  }
+
+  changeType(ingredientType: IngredientType) {
+    if (ingredientType == this.ingredientType) return;
+    this.control.detach(this.view.pane);
+    this.ingredientType = ingredientType;
+    this.attachInput(ingredientType);
+  }
+
+  emit() {
+    return this.control.emit();
   }
 }

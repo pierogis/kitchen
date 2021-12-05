@@ -23,7 +23,15 @@ code {
     monospace;
 }
 
+@mixin no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 .ingredient-node {
+  @include no-select;
   position: absolute;
   z-index: 9;
   display: block;
@@ -33,13 +41,6 @@ code {
   @extend .ingredient-node;
   top: 50%;
   right: 0px;
-}
-
-.no-select {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 
 .node-header {
@@ -107,6 +108,7 @@ code {
 }
 
 %terminal {
+  @include no-select;
   border: 0px outset hsla(0, 0%, 20%, 0.3);
   background-color: var(--tp-button-background-color-hover);
   // box-shadow: 0 2px 4px var(--tp-base-shadow-color);
@@ -117,7 +119,7 @@ code {
   z-index: -1;
 }
 
-%terminal:hover {
+.terminal-selected {
   border: 2px inset hsla(0, 0%, 20%, 0.5);
 
   cursor: grab;
