@@ -15,5 +15,6 @@ site/dist
 crate/pkg
 /wasm-pack.log
 .cache
+.parcel-cache
 
 .idea
