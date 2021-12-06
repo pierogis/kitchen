@@ -1,5 +1,4 @@
-import { Restaurant } from "./restaurant";
-import * as Vue from "vue";
+// import { Restaurant } from "./restaurant";
 
 let onScroll = () => {
   window.scrollTo(0, 0);
@@ -12,9 +11,8 @@ cursorCircle.classList.add("cursor-circle");
 
 var touchduration = 500; //length of time we want the user to touch before we do something
 
-cursorCircle.style.transition = `width ${touchduration / 1.5}ms, height ${
-  touchduration / 1.5
-}ms, margin ${touchduration / 1.5}ms`;
+cursorCircle.style.transition = `width ${touchduration / 1.5}ms, height ${touchduration / 1.5
+  }ms, margin ${touchduration / 1.5}ms`;
 document.body.append(cursorCircle);
 
 document.addEventListener("mousemove", (ev) => {
@@ -61,35 +59,35 @@ function pressEnd() {
   }
 }
 
-let restaurant = new Restaurant();
+// let restaurant = new Restaurant();
 
-onLongPress = (ev: MouseEvent | Touch) => {
-  if (moveCancelsTimer) {
-    document.body.onmousemove = null;
-    clearTimeout(moveCancelsTimer);
-    moveCancelsTimer = null;
-  }
-  longPressTimer = null;
-  cursorCircle.style.width = "0px";
-  cursorCircle.style.height = "0px";
-  cursorCircle.style.marginTop = "0px";
-  cursorCircle.style.marginLeft = "0px";
-  restaurant.addNode(ev.clientY, ev.clientX);
-};
+// onLongPress = (ev: MouseEvent | Touch) => {
+//   if (moveCancelsTimer) {
+//     document.body.onmousemove = null;
+//     clearTimeout(moveCancelsTimer);
+//     moveCancelsTimer = null;
+//   }
+//   longPressTimer = null;
+//   cursorCircle.style.width = "0px";
+//   cursorCircle.style.height = "0px";
+//   cursorCircle.style.marginTop = "0px";
+//   cursorCircle.style.marginLeft = "0px";
+//   restaurant.addNode(ev.clientY, ev.clientX);
+// };
 
-restaurant.canvas.onmousedown = (ev) => {
-  if (ev.button == 0) {
-    ev.preventDefault();
-    pressStart(ev);
-  }
-};
-restaurant.canvas.onmouseup = pressEnd;
+// restaurant.canvas.onmousedown = (ev) => {
+//   if (ev.button == 0) {
+//     ev.preventDefault();
+//     pressStart(ev);
+//   }
+// };
+// restaurant.canvas.onmouseup = pressEnd;
 
-restaurant.canvas.ontouchstart = (ev) => {
-  ev.preventDefault();
-  pressStart(ev.touches.item(0));
-};
-restaurant.canvas.ontouchcancel = pressEnd;
+// restaurant.canvas.ontouchstart = (ev) => {
+//   ev.preventDefault();
+//   pressStart(ev.touches.item(0));
+// };
+// restaurant.canvas.ontouchcancel = pressEnd;
 
 // const app = Vue.createApp(restaurant);
 
@@ -110,3 +108,15 @@ restaurant.canvas.ontouchcancel = pressEnd;
 //         <plate-node></plate-node>
 //     `,
 // });
+
+import Restaurant from './svelte/restaurant.svelte';
+
+console.log(Restaurant);
+
+const restaurant = new Restaurant({
+  target: document.body,
+  props: {
+    // we'll learn about props later
+    answer: 42
+  }
+});

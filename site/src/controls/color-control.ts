@@ -1,9 +1,48 @@
 import { Pane } from "tweakpane";
 
-import { IngredientType } from "../Cargo.toml";
+import { IngredientType } from "../../../crate/Cargo.toml";
 
 import { IngredientControl } from "./common";
 import { Terminal, TerminalDirection, TerminalRack } from "../terminal";
+
+interface View {
+  readonly element: HTMLElement;
+}
+
+class ColorView implements View {
+  element: HTMLElement;
+  constructor(
+    doc: Document
+  ) {
+    this.element = doc.createElement('div')
+
+    let pane = new Pane(
+      {
+        container: this.element
+      }
+    );
+
+    let colorInput = pane
+      .addInput({ color: { r: this.r, g: this.g, b: this.b } }, "color")
+      .on("change", (ev) => {
+        this.r = ev.value.r;
+        this.g = ev.value.g;
+        this.b = ev.value.b;
+      });
+
+    this.inputs.push(colorInput);
+
+    this.attachTerminalRack(
+      colorInput.controller_.view.element,
+      TerminalDirection.in
+    );
+
+    this.attachTerminalRack(
+      colorInput.controller_.view.element,
+      TerminalDirection.out
+    );
+  }
+}
 
 export class ColorControl extends IngredientControl<IngredientType.Color> {
   type: IngredientType.Color;
