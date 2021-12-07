@@ -1,4 +1,4 @@
-<script lang ts>
+<script lang=ts>
   import { createEventDispatcher, onMount } from "svelte";
   import TerminalRack from "./terminal-rack.svelte";
   import { TerminalDirection } from "../terminal";
@@ -37,8 +37,8 @@
         change();
       });
 
-    widthInput.controller_.view.element.appendChild(widthInRack);
-    widthInput.controller_.view.element.appendChild(widthOutRack);
+    widthInput.controller_.view.element.prepend(widthInRack);
+    // widthInput.controller_.view.element.append(widthOutRack);
 
     let heightInput = pane
       .addInput(params, "height", {
@@ -49,17 +49,17 @@
         change();
       });
 
-    heightInput.controller_.view.element.appendChild(heightInRack);
-    heightInput.controller_.view.element.appendChild(heightOutRack);
+    heightInput.controller_.view.element.prepend(heightInRack);
+    // heightInput.controller_.view.element.append(heightOutRack);
   });
 </script>
 
 <div bind:this={container} />
 
 <TerminalRack bind:container={widthInRack} direction={TerminalDirection.in} />
-<TerminalRack bind:container={widthOutRack} direction={TerminalDirection.out} />
+<!-- <TerminalRack bind:container={widthOutRack} direction={TerminalDirection.out} /> -->
 <TerminalRack bind:container={heightInRack} direction={TerminalDirection.in} />
-<TerminalRack
+<!-- <TerminalRack
   bind:container={heightOutRack}
   direction={TerminalDirection.out}
-/>
+/> -->

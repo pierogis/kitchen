@@ -11,8 +11,9 @@ cursorCircle.classList.add("cursor-circle");
 
 var touchduration = 500; //length of time we want the user to touch before we do something
 
-cursorCircle.style.transition = `width ${touchduration / 1.5}ms, height ${touchduration / 1.5
-  }ms, margin ${touchduration / 1.5}ms`;
+cursorCircle.style.transition = `width ${touchduration / 1.5}ms, height ${
+  touchduration / 1.5
+}ms, margin ${touchduration / 1.5}ms`;
 document.body.append(cursorCircle);
 
 document.addEventListener("mousemove", (ev) => {
@@ -89,34 +90,9 @@ function pressEnd() {
 // };
 // restaurant.canvas.ontouchcancel = pressEnd;
 
-// const app = Vue.createApp(restaurant);
 
-// app.component("plate-node", {
-//   data() {
-
-//     let platePane = new Pane({ container: plateNode });
-//   },
-//   template: `
-//         <div></div>
-//     `,
-// });
-
-// app.component("restaurant", {
-//   data() {},
-//   template: `
-//         <canvas></canvas>
-//         <plate-node></plate-node>
-//     `,
-// });
-
-import Restaurant from './svelte/restaurant.svelte';
-
-console.log(Restaurant);
+import Restaurant from "./svelte/restaurant.svelte";
 
 const restaurant = new Restaurant({
   target: document.body,
-  props: {
-    // we'll learn about props later
-    answer: 42
-  }
 });

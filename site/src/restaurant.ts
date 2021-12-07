@@ -5,7 +5,7 @@ import { Cable } from "./cable";
 
 import { PlateControl } from "./controls/plate-control";
 import { IngredientNode } from "./ingredientNode";
-import { Terminal, TerminalDirection, TerminalRack } from "./terminal";
+import type { Terminal } from "./terminal";
 
 export class Restaurant {
   canvas: HTMLCanvasElement;

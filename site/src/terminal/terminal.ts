@@ -1,6 +1,3 @@
-import { Cable } from "../cable";
-
-
 export enum TerminalDirection {
   in = "in",
   out = "out",
@@ -34,4 +31,3 @@ export class Terminal {
     this.element.classList.remove("terminal-selected");
   }
 }
-

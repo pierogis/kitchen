@@ -3,10 +3,13 @@ import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import livereload from "rollup-plugin-livereload";
 import { terser } from "rollup-plugin-terser";
-import rust from "@wasm-tool/rollup-plugin-rust";
-import ts from "rollup-plugin-ts";
+import rust from "rollup-plugin-rust";
+import typescript from "@rollup/plugin-typescript";
+import html from "@rollup/plugin-html";
+import css from "rollup-plugin-import-css";
 
 const production = !process.env.ROLLUP_WATCH;
+import preprocess from "svelte-preprocess";
 
 function serve() {
     let server;
@@ -32,27 +35,11 @@ function serve() {
 }
 
 export default {
-    input: {
-        site: "src/index.ts",
-        crate: "../crate/Cargo.toml",
-    },
+    input: "src/index.ts",
     output: {
-        sourcemap: true,
-        format: "iife",
-        name: "app",
-        file: "bundle.js",
+        dir: "dist",
     },
     plugins: [
-        svelte({
-            // enable run-time checks when not in production
-            dev: !production,
-            // we'll extract any component CSS out into
-            // a separate file - better for performance
-            css: (css) => {
-                css.write("bundle.css");
-            },
-        }),
-
         // If you have external dependencies installed from
         // npm, you'll most likely need these plugins. In
         // some cases you'll need additional configuration -
@@ -68,7 +55,7 @@ export default {
         // the bundle has been generated
         !production && serve(),
 
-        // Watch the `public` directory and refresh the
+        // Watch the `src` directory and refresh the
         // browser on changes when not in production
         !production && livereload("src"),
 
@@ -76,12 +63,14 @@ export default {
         // instead of npm run dev), minify
         production && terser(),
 
-        rust({
-            verbose: true,
-            serverPath: "/build/",
+        rust(),
+        svelte({
+            preprocess: preprocess(),
         }),
-        ts({
-            tsconfig: "tsconfig.json",
+        typescript(),
+        css(),
+        html({
+            title: "kitchen",
         }),
     ],
     watch: {
