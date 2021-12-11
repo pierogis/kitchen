@@ -1,7 +1,8 @@
-<script lang=ts>
-  import { writable } from "svelte/store";
-  import PlateControl from "./plate-control.svelte";
-  let connections = writable();
+<script lang="typescript">
+  import { nodesStore } from "./features/nodes/nodes";
+  import Node from "./features/nodes/node.svelte";
+
+  // import PierogiControl from "./pierogi-control.svelte";
 
   let viewportHeight = window.innerHeight;
   let viewportWidth = window.innerWidth;
@@ -10,13 +11,14 @@
 </script>
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
-<div class="plate">
-  <PlateControl
-    height={window.innerHeight}
-    width={window.innerWidth}
-    on:change={changeViewport}
-  />
-</div>
+
+<!-- <div style="top: 50%; right 0px;">
+  <Node draggable={false} id{node.id} />
+</div> -->
+
+{#each Object.entries($nodesStore) as [id, node]}
+  <Node draggable={true} {...node} />
+{/each}
 
 <style>
   :global(:root) {
@@ -26,16 +28,15 @@
     --tp-label-foreground-color: hsla(230, 5%, 30%, 0.7);
     --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
     --close-color: hsla(0, 80%, 70%, 0.8);
-    --node-header-height: 12px;
   }
-  :global(body){
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #282c34;
-  margin: 0px;
+  :global(body) {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+      "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #282c34;
+    margin: 0px;
   }
   .plate {
     position: absolute;

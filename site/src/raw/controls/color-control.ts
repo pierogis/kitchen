@@ -3,7 +3,7 @@ import { Pane } from "tweakpane";
 import { IngredientType } from "../../../crate/Cargo.toml";
 
 import { IngredientControl } from "./common";
-import { Terminal, TerminalDirection, TerminalRack } from "../terminal";
+import { Terminal, TerminalDirection, TerminalRack } from "../../terminalnal";
 
 interface View {
   readonly element: HTMLElement;

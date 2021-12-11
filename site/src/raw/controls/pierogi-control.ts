@@ -4,7 +4,7 @@ import * as ImagePlugin from "tweakpane-image-plugin";
 import { IngredientType } from "../Cargo.toml";
 
 import { IngredientControl } from "./common";
-import { Terminal, TerminalDirection, TerminalRack } from "../terminal";
+import { Terminal, TerminalDirection, TerminalRack } from "../../terminalnal";
 
 export class PierogiControl extends IngredientControl<IngredientType.Pierogi> {
   type: IngredientType.Pierogi;

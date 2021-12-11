@@ -2,9 +2,9 @@ import { BladeController } from "@tweakpane/core";
 import { BladeApi, Pane } from "tweakpane";
 
 import { IngredientType } from "../Cargo.toml";
-import { Cable } from "../cable";
+import { Cable } from "../../cableble";
 
-import { Terminal, TerminalDirection, TerminalRack } from "../terminal";
+import { Terminal, TerminalDirection, TerminalRack } from "../../terminalnal";
 
 export interface View {
   readonly element: HTMLElement;

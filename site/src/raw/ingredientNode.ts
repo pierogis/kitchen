@@ -1,11 +1,9 @@
 import { Pane } from "tweakpane";
 
 import { IngredientType } from "../Cargo.toml";
-import { Cable } from "./cable";
-import { ColorControl, PierogiControl, IIngredientControl } from "./controls";
-import { TerminalRack, Terminal } from "./terminal";
-import { View, NodeView } from "./controls";
-
+import { Cable } from "./cablet { ColorControl, PierogiControl, IIngredientControl } from "./raw/controlsrols";
+import { TerminalRack, Terminal } from "./raw/termin./terminal, NodeView } from "./raw/controlsrols";
+./terminal
 const ingredientTypeMap = {
   color: IngredientType.Color,
   pierogi: IngredientType.Pierogi,

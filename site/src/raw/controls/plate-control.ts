@@ -1,7 +1,7 @@
 import { Pane } from "tweakpane";
 
 import { NodeControl } from "./common";
-import { Terminal, TerminalDirection, TerminalRack } from "../terminal";
+import { Terminal, TerminalDirection, TerminalRack } from "../../terminalnal";
 
 export class PlateControl extends NodeControl {
   width: number;

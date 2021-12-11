@@ -1,13 +1,10 @@
 import { Pane } from "tweakpane";
 
 import { Kitchen, Recipe, IngredientType } from "../Cargo.toml";
-import { Cable } from "./cable";
+import { Cable } from "./cableimport { PlateControl } from "./raw/controls/plate-controltrol";
+import { IngredientNode } from "./raw/ingred./ingredientNode Terminal } from "./raw/terminal";
 
-import { PlateControl } from "./controls/plate-control";
-import { IngredientNode } from "./ingredientNode";
-import type { Terminal } from "./terminal";
-
-export class Restaurant {
+ex./terminaltaurant {
   canvas: HTMLCanvasElement;
   viewportWidth: number;
   viewportHeight: number;

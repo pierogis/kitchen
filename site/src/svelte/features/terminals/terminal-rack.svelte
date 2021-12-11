@@ -1,6 +1,6 @@
-<script lang=ts>
-  import Terminal from "./terminal.svelte";
-  import type { TerminalDirection } from "../terminal";
+<script lang="typescript">
+  import Terminal from "../../terminal.svelte";
+  import type { TerminalDirection } from "./terminal";
 
   import cssVars from "svelte-css-vars";
 
@@ -18,21 +18,22 @@
   //     },
   // ]);
 
-  let terminals = 1;
+  let connections = [];
+
+  let terminals = 1 + connections.length;
 
   const nearTerminalRackDistance = 8;
   const terminalWidth = 10;
   const terminalGap = 4;
 
-  let width = 4;
-  $: expandedWidth = terminalGap * (terminals + 1) + terminalWidth * terminals;
-  $: expandedDirection = expandedWidth + terminalWidth - terminalGap;
+  let paneOffset = 6;
+  $: width = !expanded
+    ? 4
+    : terminalGap * (terminals + 1) + terminalWidth * terminals;
 
   $: styleVars = {
     width: width + "px",
-    expandedWidth: expandedWidth + "px",
-    expandedDirection: expandedDirection + "px",
-    terminalWidth: terminalWidth + "px",
+    paneOffset: paneOffset + "px",
     terminalGap: terminalGap + "px",
   };
 
@@ -85,29 +86,16 @@
   }
 
   .in {
-    right: 10px;
-    margin-right: -4px;
+    right: calc(var(--width) + var(--paneOffset));
+    margin-right: calc(0px - var(--width));
   }
 
   .out {
-    left: 10px;
-    margin-left: -4px;
+    left: calc(var(--width) + var(--paneOffset));
+    margin-left: calc(0px - var(--width));
   }
 
   .expanded {
-    gap: var(--terminal-gap);
-  }
-
-  .terminal-rack.expanded.in {
-    width: var(--expandedWidth);
-    margin-right: calc(0px - var(--expandedWidth));
-    /* right: calc(var(--width) + var(--terminalWidth) - var(--terminalGap)); */
-    right: var(--expandedDirection);
-  }
-
-  .terminal-rack.expanded.out {
-    width: var(--width);
-    margin-left: calc(0px - var(--width));
-    left: calc(var(--width) + var(--terminalWidth) - var(--terminalGap));
+    gap: var(--terminalGap);
   }
 </style>
