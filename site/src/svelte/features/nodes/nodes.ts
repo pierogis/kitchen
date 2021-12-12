@@ -4,6 +4,9 @@ export interface NodeState {
   id: string;
   type: string;
   style: string;
+  properties: {
+    [key: string]: any
+  }
 }
 
 const initialState = {
@@ -11,6 +14,7 @@ const initialState = {
     id: "plate",
     type: "plate",
     style: "top: 50%; right: 0px;",
+    properties: {}
   },
 };
 
@@ -24,6 +28,7 @@ export function addNode(node: NodeState) {
   });
 }
 export function updateNode(node: NodeState) {
+  console.log(node)
   nodesStore.update(($nodes) => {
     $nodes[node.id] = node;
     return $nodes;

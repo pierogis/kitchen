@@ -1,38 +1,47 @@
 import { Writable, writable } from "svelte/store";
 import type { Pane } from "tweakpane";
+import type { NodeState } from "../nodes/nodes";
 
-export interface Ingredient {
+import { PlateControl } from "./plate";
+import { PierogiControl } from "./pierogi";
+import { ColorControl } from "./color";
+
+export interface IngredientControl {
   type: string;
-  attach(pane: Pane);
-  properties: {};
+  attach(pane: Pane, node: NodeState, properties: any): () => void;
 }
 
 const initialState = {
-  plate: {
-    type: "plate",
-    attach() {},
-    properties: {},
-  },
+  plate: () => new PlateControl(),
+  pierogi: () => new PierogiControl(),
+  color: () => new ColorControl(),
 };
 
-export const ingredientsStore: Writable<{ [key: string]: Ingredient }> =
-  writable(initialState);
+export const ingredientsStore: Writable<{
+  [key: string]: () => IngredientControl;
+}> = writable(initialState);
 
-export function addIngredient(ingredient: Ingredient) {
+export function addIngredient(type: string, control: () => IngredientControl) {
   ingredientsStore.update(($ingredients) => {
-    $ingredients[ingredient.type] = ingredient;
+    $ingredients[type] = control;
     return $ingredients;
   });
 }
-export function updateIngredient(ingredient: Ingredient) {
+export function updateIngredient(
+  type: string,
+  control: () => IngredientControl
+) {
   ingredientsStore.update(($ingredients) => {
-    $ingredients[ingredient.type] = ingredient;
+    $ingredients[type] = control;
     return $ingredients;
   });
 }
-export function deleteIngredient(ingredient: Ingredient) {
+export function deleteIngredient(
+  type: string,
+  control: () => IngredientControl
+) {
   ingredientsStore.update(($ingredients) => {
-    delete $ingredients[ingredient.type];
+    delete $ingredients[type];
     return $ingredients;
   });
 }

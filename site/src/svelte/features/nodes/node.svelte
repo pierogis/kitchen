@@ -3,7 +3,10 @@
   import cssVars from "svelte-css-vars";
   import { derived, Readable } from "svelte/store";
   import { Pane, TpChangeEvent } from "tweakpane";
-  import { Ingredient, ingredientsStore } from "../ingredients/ingredients";
+  import {
+    IngredientControl,
+    ingredientsStore,
+  } from "../ingredients/ingredients";
   import { deleteNode, nodesStore, NodeState, updateNode } from "./nodes";
 
   export let draggable: boolean;
@@ -72,26 +75,35 @@
 
   let ingredients = $ingredientsStore;
 
-  let ingredient: Readable<Ingredient> = derived(
+  let ingredientBuilder: Readable<() => IngredientControl> = derived(
     ingredientsStore,
     ($ingredients) => $ingredients[$node.type]
   );
 
+  let ingredient = $ingredientBuilder();
+  let detachHandle: () => void;
+
   function updateType(event: TpChangeEvent<string>) {
-    $node.type = event.value;
-    updateNode($node);
+    detachHandle();
+    let newNode = {
+      id: $node.id,
+      type: event.value,
+      style: "",
+      properties: {},
+    };
+    updateNode(newNode);
   }
 
   onMount(() => {
     pane = new Pane({ container: container });
 
     pane
-      .addInput({ type: $ingredient.type }, "type", {
+      .addInput({ type: ingredient.type }, "type", {
         options: ingredients,
       })
       .on("change", updateType);
 
-    $ingredient.attach(pane);
+    detachHandle = ingredient.attach(pane, $node, $node.properties);
   });
 
   const nodeHeaderSize = 12;

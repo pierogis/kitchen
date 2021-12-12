@@ -40,7 +40,7 @@
     });
 
     let widthInput = pane
-      .addInput(params, "width", {
+      .addInput(params, "width", {Î
         step: 1,
       })
       .on("change", (ev) => {

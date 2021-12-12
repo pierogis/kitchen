@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { nodesStore } from "./features/nodes/nodes";
+  import { nodesStore, updateNode } from "./features/nodes/nodes";
   import Node from "./features/nodes/node.svelte";
 
   // import PierogiControl from "./pierogi-control.svelte";
@@ -7,14 +7,17 @@
   let viewportHeight = window.innerHeight;
   let viewportWidth = window.innerWidth;
 
+  let plate = $nodesStore["plate"];
+
+  plate.properties.height = viewportHeight;
+  plate.properties.width = viewportWidth;
+
+  updateNode(plate);
+
   function changeViewport() {}
 </script>
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
-
-<!-- <div style="top: 50%; right 0px;">
-  <Node draggable={false} id{node.id} />
-</div> -->
 
 {#each Object.entries($nodesStore) as [id, node]}
   <Node draggable={true} {...node} />
