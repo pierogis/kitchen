@@ -1,18 +1,23 @@
 import type { Pane } from "tweakpane";
 import { NodeState, updateNode } from "../nodes/nodes";
+import { viewportStore } from "../viewport/viewport";
 import type { IngredientControl } from "./ingredients";
+import { get } from "svelte/store";
 
 interface PlateProperties {
   width: number;
   height: number;
 }
 
-export class PlateControl implements IngredientControl {
+export class PlateControl implements IngredientControl<PlateProperties> {
   type = "plate";
-  attach(pane: Pane, node: NodeState, properties: PlateProperties) {
+  defaultProperties(): PlateProperties {
+    return get(viewportStore);
+  }
+  attach(pane: Pane, node: NodeState) {
     const params = {
-      width: properties.width,
-      height: properties.height,
+      width: node.properties.width,
+      height: node.properties.height,
     };
     let widthInput = pane
       .addInput(params, "width", {

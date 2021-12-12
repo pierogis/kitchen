@@ -1,12 +1,13 @@
-import { Writable, writable } from "svelte/store";
+import { get, Writable, writable } from "svelte/store";
+import { viewportStore } from "../viewport/viewport";
 
 export interface NodeState {
   id: string;
   type: string;
   style: string;
   properties: {
-    [key: string]: any
-  }
+    [key: string]: any;
+  };
 }
 
 const initialState = {
@@ -14,7 +15,7 @@ const initialState = {
     id: "plate",
     type: "plate",
     style: "top: 50%; right: 0px;",
-    properties: {}
+    properties: get(viewportStore),
   },
 };
 
@@ -28,7 +29,6 @@ export function addNode(node: NodeState) {
   });
 }
 export function updateNode(node: NodeState) {
-  console.log(node)
   nodesStore.update(($nodes) => {
     $nodes[node.id] = node;
     return $nodes;

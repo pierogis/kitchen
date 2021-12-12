@@ -1,5 +1,10 @@
 <script lang="typescript">
-  import { createEventDispatcher, onMount, SvelteComponent } from "svelte";
+  import {
+    afterUpdate,
+    createEventDispatcher,
+    onMount,
+    SvelteComponent,
+  } from "svelte";
   import cssVars from "svelte-css-vars";
   import { derived, Readable } from "svelte/store";
   import { Pane, TpChangeEvent } from "tweakpane";
@@ -73,37 +78,44 @@
 
   let node: Readable<NodeState> = derived(nodesStore, ($nodes) => $nodes[id]);
 
-  let ingredients = $ingredientsStore;
-
-  let ingredientBuilder: Readable<() => IngredientControl> = derived(
-    ingredientsStore,
-    ($ingredients) => $ingredients[$node.type]
+  let ingredientBuilder: Readable<IngredientControl<any>> = derived(
+    node,
+    (state) => $ingredientsStore[state.type]
   );
 
-  let ingredient = $ingredientBuilder();
+  let options = Object.keys($ingredientsStore).reduce(
+    (previous, current) => ({ ...previous, [current]: current }),
+    {}
+  );
+
   let detachHandle: () => void;
 
   function updateType(event: TpChangeEvent<string>) {
     detachHandle();
+    let newType = event.value;
     let newNode = {
       id: $node.id,
-      type: event.value,
+      type: newType,
       style: "",
-      properties: {},
+      properties: $ingredientsStore[newType].defaultProperties(),
     };
     updateNode(newNode);
+    detachHandle = $ingredientsStore[newType].attach(pane, $node);
+  }
+
+  function attach(pane: Pane) {
+    pane
+      .addInput({ type: $ingredientBuilder.type }, "type", {
+        options: options,
+      })
+      .on("change", updateType);
   }
 
   onMount(() => {
     pane = new Pane({ container: container });
 
-    pane
-      .addInput({ type: ingredient.type }, "type", {
-        options: ingredients,
-      })
-      .on("change", updateType);
-
-    detachHandle = ingredient.attach(pane, $node, $node.properties);
+    attach(pane);
+    detachHandle = $ingredientBuilder.attach(pane, $node);
   });
 
   const nodeHeaderSize = 12;
@@ -140,6 +152,9 @@
     position: absolute;
     z-index: 9;
     display: block;
+
+    top: 50%;
+    left: 50%;
   }
   .header {
     display: flex;

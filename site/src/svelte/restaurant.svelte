@@ -1,18 +1,6 @@
 <script lang="typescript">
-  import { nodesStore, updateNode } from "./features/nodes/nodes";
+  import { nodesStore } from "./features/nodes/nodes";
   import Node from "./features/nodes/node.svelte";
-
-  // import PierogiControl from "./pierogi-control.svelte";
-
-  let viewportHeight = window.innerHeight;
-  let viewportWidth = window.innerWidth;
-
-  let plate = $nodesStore["plate"];
-
-  plate.properties.height = viewportHeight;
-  plate.properties.width = viewportWidth;
-
-  updateNode(plate);
 
   function changeViewport() {}
 </script>

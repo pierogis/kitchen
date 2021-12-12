@@ -8,14 +8,23 @@ interface ColorProperties {
   b: number;
 }
 
-export class ColorControl implements IngredientControl {
+export class ColorControl implements IngredientControl<ColorProperties> {
   type = "color";
-  attach(pane: Pane, node: NodeState, properties: ColorProperties) {
+
+  defaultProperties(): ColorProperties {
+    return {
+      r: 120,
+      g: 150,
+      b: 190,
+    };
+  }
+
+  attach(pane: Pane, node: NodeState) {
     const params = {
       color: {
-        r: properties.r,
-        g: properties.g,
-        b: properties.b,
+        r: node.properties.r,
+        g: node.properties.g,
+        b: node.properties.b,
       },
     };
     let colorInput = pane.addInput(params, "color").on("change", (ev) => {

@@ -37,3 +37,5 @@ connect terminals
       - connection object
         - `(x, y) => {updatePosition(this.startX, this.startY, x, y)}`
 
+connect terminal racks
+- attach functions track this

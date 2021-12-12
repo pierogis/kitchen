@@ -1,19 +1,40 @@
+import { get } from "svelte/store";
 import type { Pane } from "tweakpane";
+import * as ImagePlugin from "tweakpane-image-plugin";
+
 import { NodeState, updateNode } from "../nodes/nodes";
+import { viewportStore } from "../viewport/viewport";
 import type { IngredientControl } from "./ingredients";
 
 interface PierogiProperties {
+  image: HTMLImageElement;
   width: number;
   height: number;
 }
 
-export class PierogiControl implements IngredientControl {
-  type = "plate";
-  attach(pane: Pane, node: NodeState, properties: PierogiProperties) {
+export class PierogiControl implements IngredientControl<PierogiProperties> {
+  type = "pierogi";
+  defaultProperties(): PierogiProperties {
+    return { ...get(viewportStore), image: new Image() };
+  }
+  attach(pane: Pane, node: NodeState) {
+    pane.registerPlugin(ImagePlugin);
+
     const params = {
-      width: properties.width,
-      height: properties.height,
+      image: node.properties.image,
+      height: node.properties.height,
+      width: node.properties.width,
     };
+
+    let imageInput = pane
+      .addInput(params, "image", {
+        extensions: ".jpg, .png, .gif",
+      })
+      .on("change", (ev) => {
+        node.properties.image = ev.value;
+        updateNode(node);
+      });
+
     let widthInput = pane
       .addInput(params, "width", {
         step: 1,
@@ -39,6 +60,8 @@ export class PierogiControl implements IngredientControl {
     // heightInput.controller_.view.element.append(heightOutRack);
 
     return () => {
+      imageInput.dispose();
+      widthInput.dispose();
       heightInput.dispose();
     };
   }
