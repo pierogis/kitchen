@@ -1,21 +1,42 @@
 import { get, Writable, writable } from "svelte/store";
 import { viewportStore } from "../viewport/viewport";
 
+export type NodeProperties = {
+  [key: string]: any;
+};
+
+export type RacksState = {
+  in: {
+    [key: string]: boolean;
+  };
+  out: {
+    [key: string]: boolean;
+  };
+};
+
 export interface NodeState {
   id: string;
   type: string;
   style: string;
-  properties: {
-    [key: string]: any;
-  };
+  properties: NodeProperties;
+  racks: RacksState;
 }
+
+let initialProps = get(viewportStore);
+
+let initialRacks = { in: {}, out: {} };
+Object.keys(initialProps).forEach((key) => {
+  initialRacks.in[key] = true;
+  initialRacks.out[key] = false;
+});
 
 const initialState = {
   plate: {
     id: "plate",
     type: "plate",
     style: "top: 50%; right: 0px;",
-    properties: get(viewportStore),
+    properties: initialProps,
+    racks: initialRacks,
   },
 };
 

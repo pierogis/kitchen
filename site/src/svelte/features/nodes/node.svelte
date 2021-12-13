@@ -8,10 +8,13 @@
   import cssVars from "svelte-css-vars";
   import { derived, Readable } from "svelte/store";
   import { Pane, TpChangeEvent } from "tweakpane";
+  import { TerminalDirection } from "../../../raw/terminal";
   import {
     IngredientControl,
+    IngredientControlHandle,
     ingredientsStore,
   } from "../ingredients/ingredients";
+  import TerminalRack from "../terminals/terminal-rack.svelte";
   import { deleteNode, nodesStore, NodeState, updateNode } from "./nodes";
 
   export let draggable: boolean;
@@ -88,19 +91,30 @@
     {}
   );
 
-  let detachHandle: () => void;
+  let ingredientControlHandle: IngredientControlHandle;
 
   function updateType(event: TpChangeEvent<string>) {
-    detachHandle();
+    ingredientControlHandle.detach();
+
     let newType = event.value;
+    let defaultProperties = $ingredientsStore[newType].defaultProperties();
+
+    let defaultRacks = { in: {}, out: {} };
+    Object.keys(defaultProperties).forEach((key) => {
+      defaultRacks.in[key] = true;
+      defaultRacks.out[key] = true;
+    });
+
     let newNode = {
       id: $node.id,
       type: newType,
       style: "",
-      properties: $ingredientsStore[newType].defaultProperties(),
+      properties: defaultProperties,
+      racks: defaultRacks,
     };
     updateNode(newNode);
-    detachHandle = $ingredientsStore[newType].attach(pane, $node);
+    ingredientControlHandle = $ingredientsStore[newType].attach(pane, $node);
+    inputs = ingredientControlHandle.inputs;
   }
 
   function attach(pane: Pane) {
@@ -111,11 +125,18 @@
       .on("change", updateType);
   }
 
+  let inputs: {
+    [key: string]: HTMLElement;
+  } = {};
+
+  let terminalRacks = $node.racks;
+
   onMount(() => {
     pane = new Pane({ container: container });
 
     attach(pane);
-    detachHandle = $ingredientBuilder.attach(pane, $node);
+    ingredientControlHandle = $ingredientBuilder.attach(pane, $node);
+    inputs = ingredientControlHandle.inputs;
   });
 
   const nodeHeaderSize = 12;
@@ -140,6 +161,15 @@
     <div class="close" on:click={close} />
   </div>
 </div>
+
+{#each Object.entries(inputs) as [key, input]}
+  {#if terminalRacks.in[key]}
+    <TerminalRack container={input} direction={TerminalDirection.in} />
+  {/if}
+  {#if terminalRacks.out[key]}
+    <TerminalRack container={input} direction={TerminalDirection.out} />
+  {/if}
+{/each}
 
 <style>
   .no-select {

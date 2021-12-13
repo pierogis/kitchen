@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import Terminal from "../../terminal.svelte";
+  import Terminal from "./terminal.svelte";
   import type { TerminalDirection } from "./terminal";
 
   import cssVars from "svelte-css-vars";
@@ -8,15 +8,6 @@
   export let container: HTMLElement;
   let expanded: boolean;
   let expandedLocked: boolean = false;
-
-  // import { Writable, writable } from "svelte/store";
-
-  // let terminals: Writable<TerminalModel[]> = writable([
-  //     {
-  //         expanded: false,
-  //         selected: false,
-  //     },
-  // ]);
 
   let connections = [];
 

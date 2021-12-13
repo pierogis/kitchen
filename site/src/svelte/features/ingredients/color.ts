@@ -1,8 +1,8 @@
 import type { Pane } from "tweakpane";
-import { NodeState, updateNode } from "../nodes/nodes";
+import { NodeProperties, NodeState, updateNode } from "../nodes/nodes";
 import type { IngredientControl } from "./ingredients";
 
-interface ColorProperties {
+interface ColorProperties extends NodeProperties {
   r: number;
   g: number;
   b: number;
@@ -34,8 +34,13 @@ export class ColorControl implements IngredientControl<ColorProperties> {
       updateNode(node);
     });
 
-    return () => {
-      colorInput.dispose();
+    return {
+      inputs: {
+        color: colorInput.controller_.view.element,
+      },
+      detach: () => {
+        colorInput.dispose();
+      },
     };
   }
 }

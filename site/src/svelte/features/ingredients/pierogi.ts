@@ -59,14 +59,17 @@ export class PierogiControl implements IngredientControl<PierogiProperties> {
     // heightInput.controller_.view.element.prepend(heightInRack);
     // heightInput.controller_.view.element.append(heightOutRack);
 
-    return () => {
-      imageInput.dispose();
-      widthInput.dispose();
-      heightInput.dispose();
+    return {
+      inputs: {
+        image: imageInput.controller_.view.element,
+        width: widthInput.controller_.view.element,
+        height: heightInput.controller_.view.element,
+      },
+      detach: () => {
+        imageInput.dispose();
+        widthInput.dispose();
+        heightInput.dispose();
+      },
     };
-  }
-  detach(pane: Pane) {
-    // widthInput.dispose();
-    // heightInput.dispose();
   }
 }

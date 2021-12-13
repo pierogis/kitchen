@@ -1,15 +1,20 @@
 import { Writable, writable } from "svelte/store";
 import type { Pane } from "tweakpane";
-import type { NodeState } from "../nodes/nodes";
+import type { NodeState, NodeProperties } from "../nodes/nodes";
 
 import { PlateControl } from "./plate";
 import { PierogiControl } from "./pierogi";
 import { ColorControl } from "./color";
 
-export interface IngredientControl<P> {
+export interface IngredientControlHandle {
+  inputs: { [key: string]: HTMLElement };
+  detach();
+}
+
+export interface IngredientControl<P extends NodeProperties> {
   type: string;
   defaultProperties(): P;
-  attach(pane: Pane, node: NodeState): () => void;
+  attach(pane: Pane, node: NodeState): IngredientControlHandle;
 }
 
 const initialState = {
@@ -19,7 +24,7 @@ const initialState = {
 };
 
 export const ingredientsStore: Writable<{
-  [key: string]: IngredientControl<any>;
+  [key: string]: IngredientControl<{}>;
 }> = writable(initialState);
 
 export function addIngredient(type: string, control: IngredientControl<any>) {

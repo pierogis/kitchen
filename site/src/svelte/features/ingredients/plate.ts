@@ -43,9 +43,15 @@ export class PlateControl implements IngredientControl<PlateProperties> {
     // heightInput.controller_.view.element.prepend(heightInRack);
     // heightInput.controller_.view.element.append(heightOutRack);
 
-    return () => {
-      widthInput.dispose();
-      heightInput.dispose();
+    return {
+      inputs: {
+        width: widthInput.controller_.view.element,
+        height: heightInput.controller_.view.element,
+      },
+      detach: () => {
+        widthInput.dispose();
+        heightInput.dispose();
+      },
     };
   }
 }
