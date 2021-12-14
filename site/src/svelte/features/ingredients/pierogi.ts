@@ -14,8 +14,21 @@ interface PierogiProperties {
 
 export class PierogiControl implements IngredientControl<PierogiProperties> {
   type = "pierogi";
-  defaultProperties(): PierogiProperties {
-    return { ...get(viewportStore), image: new Image() };
+  default(id: string): NodeState {
+    let defaultProperties = { ...get(viewportStore), image: new Image() };
+    let defaultRacks = { in: [], out: [] };
+    for (let propertyName in defaultProperties) {
+      defaultRacks.in.push(propertyName);
+      defaultRacks.out.push(propertyName);
+    }
+
+    return {
+      id: id,
+      type: this.type,
+      style: "",
+      properties: defaultProperties,
+      racks: defaultRacks,
+    };
   }
   attach(pane: Pane, node: NodeState) {
     pane.registerPlugin(ImagePlugin);
@@ -44,9 +57,6 @@ export class PierogiControl implements IngredientControl<PierogiProperties> {
         updateNode(node);
       });
 
-    // widthInput.controller_.view.element.prepend(widthInRack);
-    // widthInput.controller_.view.element.append(widthOutRack);
-
     let heightInput = pane
       .addInput(params, "height", {
         step: 1,
@@ -56,20 +66,10 @@ export class PierogiControl implements IngredientControl<PierogiProperties> {
         updateNode(node);
       });
 
-    // heightInput.controller_.view.element.prepend(heightInRack);
-    // heightInput.controller_.view.element.append(heightOutRack);
-
     return {
-      inputs: {
-        image: imageInput.controller_.view.element,
-        width: widthInput.controller_.view.element,
-        height: heightInput.controller_.view.element,
-      },
-      detach: () => {
-        imageInput.dispose();
-        widthInput.dispose();
-        heightInput.dispose();
-      },
+      image: imageInput,
+      width: widthInput,
+      height: heightInput,
     };
   }
 }

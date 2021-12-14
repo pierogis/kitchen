@@ -1,31 +1,23 @@
 <script lang="typescript">
-  import {
-    afterUpdate,
-    createEventDispatcher,
-    onMount,
-    SvelteComponent,
-  } from "svelte";
+  import { onMount } from "svelte";
   import cssVars from "svelte-css-vars";
   import { derived, Readable } from "svelte/store";
-  import { Pane, TpChangeEvent } from "tweakpane";
-  import { TerminalDirection } from "../../../raw/terminal";
+  import type { Pane } from "tweakpane";
   import {
     IngredientControl,
     IngredientControlHandle,
     ingredientsStore,
   } from "../ingredients/ingredients";
-  import TerminalRack from "../terminals/terminal-rack.svelte";
-  import { deleteNode, nodesStore, NodeState, updateNode } from "./nodes";
+  import {
+    deleteNode,
+    nodesStore,
+    NodeState,
+    RacksState,
+    updateNode,
+  } from "./nodes";
+  import PaneWrapper from "./pane-wrapper.svelte";
 
   export let draggable: boolean;
-  // export let ingredientType: string;
-  // export let ingredientAttaches: {
-  //   [key: string]: (pane: Pane) => void;
-  // };
-
-  //   type ControlComponent<T> = {
-  //     component: new (...args: any) => SvelteComponent;
-  //   };
 
   let container: HTMLElement;
 
@@ -76,7 +68,6 @@
     deleteNode($node);
   }
 
-  let pane: Pane;
   export let id: string;
 
   let node: Readable<NodeState> = derived(nodesStore, ($nodes) => $nodes[id]);
@@ -86,58 +77,20 @@
     (state) => $ingredientsStore[state.type]
   );
 
-  let options = Object.keys($ingredientsStore).reduce(
+  let options: {
+    [key: string]: string;
+  } = Object.keys($ingredientsStore).reduce(
     (previous, current) => ({ ...previous, [current]: current }),
     {}
   );
 
-  let ingredientControlHandle: IngredientControlHandle;
+  function updateType(event: CustomEvent<string>) {
+    let defaultNode = $ingredientsStore[event.detail].default($node.id);
 
-  function updateType(event: TpChangeEvent<string>) {
-    ingredientControlHandle.detach();
-
-    let newType = event.value;
-    let defaultProperties = $ingredientsStore[newType].defaultProperties();
-
-    let defaultRacks = { in: {}, out: {} };
-    Object.keys(defaultProperties).forEach((key) => {
-      defaultRacks.in[key] = true;
-      defaultRacks.out[key] = true;
-    });
-
-    let newNode = {
-      id: $node.id,
-      type: newType,
-      style: "",
-      properties: defaultProperties,
-      racks: defaultRacks,
-    };
-    updateNode(newNode);
-    ingredientControlHandle = $ingredientsStore[newType].attach(pane, $node);
-    inputs = ingredientControlHandle.inputs;
+    updateNode(defaultNode);
   }
 
-  function attach(pane: Pane) {
-    pane
-      .addInput({ type: $ingredientBuilder.type }, "type", {
-        options: options,
-      })
-      .on("change", updateType);
-  }
-
-  let inputs: {
-    [key: string]: HTMLElement;
-  } = {};
-
-  let terminalRacks = $node.racks;
-
-  onMount(() => {
-    pane = new Pane({ container: container });
-
-    attach(pane);
-    ingredientControlHandle = $ingredientBuilder.attach(pane, $node);
-    inputs = ingredientControlHandle.inputs;
-  });
+  $: attach = (pane: Pane) => $ingredientBuilder.attach(pane, $node);
 
   const nodeHeaderSize = 12;
 
@@ -160,16 +113,14 @@
 
     <div class="close" on:click={close} />
   </div>
+  <PaneWrapper
+    type={$node.type}
+    {options}
+    racks={$node.racks}
+    {attach}
+    on:updateType={updateType}
+  />
 </div>
-
-{#each Object.entries(inputs) as [key, input]}
-  {#if terminalRacks.in[key]}
-    <TerminalRack container={input} direction={TerminalDirection.in} />
-  {/if}
-  {#if terminalRacks.out[key]}
-    <TerminalRack container={input} direction={TerminalDirection.out} />
-  {/if}
-{/each}
 
 <style>
   .no-select {

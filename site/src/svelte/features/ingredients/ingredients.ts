@@ -1,19 +1,18 @@
 import { Writable, writable } from "svelte/store";
-import type { Pane } from "tweakpane";
+import type { InputBindingApi, Pane } from "tweakpane";
 import type { NodeState, NodeProperties } from "../nodes/nodes";
 
 import { PlateControl } from "./plate";
 import { PierogiControl } from "./pierogi";
 import { ColorControl } from "./color";
 
-export interface IngredientControlHandle {
-  inputs: { [key: string]: HTMLElement };
-  detach();
-}
+export type IngredientControlHandle = {
+  [key: string]: InputBindingApi<unknown, any>;
+};
 
 export interface IngredientControl<P extends NodeProperties> {
   type: string;
-  defaultProperties(): P;
+  default(id: string): NodeState;
   attach(pane: Pane, node: NodeState): IngredientControlHandle;
 }
 

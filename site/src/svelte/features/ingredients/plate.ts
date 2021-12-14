@@ -11,8 +11,21 @@ interface PlateProperties {
 
 export class PlateControl implements IngredientControl<PlateProperties> {
   type = "plate";
-  defaultProperties(): PlateProperties {
-    return get(viewportStore);
+  default(id: string): NodeState {
+    let defaultProperties = get(viewportStore);
+    let defaultRacks = { in: [], out: [] };
+    for (let propertyName in defaultProperties) {
+      defaultRacks.in.push(propertyName);
+      defaultRacks.out.push(propertyName);
+    }
+
+    return {
+      id: id,
+      type: this.type,
+      style: "",
+      properties: defaultProperties,
+      racks: defaultRacks,
+    };
   }
   attach(pane: Pane, node: NodeState) {
     const params = {
@@ -44,14 +57,8 @@ export class PlateControl implements IngredientControl<PlateProperties> {
     // heightInput.controller_.view.element.append(heightOutRack);
 
     return {
-      inputs: {
-        width: widthInput.controller_.view.element,
-        height: heightInput.controller_.view.element,
-      },
-      detach: () => {
-        widthInput.dispose();
-        heightInput.dispose();
-      },
+      width: widthInput,
+      height: heightInput,
     };
   }
 }

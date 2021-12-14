@@ -6,12 +6,8 @@ export type NodeProperties = {
 };
 
 export type RacksState = {
-  in: {
-    [key: string]: boolean;
-  };
-  out: {
-    [key: string]: boolean;
-  };
+  in: string[];
+  out: string[];
 };
 
 export interface NodeState {
@@ -24,10 +20,9 @@ export interface NodeState {
 
 let initialProps = get(viewportStore);
 
-let initialRacks = { in: {}, out: {} };
+let initialRacks = { in: [], out: [] };
 Object.keys(initialProps).forEach((key) => {
-  initialRacks.in[key] = true;
-  initialRacks.out[key] = false;
+  initialRacks.in.push(key);
 });
 
 const initialState = {

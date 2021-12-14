@@ -6,6 +6,7 @@
 
   export let direction: TerminalDirection;
   export let container: HTMLElement;
+
   let expanded: boolean;
   let expandedLocked: boolean = false;
 

@@ -12,10 +12,22 @@ export class ColorControl implements IngredientControl<ColorProperties> {
   type = "color";
 
   defaultProperties(): ColorProperties {
-    return {
+    return;
+  }
+  default(id: string): NodeState {
+    let defaultProperties = {
       r: 120,
       g: 150,
       b: 190,
+    };
+    let defaultRacks = { in: ["color"], out: ["color"] };
+
+    return {
+      id: id,
+      type: this.type,
+      style: "",
+      properties: defaultProperties,
+      racks: defaultRacks,
     };
   }
 
@@ -35,12 +47,7 @@ export class ColorControl implements IngredientControl<ColorProperties> {
     });
 
     return {
-      inputs: {
-        color: colorInput.controller_.view.element,
-      },
-      detach: () => {
-        colorInput.dispose();
-      },
+      color: colorInput,
     };
   }
 }
