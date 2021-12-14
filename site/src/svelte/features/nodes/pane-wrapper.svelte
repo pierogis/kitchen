@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { afterUpdate, createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount, tick } from "svelte";
 
   import { InputBindingApi, Pane, TpChangeEvent } from "tweakpane";
   import type { IngredientControlHandle } from "../ingredients/ingredients";
@@ -31,7 +31,7 @@
 
   const dispatch = createEventDispatcher();
 
-  afterUpdate(() => {
+  function updatePane() {
     // divs that TerminalRacks bind to
     inputs = attach(pane);
 
@@ -47,13 +47,19 @@
         terminalRackContainers.out[inputName]
       );
     });
+  }
+
+  onMount(() => {
+    updatePane();
   });
 
-  function updateType(event: TpChangeEvent<string>) {
+  async function updateType(event: TpChangeEvent<string>) {
     dispatch("updateType", event.value);
     for (let [inputName, input] of Object.entries(inputs)) {
       input.dispose();
     }
+    await tick();
+    updatePane();
   }
 
   let typeInput: InputBindingApi<unknown, string>;

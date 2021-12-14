@@ -1,20 +1,12 @@
 <script lang="typescript">
-  import { onMount } from "svelte";
   import cssVars from "svelte-css-vars";
   import { derived, Readable } from "svelte/store";
   import type { Pane } from "tweakpane";
   import {
     IngredientControl,
-    IngredientControlHandle,
     ingredientsStore,
   } from "../ingredients/ingredients";
-  import {
-    deleteNode,
-    nodesStore,
-    NodeState,
-    RacksState,
-    updateNode,
-  } from "./nodes";
+  import { deleteNode, nodesStore, NodeState, updateNode } from "./nodes";
   import PaneWrapper from "./pane-wrapper.svelte";
 
   export let draggable: boolean;

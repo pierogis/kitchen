@@ -1,6 +1,11 @@
 <script lang="typescript">
-  import { nodesStore } from "./features/nodes/nodes";
+  import { addNode, nodesStore } from "./features/nodes/nodes";
   import Node from "./features/nodes/node.svelte";
+  import CursorCircle from "./features/cursor-circle/cursor-circle.svelte";
+  import { ColorControl } from "./features/ingredients/color";
+  import { v4 as uuidv4 } from "uuid";
+
+  const defaultNode = () => new ColorControl().default(uuidv4());
 
   function changeViewport() {}
 </script>
@@ -10,6 +15,8 @@
 {#each Object.entries($nodesStore) as [id, node]}
   <Node draggable={true} {...node} />
 {/each}
+
+<CursorCircle on:longpress={() => addNode(defaultNode())} />
 
 <style>
   :global(:root) {
@@ -29,12 +36,7 @@
     background-color: #282c34;
     margin: 0px;
   }
-  .plate {
-    position: absolute;
-    z-index: 9;
-    display: block;
-
-    top: 50%;
-    right: 0px;
+  canvas {
+    pointer-events: none;
   }
 </style>
