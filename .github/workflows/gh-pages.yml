@@ -16,11 +16,11 @@ jobs:
         with:
           node-version: "16"
 
-      - name: install cross-env
-        run: npm install --save-dev cross-env
-
       - name: install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: install devDependencies
+        run: npm install
 
       - name: build
         run: npm run build --prefix site
