@@ -23,7 +23,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: build
-        run: npm run /build --prefix site
+        run: npm run build --prefix site
 
       - name: create CNAME
         run: echo "$domain" > ./site/dist/CNAME
