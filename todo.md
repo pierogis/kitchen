@@ -37,3 +37,9 @@ connect terminals
       - connection object
         - `(x, y) => {updatePosition(this.startX, this.startY, x, y)}`
 
+fix perma-selected on terminals
+
+grab cursor on move node
+
+close node causes state error
+- close node should remove terminals
