@@ -22,14 +22,11 @@ jobs:
       - name: install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - name: cd
-        run: cd site
-
       - name: build
-        run: npm run build
+        run: npm run /build --prefix site
 
       - name: create CNAME
-        run: echo "$domain" > dist/CNAME
+        run: echo "$domain" > ./site/dist/CNAME
         env:
           domain: ${{ secrets.DOMAIN }}
 
@@ -37,4 +34,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3.7.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          publish_dir: ./site/dist
