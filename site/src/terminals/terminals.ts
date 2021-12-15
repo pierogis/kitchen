@@ -5,8 +5,9 @@ export enum TerminalDirection {
   out = "out",
 }
 
-interface TerminalRectState {
-  id: string;
+export interface TerminalRectState {
+  rackId: string;
+  i: number;
   nodeId: string;
   inputName: string;
   direction: TerminalDirection;
@@ -14,13 +15,25 @@ interface TerminalRectState {
 }
 
 // key by terminal id
-let terminalRectsStore: Writable<{
-  [key: string]: TerminalRectState;
+export let terminalRectsStore: Writable<{
+  [key: string]: TerminalRectState[];
 }> = writable({});
 
-export function updateTerminalRect(state: TerminalRectState) {
+export function addTerminalRect(state: TerminalRectState) {
+  console.log();
   terminalRectsStore.update(($terminalRects) => {
-    $terminalRects[state.id] = state;
+    $terminalRects[state.rackId].push(state);
+    return $terminalRects;
+  });
+}
+
+export function updateTerminalRect(state: TerminalRectState) {
+  console.log();
+  terminalRectsStore.update(($terminalRects) => {
+    if ($terminalRects[state.rackId] === undefined) {
+      $terminalRects[state.rackId] = [];
+    }
+    $terminalRects[state.rackId][state.i] = state;
     return $terminalRects;
   });
 }

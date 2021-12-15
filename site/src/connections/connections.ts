@@ -14,7 +14,14 @@ export interface ConnectionState {
 }
 
 export let connectionsStore: Writable<{ [key: string]: ConnectionState }> =
-  writable();
+  writable({});
+
+export function addConnection(state: ConnectionState) {
+  connectionsStore.update(($connections) => {
+    $connections[state.id] = state;
+    return $connections;
+  });
+}
 
 export function updateConnection(connection: ConnectionState) {
   connectionsStore.update(($connections) => {

@@ -12,27 +12,27 @@
   let endY: number;
 
   // adjust svg position
-  if (x1 < x2) {
-    left = x1 + "px";
+  $: if (x1 < x2) {
+    left = x1;
 
     if (y1 < y2) {
-      top = y1 + "px";
+      top = y1;
       startY = 0;
       endY = height;
     } else {
-      top = y2 + "px";
+      top = y2;
       startY = height;
       endY = 0;
     }
   } else {
-    left = x2 + "px";
+    left = x2;
 
     if (y1 < y2) {
-      top = y1 + "px";
+      top = y1;
       startY = height;
       endY = 0;
     } else {
-      top = y2 + "px";
+      top = y2;
       startY = 0;
       endY = height;
     }
@@ -53,11 +53,9 @@
   };
 </script>
 
-<div use:cssVars={styleVars}>
-  <svg {width} {height} class:dragging>
-    <path d={pathString} />
-  </svg>
-</div>
+<svg use:cssVars={styleVars} {width} {height} class:dragging>
+  <path d={pathString} />
+</svg>
 
 <style>
   .dragging {

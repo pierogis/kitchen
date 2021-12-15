@@ -9,20 +9,6 @@
 
   let container: HTMLElement;
 
-  // async function updateRect() {
-  //   while (true) {
-  //     await tick();
-  //     let rect = container.getBoundingClientRect();
-  //     console.log(rect);
-  //   }
-  // }
-
-  // afterUpdate(() => {
-
-  //   let rect = container.getBoundingClientRect();
-  //     console.log(rect);
-  // });
-
   let dispatch = createEventDispatcher();
 
   onMount(() => {
@@ -31,8 +17,6 @@
       dispatch("terminalRect", rect);
     }, 10);
   });
-
-  // updateRect();
 
   function select(event) {
     selected = true;

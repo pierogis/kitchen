@@ -1,4 +1,6 @@
 <script lang="typescript">
+  import { v4 as uuidv4 } from "uuid";
+
   import { createEventDispatcher } from "svelte";
 
   import cssVars from "svelte-css-vars";
@@ -8,6 +10,8 @@
 
   export let direction: TerminalDirection;
   export let container: HTMLElement;
+
+  let rackId = uuidv4();
 
   let expanded: boolean;
   let expandedLocked: boolean = false;
@@ -53,10 +57,11 @@
 
   let dispatch = createEventDispatcher();
 
-  function dispatchUpdateTerminalRect(rect: DOMRect, i: number) {
+  function dispatchTerminalRect(rect: DOMRect, i: number) {
     dispatch("terminalRect", {
+      rackId: rackId,
       rect: rect,
-      id: i,
+      i: i,
       direction: direction,
     });
   }
@@ -74,8 +79,7 @@
     <Terminal
       {direction}
       {expanded}
-      on:terminalRect={(event) =>
-        dispatchUpdateTerminalRect(event.detail, i)}
+      on:terminalRect={(event) => dispatchTerminalRect(event.detail, i)}
     />
   {/each}
 </div>

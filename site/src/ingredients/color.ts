@@ -11,9 +11,6 @@ interface ColorProperties extends NodeProperties {
 export class ColorControl implements IngredientControl<ColorProperties> {
   type = "color";
 
-  defaultProperties(): ColorProperties {
-    return;
-  }
   default(id: string): NodeState {
     let defaultProperties = {
       r: 120,

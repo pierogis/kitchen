@@ -92,25 +92,7 @@
     updateNode(defaultNode);
   }
 
-  // $: attach = (pane: Pane) => ;
-
   const nodeHeaderSize = 12;
-
-  function updateTerminalRectCallback(
-    id: string,
-    inputName: string,
-    direction: TerminalDirection,
-    rect: DOMRect
-  ) {
-    let state = {
-      id: id,
-      nodeId: $node.id,
-      inputName: inputName,
-      direction: direction,
-      rect: rect,
-    };
-    updateTerminalRect(state);
-  }
 
   let terminalRackContainers: {
     in: { [key: string]: HTMLElement };
@@ -135,10 +117,11 @@
     });
   }
 
-  function updateBoundingRect(
+  function handleTerminalRect(
     event: CustomEvent<{
+      rackId: string;
       rect: DOMRect;
-      id: string;
+      i: number;
       direction: TerminalDirection;
     }>,
     inputName: string
@@ -149,19 +132,6 @@
       ...event.detail,
     });
   }
-
-  // function updateBoundingRect(
-  //   state: { id: string; direction: TerminalDirection; rect: DOMRect },
-  //   inputName: string
-  // ) {
-  //   let newState = {
-  //     id: state.id,
-  //     nodeId: $node.id,
-  //     inputName: inputName,
-  //     direction: state.direction,
-  //     rect: state.rect,
-  //   };
-  // }
 
   $: styleVars = {
     nodeHeaderSize: nodeHeaderSize + "px",
@@ -193,7 +163,7 @@
 {#each $node.racks.in as inputName (inputName)}
   <TerminalRack
     bind:container={terminalRackContainers.in[inputName]}
-    on:terminalRect={(event) => updateBoundingRect(event, inputName)}
+    on:terminalRect={(event) => handleTerminalRect(event, inputName)}
     direction={TerminalDirection.in}
   />
 {/each}
@@ -201,7 +171,7 @@
 {#each $node.racks.out as inputName (inputName)}
   <TerminalRack
     bind:container={terminalRackContainers.out[inputName]}
-    on:terminalRect={(event) => updateBoundingRect(event, inputName)}
+    on:terminalRect={(event) => handleTerminalRect(event, inputName)}
     direction={TerminalDirection.out}
   />
 {/each}
