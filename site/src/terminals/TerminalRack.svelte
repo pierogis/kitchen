@@ -1,8 +1,10 @@
 <script lang="typescript">
-  import Terminal from "./terminal.svelte";
-  import type { TerminalDirection } from "./terminal";
+  import { createEventDispatcher } from "svelte";
 
   import cssVars from "svelte-css-vars";
+
+  import Terminal from "./Terminal.svelte";
+  import type { TerminalDirection } from "./terminals";
 
   export let direction: TerminalDirection;
   export let container: HTMLElement;
@@ -29,21 +31,34 @@
     terminalGap: terminalGap + "px",
   };
 
-  function checkNear(event) {
+  function checkNear(event: MouseEvent) {
     if (!expandedLocked) {
       let rackRect = container.getBoundingClientRect();
-      var left = rackRect.left - nearTerminalRackDistance;
-      var top = rackRect.top - nearTerminalRackDistance;
-      var right = rackRect.right + nearTerminalRackDistance;
-      var bottom = rackRect.bottom + nearTerminalRackDistance;
-      var x = event.pageX;
-      var y = event.pageY;
+
+      let left = rackRect.left - nearTerminalRackDistance;
+      let top = rackRect.top - nearTerminalRackDistance;
+      let right = rackRect.right + nearTerminalRackDistance;
+      let bottom = rackRect.bottom + nearTerminalRackDistance;
+
+      let x = event.pageX;
+      let y = event.pageY;
+
       if (x > left && x < right && y > top && y < bottom) {
         expanded = true;
       } else {
         expanded = false;
       }
     }
+  }
+
+  let dispatch = createEventDispatcher();
+
+  function dispatchUpdateTerminalRect(rect: DOMRect, i: number) {
+    dispatch("terminalRect", {
+      rect: rect,
+      id: i,
+      direction: direction,
+    });
   }
 </script>
 
@@ -55,8 +70,13 @@
   class:expanded
   use:cssVars={styleVars}
 >
-  {#each Array(terminals) as terminal}
-    <Terminal {direction} {expanded} />
+  {#each Array(terminals) as terminal, i}
+    <Terminal
+      {direction}
+      {expanded}
+      on:terminalRect={(event) =>
+        dispatchUpdateTerminalRect(event.detail, i)}
+    />
   {/each}
 </div>
 

@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
-
   import { spring } from "svelte/motion";
 
   let coords = { x: 0, y: 0 };
@@ -25,13 +24,13 @@
     coords = { x: event.clientX, y: event.clientY };
   }
 
-  function onmousedown() {
-    size.set(20);
-    if (!longPressTimer) {
-      longPressTimer = setTimeout(
-        () => dispatch("longpress", coords),
-        touchDuration
-      );
+  function onmousedown(event: MouseEvent) {
+    if (!longPressTimer && event.button == 0) {
+      size.set(20);
+      longPressTimer = setTimeout(() => {
+        size.set(0);
+        dispatch("longpress", coords);
+      }, touchDuration);
     }
   }
 

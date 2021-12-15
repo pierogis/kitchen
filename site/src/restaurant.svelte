@@ -1,11 +1,29 @@
 <script lang="typescript">
-  import { addNode, nodesStore } from "./features/nodes/nodes";
-  import Node from "./features/nodes/node.svelte";
-  import CursorCircle from "./features/cursor-circle/cursor-circle.svelte";
-  import { ColorControl } from "./features/ingredients/color";
   import { v4 as uuidv4 } from "uuid";
 
+  import { addNode, nodesStore } from "./nodes/nodes";
+  import { connectionsStore } from "./connections/connections";
+
+  import Node from "./nodes/Node.svelte";
+  import CursorCircle from "./cursor-circle/CursorCircle.svelte";
+  import { ColorControl } from "./ingredients/color";
+  // import Cable from "./cable/cable.svelte";
+
   const defaultNode = () => new ColorControl().default(uuidv4());
+
+  let mouseX: number;
+  let mouseY: number;
+
+  function mousemove(event: MouseEvent) {
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+  }
+
+  let holdingCable = false;
+
+  // let anchorTerminal: HTMLElement;
+
+  // let rect = anchorTerminal.getBoundingClientRect();
 
   function changeViewport() {}
 </script>
@@ -15,6 +33,19 @@
 {#each Object.entries($nodesStore) as [id, node]}
   <Node draggable={true} {...node} />
 {/each}
+
+<svelte:window on:mousemove={mousemove} />
+
+<!-- {#if holdingCable}
+  <Cable x1={rect} y1={rect} x2={mouseX} y2={mouseY} />
+{/if}
+
+{#each Object.entries($connectionsStore) as [id, connection]}
+  <Cable
+    origin={() =>
+      $nodesStore[connection.in.nodeId].racks[connection.in.inputName]}
+  />
+{/each} -->
 
 <CursorCircle on:longpress={() => addNode(defaultNode())} />
 

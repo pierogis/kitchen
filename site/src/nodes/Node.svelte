@@ -1,13 +1,23 @@
 <script lang="typescript">
-  import cssVars from "svelte-css-vars";
+  import { tick } from "svelte";
   import { derived, Readable } from "svelte/store";
-  import type { Pane } from "tweakpane";
+
+  import cssVars from "svelte-css-vars";
+
+  import type { InputBindingApi, Pane } from "tweakpane";
+
   import {
     IngredientControl,
     ingredientsStore,
   } from "../ingredients/ingredients";
+  import TerminalRack from "../terminals/TerminalRack.svelte";
+  import {
+    TerminalDirection,
+    updateTerminalRect,
+  } from "../terminals/terminals";
   import { deleteNode, nodesStore, NodeState, updateNode } from "./nodes";
-  import PaneWrapper from "./pane-wrapper.svelte";
+
+  import PaneWrapper from "./PaneWrapper.svelte";
 
   export let draggable: boolean;
 
@@ -82,9 +92,76 @@
     updateNode(defaultNode);
   }
 
-  $: attach = (pane: Pane) => $ingredientBuilder.attach(pane, $node);
+  // $: attach = (pane: Pane) => ;
 
   const nodeHeaderSize = 12;
+
+  function updateTerminalRectCallback(
+    id: string,
+    inputName: string,
+    direction: TerminalDirection,
+    rect: DOMRect
+  ) {
+    let state = {
+      id: id,
+      nodeId: $node.id,
+      inputName: inputName,
+      direction: direction,
+      rect: rect,
+    };
+    updateTerminalRect(state);
+  }
+
+  let terminalRackContainers: {
+    in: { [key: string]: HTMLElement };
+    out: { [key: string]: HTMLElement };
+  } = { in: {}, out: {} };
+
+  async function attach(pane: Pane) {
+    let inputs = $ingredientBuilder.attach(pane, $node);
+
+    await tick();
+    // attaching bound divs to terminal racks
+    $node.racks.in.forEach((inputName) => {
+      inputs[inputName].controller_.view.element.prepend(
+        terminalRackContainers.in[inputName]
+      );
+    });
+
+    $node.racks.out.forEach((inputName) => {
+      inputs[inputName].controller_.view.element.append(
+        terminalRackContainers.out[inputName]
+      );
+    });
+  }
+
+  function updateBoundingRect(
+    event: CustomEvent<{
+      rect: DOMRect;
+      id: string;
+      direction: TerminalDirection;
+    }>,
+    inputName: string
+  ) {
+    updateTerminalRect({
+      nodeId: $node.id,
+      inputName: inputName,
+      ...event.detail,
+    });
+  }
+
+  // function updateBoundingRect(
+  //   state: { id: string; direction: TerminalDirection; rect: DOMRect },
+  //   inputName: string
+  // ) {
+  //   let newState = {
+  //     id: state.id,
+  //     nodeId: $node.id,
+  //     inputName: inputName,
+  //     direction: state.direction,
+  //     rect: state.rect,
+  //   };
+  // }
 
   $: styleVars = {
     nodeHeaderSize: nodeHeaderSize + "px",
@@ -108,11 +185,26 @@
   <PaneWrapper
     type={$node.type}
     {options}
-    racks={$node.racks}
     {attach}
     on:updateType={updateType}
   />
 </div>
+
+{#each $node.racks.in as inputName (inputName)}
+  <TerminalRack
+    bind:container={terminalRackContainers.in[inputName]}
+    on:terminalRect={(event) => updateBoundingRect(event, inputName)}
+    direction={TerminalDirection.in}
+  />
+{/each}
+
+{#each $node.racks.out as inputName (inputName)}
+  <TerminalRack
+    bind:container={terminalRackContainers.out[inputName]}
+    on:terminalRect={(event) => updateBoundingRect(event, inputName)}
+    direction={TerminalDirection.out}
+  />
+{/each}
 
 <style>
   .no-select {

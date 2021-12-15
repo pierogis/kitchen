@@ -1,16 +1,17 @@
-import svelte from "rollup-plugin-svelte";
 import resolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import commonjs from "@rollup/plugin-commonjs";
 import livereload from "rollup-plugin-livereload";
 import { terser } from "rollup-plugin-terser";
+import svelte from "rollup-plugin-svelte";
 import rust from "rollup-plugin-rust";
 import typescript from "@rollup/plugin-typescript";
 import html from "@rollup/plugin-html";
 import css from "rollup-plugin-import-css";
 
-const production = !process.env.ROLLUP_WATCH;
 import preprocess from "svelte-preprocess";
+
+const production = !process.env.ROLLUP_WATCH;
 
 function serve() {
   let server;
@@ -74,15 +75,13 @@ export default {
     svelte({
       preprocess: preprocess(),
     }),
-    typescript({
-      sourceMap: true,
-    }),
+    typescript(),
     css(),
     html({
       title: "kitchen",
     }),
   ],
   watch: {
-    clearScreen: false,
+    clearScreen: true,
   },
 };
