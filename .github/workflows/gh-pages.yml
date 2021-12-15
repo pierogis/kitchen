@@ -20,7 +20,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: install devDependencies
-        run: npm install
+        run: npm install --prefix site
 
       - name: build
         run: npm run build --prefix site
