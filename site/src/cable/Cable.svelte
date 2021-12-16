@@ -3,6 +3,8 @@
 
   export let x1, y1, x2, y2;
 
+  console.log(x1, y1, x2, y2)
+
   $: width = Math.abs(x2 - x1);
   $: height = Math.abs(y2 - y1);
 

@@ -23,7 +23,7 @@ export class PierogiControl implements IngredientControl<PierogiProperties> {
     }
 
     return {
-      id: id,
+      nodeId: id,
       type: this.type,
       style: "",
       properties: defaultProperties,

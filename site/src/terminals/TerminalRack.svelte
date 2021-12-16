@@ -1,12 +1,17 @@
 <script lang="typescript">
   import { v4 as uuidv4 } from "uuid";
 
-  import { createEventDispatcher } from "svelte";
+  import { getContext, onMount } from "svelte";
+  import { derived, Readable, Writable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
 
+  import type {
+    NodeRectUpdateCallbacksState,
+    RectUpdateCallback,
+    TerminalDirection,
+  } from "./terminals";
   import Terminal from "./Terminal.svelte";
-  import type { TerminalDirection } from "./terminals";
 
   export let direction: TerminalDirection;
   export let container: HTMLElement;
@@ -16,24 +21,14 @@
   let expanded: boolean;
   let expandedLocked: boolean = false;
 
-  let connections = [];
-
-  let terminals = 1 + connections.length;
+  // export let connections = [];
+  export let inputName: string;
 
   const nearTerminalRackDistance = 8;
   const terminalWidth = 10;
   const terminalGap = 4;
 
   let paneOffset = 6;
-  $: width = !expanded
-    ? 4
-    : terminalGap * (terminals + 1) + terminalWidth * terminals;
-
-  $: styleVars = {
-    width: width + "px",
-    paneOffset: paneOffset + "px",
-    terminalGap: terminalGap + "px",
-  };
 
   function checkNear(event: MouseEvent) {
     if (!expandedLocked) {
@@ -55,16 +50,48 @@
     }
   }
 
-  let dispatch = createEventDispatcher();
+  let nodeId = getContext("nodeId");
 
-  function dispatchTerminalRect(rect: DOMRect, i: number) {
-    dispatch("terminalRect", {
-      rackId: rackId,
-      rect: rect,
-      i: i,
-      direction: direction,
+  const callbacksKey = nodeId;
+
+  let nodeCallbacksStore: Writable<NodeRectUpdateCallbacksState> =
+    getContext(callbacksKey);
+
+  let rectUpdateCallbacks: Readable<{ [key: string]: RectUpdateCallback }> =
+    derived(nodeCallbacksStore, ($nodeCallbacks) => {
+      return $nodeCallbacks[direction][inputName];
     });
-  }
+
+  onMount(() => {
+    // console.log($nodeCallbacksStore);
+    // context set with node, input, dir before terminal racks mount
+    setInterval(() => {
+      $rectUpdateCallbacks &&
+        Object.entries($rectUpdateCallbacks).forEach(
+          (
+            [connectionId, callback]: [string, RectUpdateCallback],
+            i: number
+          ) => {
+            callback(terminalContainers[i].getBoundingClientRect());
+          }
+        );
+    }, 10);
+  });
+
+  $: terminals =
+    1 +
+    ($rectUpdateCallbacks ? Object.entries($rectUpdateCallbacks).length : 0);
+  let terminalContainers: { [key: string]: HTMLElement } = {};
+
+  $: width = !expanded
+    ? 4
+    : terminalGap * (terminals + 1) + terminalWidth * terminals;
+
+  $: styleVars = {
+    width: width + "px",
+    paneOffset: paneOffset + "px",
+    terminalGap: terminalGap + "px",
+  };
 </script>
 
 <svelte:window on:mousemove={checkNear} />
@@ -75,12 +102,8 @@
   class:expanded
   use:cssVars={styleVars}
 >
-  {#each Array(terminals) as terminal, i}
-    <Terminal
-      {direction}
-      {expanded}
-      on:terminalRect={(event) => dispatchTerminalRect(event.detail, i)}
-    />
+  {#each [...Array(terminals).keys()] as i (i)}
+    <Terminal bind:container={terminalContainers[i]} {direction} {expanded} />
   {/each}
 </div>
 

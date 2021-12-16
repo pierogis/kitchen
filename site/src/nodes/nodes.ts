@@ -11,7 +11,7 @@ export type RacksState = {
 };
 
 export interface NodeState {
-  id: string;
+  nodeId: string;
   type: string;
   style: string;
   properties: NodeProperties;
@@ -27,7 +27,7 @@ Object.keys(initialProps).forEach((key) => {
 
 const initialState = {
   plate: {
-    id: "plate",
+    nodeId: "plate",
     type: "plate",
     style: "top: 50%; right: 0px;",
     properties: initialProps,
@@ -40,19 +40,19 @@ export const nodesStore: Writable<{ [key: string]: NodeState }> =
 
 export function addNode(node: NodeState) {
   nodesStore.update(($nodes) => {
-    $nodes[node.id] = node;
+    $nodes[node.nodeId] = node;
     return $nodes;
   });
 }
 export function updateNode(node: NodeState) {
   nodesStore.update(($nodes) => {
-    $nodes[node.id] = node;
+    $nodes[node.nodeId] = node;
     return $nodes;
   });
 }
 export function deleteNode(node: NodeState) {
   nodesStore.update(($nodes) => {
-    delete $nodes[node.id];
+    delete $nodes[node.nodeId];
     return $nodes;
   });
 }

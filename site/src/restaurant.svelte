@@ -2,13 +2,13 @@
   import { v4 as uuidv4 } from "uuid";
 
   import { addNode } from "./nodes/nodes";
-  import { addConnection } from "./connections/connections";
+  import { addConnection, ConnectionState } from "./connections/connections";
   import { ColorControl } from "./ingredients/color";
 
   addNode(new ColorControl().default("color"));
 
   addConnection({
-    id: "init",
+    connectionId: "init",
     in: {
       nodeId: "plate",
       inputName: "height",
@@ -23,19 +23,19 @@
 </script>
 
 <script lang="typescript">
-  import { derived, Readable } from "svelte/store";
+  import { derived, get, writable, Writable } from "svelte/store";
 
   import { nodesStore } from "./nodes/nodes";
   import { connectionsStore } from "./connections/connections";
-  import {
-    TerminalDirection,
-    terminalRectsStore,
-    TerminalRectState,
-  } from "./terminals/terminals";
 
   import Node from "./nodes/Node.svelte";
   import CursorCircle from "./cursor-circle/CursorCircle.svelte";
   import Cable from "./cable/Cable.svelte";
+  import { afterUpdate, getContext, setContext } from "svelte";
+  import type {
+    NodeRectUpdateCallbacksState,
+    RectUpdateCallback,
+  } from "./terminals/terminals";
 
   let mouseX: number;
   let mouseY: number;
@@ -53,6 +53,12 @@
 
   function changeViewport() {}
 
+  // derived(connectionsStore, ($connections) => {
+  //   Object.entries($connections).forEach(([connectionId, connection]) => {
+  //     connection.in.nodeId;
+  //   });
+  // });
+
   function calculateCenter(rect: DOMRect): { x: number; y: number } {
     let x = rect.x + rect.width / 2;
     let y = rect.y + rect.height / 2;
@@ -60,72 +66,78 @@
     return { x, y };
   }
 
-  let terminalRectCenters = derived(terminalRectsStore, ($rects) => {
-    return Object.entries($rects).reduce(
-      (
-        accumulator: {
-          nodeId: string;
-          inputName: string;
-          direction: TerminalDirection;
-          center: { x: number; y: number };
-        }[],
-        [id, rackStateArray]
-      ) => {
-        return [
-          ...accumulator,
-          ...rackStateArray.map((state: TerminalRectState) => {
-            return {
-              nodeId: state.nodeId,
-              inputName: state.inputName,
-              direction: state.direction,
-              center: calculateCenter(state.rect),
-            };
-          }),
-        ];
-      },
-      []
-    );
-  });
-
-  let connectionCenters: Readable<
-    {
+  let connectionsCoords: Writable<{
+    [key: string]: {
       x1: number;
       y1: number;
       x2: number;
       y2: number;
-    }[]
-  > = derived(
-    [connectionsStore, terminalRectCenters],
-    ([$connections, $centers]) => {
-      return Object.entries($connections)
-        .map(([id, connection]) => {
-          let inCenter = $centers.find((rect) => {
-            return (
-              rect.inputName == connection.in.inputName &&
-              rect.nodeId == connection.in.nodeId &&
-              rect.direction == TerminalDirection.in
-            );
-          });
-          let outCenter = $centers.find((rect) => {
-            return (
-              rect.inputName == connection.out.inputName &&
-              rect.nodeId == connection.out.nodeId &&
-              rect.direction == TerminalDirection.out
-            );
-          });
+    };
+  }> = writable({});
 
-          if (inCenter && outCenter) {
-            return {
-              x1: inCenter.center.x,
-              y1: inCenter.center.y,
-              x2: outCenter.center.x,
-              y2: outCenter.center.y,
-            };
-          }
-        })
-        .filter((center) => center !== undefined);
-    }
-  );
+  Object.keys($nodesStore).forEach((nodeId: string) => {
+    setContext(
+      nodeId,
+      writable<NodeRectUpdateCallbacksState>({ in: {}, out: {} })
+    );
+  });
+
+  // put connectionsCoords updating callbacks in context
+  // this needs to happen after Node straps on all of the inputs sets
+  $: {
+    Object.entries($connectionsStore).forEach(([connectionId, connection]) => {
+      // callback that will update half of connection's coordinates
+      let updateInCoords = (rect: DOMRect) => {
+        let center = calculateCenter(rect);
+        connectionsCoords.update((coords) => {
+          coords[connectionId] = {
+            ...coords[connectionId],
+            x2: center.x,
+            y2: center.y,
+          };
+          return coords;
+        });
+      };
+
+      let updateOutCoords = (rect: DOMRect) => {
+        let center = calculateCenter(rect);
+        connectionsCoords.update((coords) => {
+          coords[connectionId] = {
+            ...coords[connectionId],
+            x1: center.x,
+            y1: center.y,
+          };
+          return coords;
+        });
+      };
+
+      let inKey = connection.in.nodeId;
+
+      let inNodeCallbacks: Writable<NodeRectUpdateCallbacksState> =
+        getContext(inKey);
+
+      inNodeCallbacks.update((callbacks: NodeRectUpdateCallbacksState) => {
+        if (callbacks.in[connection.in.inputName] === undefined) {
+          callbacks.in[connection.in.inputName] = {};
+        }
+        callbacks.in[connection.in.inputName][connectionId] = updateInCoords;
+        return callbacks;
+      });
+
+      let outKey = connection.out.nodeId;
+
+      let outNodeCallbacks: Writable<NodeRectUpdateCallbacksState> =
+        getContext(outKey);
+
+      outNodeCallbacks.update((callbacks: NodeRectUpdateCallbacksState) => {
+        if (callbacks.out[connection.out.inputName] === undefined) {
+          callbacks.out[connection.out.inputName] = {};
+        }
+        callbacks.out[connection.out.inputName][connectionId] = updateOutCoords;
+        return callbacks;
+      });
+    });
+  }
 </script>
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
@@ -140,13 +152,10 @@
   <Cable x1={rect} y1={rect} x2={mouseX} y2={mouseY} />
 {/if} -->
 
-{#each $connectionCenters as connection}
-  <Cable
-    x1={connection.x1}
-    y1={connection.y1}
-    x2={connection.x2}
-    y2={connection.y2}
-  />
+{#each Object.entries($connectionsCoords) as [connectionId, coords]}
+  {#if coords.x1 && coords.y1 && coords.x2 && coords.y2}
+    <Cable {...coords} />
+  {/if}
 {/each}
 
 <CursorCircle on:longpress={() => addNode(defaultNode())} />

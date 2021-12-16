@@ -1,22 +1,11 @@
 <script lang="typescript">
-  import { afterUpdate, createEventDispatcher, onMount, tick } from "svelte";
-
   import type { TerminalDirection } from "./terminals";
 
   export let direction: TerminalDirection;
   export let expanded: boolean;
   let selected = false;
 
-  let container: HTMLElement;
-
-  let dispatch = createEventDispatcher();
-
-  onMount(() => {
-    setInterval(() => {
-      let rect = container.getBoundingClientRect();
-      dispatch("terminalRect", rect);
-    }, 10);
-  });
+  export let container: HTMLElement;
 
   function select(event) {
     selected = true;

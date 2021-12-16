@@ -20,7 +20,7 @@ export class ColorControl implements IngredientControl<ColorProperties> {
     let defaultRacks = { in: ["color"], out: ["color"] };
 
     return {
-      id: id,
+      nodeId: id,
       type: this.type,
       style: "",
       properties: defaultProperties,

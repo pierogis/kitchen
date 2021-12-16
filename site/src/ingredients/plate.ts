@@ -20,7 +20,7 @@ export class PlateControl implements IngredientControl<PlateProperties> {
     }
 
     return {
-      id: id,
+      nodeId: id,
       type: this.type,
       style: "",
       properties: defaultProperties,

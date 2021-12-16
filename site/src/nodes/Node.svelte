@@ -1,20 +1,17 @@
 <script lang="typescript">
-  import { tick } from "svelte";
+  import { setContext, tick } from "svelte";
   import { derived, Readable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
 
-  import type { InputBindingApi, Pane } from "tweakpane";
+  import type { Pane } from "tweakpane";
 
   import {
     IngredientControl,
     ingredientsStore,
   } from "../ingredients/ingredients";
   import TerminalRack from "../terminals/TerminalRack.svelte";
-  import {
-    TerminalDirection,
-    updateTerminalRect,
-  } from "../terminals/terminals";
+  import { TerminalDirection } from "../terminals/terminals";
   import { deleteNode, nodesStore, NodeState, updateNode } from "./nodes";
 
   import PaneWrapper from "./PaneWrapper.svelte";
@@ -70,9 +67,12 @@
     deleteNode($node);
   }
 
-  export let id: string;
+  export let nodeId: string;
 
-  let node: Readable<NodeState> = derived(nodesStore, ($nodes) => $nodes[id]);
+  let node: Readable<NodeState> = derived(
+    nodesStore,
+    ($nodes) => $nodes[nodeId]
+  );
 
   let ingredientBuilder: Readable<IngredientControl<any>> = derived(
     node,
@@ -87,7 +87,7 @@
   );
 
   function updateType(event: CustomEvent<string>) {
-    let defaultNode = $ingredientsStore[event.detail].default($node.id);
+    let defaultNode = $ingredientsStore[event.detail].default($node.nodeId);
 
     updateNode(defaultNode);
   }
@@ -102,6 +102,7 @@
   async function attach(pane: Pane) {
     let inputs = $ingredientBuilder.attach(pane, $node);
 
+    // attach will cause an update
     await tick();
     // attaching bound divs to terminal racks
     $node.racks.in.forEach((inputName) => {
@@ -117,21 +118,7 @@
     });
   }
 
-  function handleTerminalRect(
-    event: CustomEvent<{
-      rackId: string;
-      rect: DOMRect;
-      i: number;
-      direction: TerminalDirection;
-    }>,
-    inputName: string
-  ) {
-    updateTerminalRect({
-      nodeId: $node.id,
-      inputName: inputName,
-      ...event.detail,
-    });
-  }
+  setContext("nodeId", nodeId);
 
   $: styleVars = {
     nodeHeaderSize: nodeHeaderSize + "px",
@@ -163,7 +150,7 @@
 {#each $node.racks.in as inputName (inputName)}
   <TerminalRack
     bind:container={terminalRackContainers.in[inputName]}
-    on:terminalRect={(event) => handleTerminalRect(event, inputName)}
+    {inputName}
     direction={TerminalDirection.in}
   />
 {/each}
@@ -171,7 +158,7 @@
 {#each $node.racks.out as inputName (inputName)}
   <TerminalRack
     bind:container={terminalRackContainers.out[inputName]}
-    on:terminalRect={(event) => handleTerminalRect(event, inputName)}
+    {inputName}
     direction={TerminalDirection.out}
   />
 {/each}
