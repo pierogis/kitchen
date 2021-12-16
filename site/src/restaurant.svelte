@@ -31,11 +31,9 @@
   import Node from "./nodes/Node.svelte";
   import CursorCircle from "./cursor-circle/CursorCircle.svelte";
   import Cable from "./cable/Cable.svelte";
-  import { afterUpdate, getContext, setContext } from "svelte";
-  import type {
-    NodeRectUpdateCallbacksState,
-    RectUpdateCallback,
-  } from "./terminals/terminals";
+  import { getContext, setContext } from "svelte";
+  import type { NodeRectUpdateCallbacksState } from "./terminals/terminals";
+  import { calculateCenter } from "./utils";
 
   let mouseX: number;
   let mouseY: number;
@@ -53,19 +51,7 @@
 
   function changeViewport() {}
 
-  // derived(connectionsStore, ($connections) => {
-  //   Object.entries($connections).forEach(([connectionId, connection]) => {
-  //     connection.in.nodeId;
-  //   });
-  // });
-
-  function calculateCenter(rect: DOMRect): { x: number; y: number } {
-    let x = rect.x + rect.width / 2;
-    let y = rect.y + rect.height / 2;
-
-    return { x, y };
-  }
-
+  // store to contain 2 (x, y) coords keyed by connectionId
   let connectionsCoords: Writable<{
     [key: string]: {
       x1: number;
@@ -75,6 +61,9 @@
     };
   }> = writable({});
 
+  // set a store for each nodes in context
+  // will contain a nested set of callbacks corresponding to inputName and direction
+  // these callbacks are used to notify many subscribers of an element rect
   Object.keys($nodesStore).forEach((nodeId: string) => {
     setContext(
       nodeId,
@@ -83,7 +72,6 @@
   });
 
   // put connectionsCoords updating callbacks in context
-  // this needs to happen after Node straps on all of the inputs sets
   $: {
     Object.entries($connectionsStore).forEach(([connectionId, connection]) => {
       // callback that will update half of connection's coordinates
@@ -99,6 +87,7 @@
         });
       };
 
+      // other half
       let updateOutCoords = (rect: DOMRect) => {
         let center = calculateCenter(rect);
         connectionsCoords.update((coords) => {
@@ -111,11 +100,17 @@
         });
       };
 
+      // the context is keyed by nodeId as a string
+      // using an object key requires matching the reference
+      // maybe pass down through props
       let inKey = connection.in.nodeId;
 
+      // get the node specific store from context
       let inNodeCallbacks: Writable<NodeRectUpdateCallbacksState> =
         getContext(inKey);
 
+      // add to the callbacks set for the given connection's "in" input name
+      // this corresponds to the in (left) terminal on inputs
       inNodeCallbacks.update((callbacks: NodeRectUpdateCallbacksState) => {
         if (callbacks.in[connection.in.inputName] === undefined) {
           callbacks.in[connection.in.inputName] = {};
@@ -124,15 +119,19 @@
         return callbacks;
       });
 
+      // do the same for out
       let outKey = connection.out.nodeId;
 
       let outNodeCallbacks: Writable<NodeRectUpdateCallbacksState> =
         getContext(outKey);
 
+      // using a store to ultimately notify terminals of a new callback to use when
+      // they providing updates on their bounding rect
       outNodeCallbacks.update((callbacks: NodeRectUpdateCallbacksState) => {
         if (callbacks.out[connection.out.inputName] === undefined) {
           callbacks.out[connection.out.inputName] = {};
         }
+        // use the out callback
         callbacks.out[connection.out.inputName][connectionId] = updateOutCoords;
         return callbacks;
       });

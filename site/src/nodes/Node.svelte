@@ -17,6 +17,9 @@
   import PaneWrapper from "./PaneWrapper.svelte";
 
   export let draggable: boolean;
+  export let nodeId: string;
+
+  setContext("nodeId", nodeId);
 
   let container: HTMLElement;
 
@@ -29,26 +32,27 @@
     pos3 = 0,
     pos4 = 0;
 
+  // for dragging the node
   function dragMouseDown(e: MouseEvent) {
     e.preventDefault();
     dragging = true;
-    // get the mouse cursor position at startup:
+    // get the mouse cursor position at startup
     pos3 = e.clientX;
     pos4 = e.clientY;
     document.onmouseup = closeDragElement;
-    // call a function whenever the cursor moves:
+    // call a function whenever the cursor moves
     document.onmousemove = elementDrag;
   }
 
   function elementDrag(e: MouseEvent) {
     if (dragging && e.button == 0) {
       e.preventDefault();
-      // calculate the new cursor position:
+      // calculate the new cursor position
       pos1 = pos3 - e.clientX;
       pos2 = pos4 - e.clientY;
       pos3 = e.clientX;
       pos4 = e.clientY;
-      // set the element's new position:
+      // set the element's new position
       top = container.offsetTop - pos2;
       left = container.offsetLeft - pos1;
       container.style.top = top + "px";
@@ -63,48 +67,49 @@
     document.onmousemove = null;
   }
 
-  function close(e: MouseEvent) {
-    deleteNode($node);
-  }
-
-  export let nodeId: string;
-
+  // subscribe to just this node in the nodesStore
   let node: Readable<NodeState> = derived(
     nodesStore,
     ($nodes) => $nodes[nodeId]
   );
 
+  // use these IngredientControl classes to do non svelte display stuff
+  // subscribe the type specified on the node
   let ingredientBuilder: Readable<IngredientControl<any>> = derived(
     node,
-    (state) => $ingredientsStore[state.type]
+    (state: NodeState) => $ingredientsStore[state.type]
   );
 
-  let options: {
+  // get a list of options for select type
+  // just take all from the ingredients store and make them key and value
+  let typeOptions: {
     [key: string]: string;
   } = Object.keys($ingredientsStore).reduce(
     (previous, current) => ({ ...previous, [current]: current }),
     {}
   );
 
+  // these will bind to the terminal racks inside
+  let terminalRackContainers: {
+    in: { [key: string]: HTMLElement };
+    out: { [key: string]: HTMLElement };
+  } = { in: {}, out: {} };
+
+  // if the node type changes update the store
   function updateType(event: CustomEvent<string>) {
     let defaultNode = $ingredientsStore[event.detail].default($node.nodeId);
 
     updateNode(defaultNode);
   }
 
-  const nodeHeaderSize = 12;
-
-  let terminalRackContainers: {
-    in: { [key: string]: HTMLElement };
-    out: { [key: string]: HTMLElement };
-  } = { in: {}, out: {} };
-
+  // use the selected ingredient to attach tweakpane
   async function attach(pane: Pane) {
     let inputs = $ingredientBuilder.attach(pane, $node);
 
     // attach will cause an update
     await tick();
     // attaching bound divs to terminal racks
+    // $node.racks specifies if a rack should be attached
     $node.racks.in.forEach((inputName) => {
       inputs[inputName].controller_.view.element.prepend(
         terminalRackContainers.in[inputName]
@@ -118,8 +123,12 @@
     });
   }
 
-  setContext("nodeId", nodeId);
+  // delete node on close button
+  function handleClose(e: MouseEvent) {
+    deleteNode($node);
+  }
 
+  const nodeHeaderSize = 12;
   $: styleVars = {
     nodeHeaderSize: nodeHeaderSize + "px",
   };
@@ -137,11 +146,11 @@
       <div class="grab-dot" />
     </div>
 
-    <div class="close" on:click={close} />
+    <div class="close" on:click={handleClose} />
   </div>
   <PaneWrapper
     type={$node.type}
-    {options}
+    options={typeOptions}
     {attach}
     on:updateType={updateType}
   />

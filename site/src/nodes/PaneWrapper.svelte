@@ -15,28 +15,20 @@
 
   const dispatch = createEventDispatcher();
 
-  // function updatePane() {
-  //   // divs that TerminalRacks bind to
-  //   ;
-  //   // dispatch("inputs", inputs);
-  // }
+  let typeInput: InputBindingApi<unknown, string>;
 
-  onMount(() => {
-    attach(pane);
-  });
-
+  // remove tweakpane inputs from pane
+  // replace with new type's
   async function updateType(event: TpChangeEvent<string>) {
     dispatch("updateType", event.value);
     for (let [inputName, input] of Object.entries(inputs)) {
       input.dispose();
     }
     await tick();
+    // attach should update
     attach(pane);
   }
 
-  let typeInput: InputBindingApi<unknown, string>;
-
-  // let container: HTMLElement;
   function attachPane(element: HTMLElement) {
     pane = new Pane({ container: element });
 
@@ -47,6 +39,10 @@
       })
       .on("change", updateType);
   }
+
+  onMount(() => {
+    attach(pane);
+  });
 </script>
 
 <div use:attachPane />
