@@ -82,43 +82,59 @@
 
 <style>
   .terminal {
-    border: 0px outset hsla(0, 0%, 20%, 0.3);
-    background-color: var(--tp-button-background-color-hover);
     position: relative;
-    width: 4px;
+    width: 0px;
     height: var(--terminalHeight);
+
+    border: 0px outset var(--cable-color-number);
+    background-color: hsla(0, 0%, 40%, 1);
+
     transition: all 300ms, border 300ms;
-    z-index: -1;
+    z-index: 1;
     cursor: grab;
+  }
+
+  .in {
+    border-radius: 10% 50% 50% 10%;
+    right: 2px;
+  }
+
+  .out {
+    border-radius: 50% 10% 10% 50%;
+    left: 2px;
   }
 
   .cabled {
     /* border: 2px inset hsla(0, 0%, 20%, 0.5); */
     border: 2px inset var(--cable-color-number);
+    background-color: var(--tp-button-background-color-hover);
+    width: 4px;
 
     margin: -2px;
+    z-index: 2;
   }
 
-  .in {
+  .cabled.in {
     border-radius: 50% 10% 10% 50%;
     right: 4px;
   }
 
-  .out {
+  .cabled.out {
     border-radius: 10% 50% 50% 10%;
     left: 4px;
   }
 
   .expanded {
     width: var(--terminalHeight);
+  }
+
+  .expanded.in {
+    right: 0px;
     border-radius: 50% 50% 50% 50%;
   }
 
-  .terminal.expanded.in {
-    right: 0px;
-  }
-
-  .terminal.expanded.out {
+  .expanded.out {
     left: 0px;
+    border-radius: 50% 50% 50% 50%;
   }
 </style>
