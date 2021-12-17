@@ -2,14 +2,13 @@
   import { createEventDispatcher, onMount, tick } from "svelte";
 
   import { InputBindingApi, Pane, TpChangeEvent } from "tweakpane";
+  import type { IngredientControlHandle } from "../ingredients/ingredients";
 
   export let type: string;
   export let options: { [key: string]: string };
-  export let attach: (pane) => void;
+  export let attach: (pane) => Promise<IngredientControlHandle>;
 
-  let inputs: {
-    [key: string]: InputBindingApi<unknown, string>;
-  } = {};
+  let inputs: IngredientControlHandle = {};
 
   let pane: Pane;
 
@@ -26,7 +25,7 @@
     }
     await tick();
     // attach should update
-    attach(pane);
+    inputs = await attach(pane);
   }
 
   function attachPane(element: HTMLElement) {
@@ -40,8 +39,8 @@
       .on("change", updateType);
   }
 
-  onMount(() => {
-    attach(pane);
+  onMount(async () => {
+    inputs = await attach(pane);
   });
 </script>
 

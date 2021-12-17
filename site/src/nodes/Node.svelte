@@ -8,6 +8,7 @@
 
   import {
     IngredientControl,
+    IngredientControlHandle,
     ingredientsStore,
   } from "../ingredients/ingredients";
   import TerminalRack from "../terminals/TerminalRack.svelte";
@@ -103,7 +104,7 @@
   }
 
   // use the selected ingredient to attach tweakpane
-  async function attach(pane: Pane) {
+  async function attach(pane: Pane): Promise<IngredientControlHandle> {
     let inputs = $ingredientBuilder.attach(pane, $node);
 
     // attach will cause an update
@@ -121,6 +122,8 @@
         terminalRackContainers.out[inputName]
       );
     });
+
+    return inputs;
   }
 
   // delete node on close button
