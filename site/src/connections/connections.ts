@@ -1,5 +1,4 @@
 import { Writable, writable } from "svelte/store";
-import type { TerminalDirection } from "../terminals/terminals";
 
 export interface ConnectionState {
   connectionId: string;
@@ -12,7 +11,6 @@ export interface ConnectionState {
     inputName: string;
   };
 }
-
 export let connectionsStore: Writable<{ [key: string]: ConnectionState }> =
   writable({});
 
@@ -26,6 +24,13 @@ export function addConnection(state: ConnectionState) {
 export function updateConnection(state: ConnectionState) {
   connectionsStore.update(($connections) => {
     $connections[state.connectionId] = state;
+    return $connections;
+  });
+}
+
+export function removeConnection(state: ConnectionState) {
+  connectionsStore.update(($connections) => {
+    delete $connections[state.connectionId];
     return $connections;
   });
 }

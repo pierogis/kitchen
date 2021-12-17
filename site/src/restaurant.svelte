@@ -2,7 +2,7 @@
   import { v4 as uuidv4 } from "uuid";
 
   import { addNode } from "./nodes/nodes";
-  import { addConnection, ConnectionState } from "./connections/connections";
+  import { addConnection } from "./connections/connections";
   import { ColorControl } from "./ingredients/color";
 
   addNode(new ColorControl().default("color"));
@@ -23,10 +23,13 @@
 </script>
 
 <script lang="typescript">
-  import { derived, get, writable, Writable } from "svelte/store";
+  import { derived, Unsubscriber, writable, Writable } from "svelte/store";
 
   import { nodesStore } from "./nodes/nodes";
-  import { connectionsStore } from "./connections/connections";
+  import {
+    connectionsStore,
+    removeConnection,
+  } from "./connections/connections";
 
   import Node from "./nodes/Node.svelte";
   import CursorCircle from "./cursor-circle/CursorCircle.svelte";
@@ -71,9 +74,12 @@
     );
   });
 
-  // put connectionsCoords updating callbacks in context
-  $: {
-    Object.entries($connectionsStore).forEach(([connectionId, connection]) => {
+  connectionsStore.subscribe((connections) => {
+    // put connectionsCoords updating callbacks in context
+    connectionsCoords.update((coords) => {
+      return {};
+    });
+    Object.entries(connections).forEach(([connectionId, connection]) => {
       // callback that will update half of connection's coordinates
       let updateInCoords = (rect: DOMRect) => {
         let center = calculateCenter(rect);
@@ -136,7 +142,74 @@
         return callbacks;
       });
     });
-  }
+  });
+
+  // need to know when a connection should be deleted
+  // this is based on whether its referenced nodes stop existing
+
+  // create derived stores (from nodesStore) that will callback
+  // a "check for delete connection" function
+
+  // need to unsubscribe to derived stores so multiple callbacks
+  // aren't registered for the same derived node store
+  let unsubscribers: Unsubscriber[] = [];
+
+  connectionsStore.subscribe((connections) => {
+    // call the unsubscribe functions previously set
+    unsubscribers.forEach((unsubscriber) => {
+      unsubscriber();
+    });
+
+    unsubscribers = [];
+
+    // loop each connection
+    Object.entries(connections).forEach(([connectionId, connection]) => {
+      let inNodeId = connection.in.nodeId;
+      let outNodeId = connection.out.nodeId;
+
+      let inInputName = connection.in.inputName;
+      let outInputName = connection.out.inputName;
+
+      // make a derived store with the state of the in node
+      let inNode = derived(nodesStore, (nodes) => {
+        return nodes[inNodeId];
+      });
+
+      // subscribe to changes in the in node's state
+      // and remove connection if necessary
+      let inUnsubscriber = inNode.subscribe((node) => {
+        // node may be removed
+        if (node) {
+          // type may change
+          if (!node.racks.in.includes(inInputName)) {
+            removeConnection(connection);
+          }
+        } else {
+          removeConnection(connection);
+        }
+      });
+
+      // do the same for the out node
+      let outNode = derived(nodesStore, (nodes) => {
+        return nodes[outNodeId];
+      });
+
+      let outUnsubscriber = outNode.subscribe((node) => {
+        if (node) {
+          if (!node.racks.out.includes(outInputName)) {
+            removeConnection(connection);
+          }
+        } else {
+          removeConnection(connection);
+        }
+      });
+
+      // add these unsubscribers to this list that will be called
+      // next time connectionsStore updates
+      unsubscribers.push(inUnsubscriber);
+      unsubscribers.push(outUnsubscriber);
+    });
+  });
 </script>
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
