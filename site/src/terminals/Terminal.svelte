@@ -6,13 +6,9 @@
   export let direction: TerminalDirection;
   export let expanded: boolean;
   export let terminalHeight: number;
-  let selected = false;
+  export let cabled;
 
   export let container: HTMLElement;
-
-  function select(event) {
-    selected = true;
-  }
 
   // connections
 
@@ -80,8 +76,7 @@
   bind:this={container}
   class="terminal {direction}"
   class:expanded
-  class:selected
-  on:mouseover={select}
+  class:cabled
   use:cssVars={styleVars}
 />
 
@@ -94,14 +89,14 @@
     height: var(--terminalHeight);
     transition: all 300ms, border 300ms;
     z-index: -1;
+    cursor: grab;
   }
 
-  .selected {
-    border: 2px inset hsla(0, 0%, 20%, 0.5);
+  .cabled {
+    /* border: 2px inset hsla(0, 0%, 20%, 0.5); */
+    border: 2px inset var(--cable-color-number);
 
     margin: -2px;
-
-    cursor: grab;
   }
 
   .in {

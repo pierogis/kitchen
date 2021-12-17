@@ -96,8 +96,7 @@
 
   // 1 more terminal than there are connections
   $: terminals =
-    1 +
-    ($rectUpdateCallbacks ? Object.entries($rectUpdateCallbacks).length : 0);
+    1 + ($rectUpdateCallbacks ? Object.keys($rectUpdateCallbacks).length : 0);
   let terminalContainers: { [key: number]: HTMLElement } = {};
 
   // if expanded, take a width dependent on the number of terminals
@@ -124,6 +123,7 @@
   {#each [...Array(terminals).keys()] as i (i)}
     <Terminal
       bind:container={terminalContainers[i]}
+      cabled={i < terminals - 1}
       {direction}
       {expanded}
       {terminalHeight}

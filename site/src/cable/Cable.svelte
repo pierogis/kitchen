@@ -63,10 +63,10 @@
     svg.style.top = top;
   });
 
-  // making bezier with 3 points (start, end, one at [x, y] middle)
-  $: pathString = `M ${0} ${startY} C ${width / 2} ${startY}, ${
-    width / 2
-  } ${endY}, ${width} ${endY}`;
+  // making bezier with 4 points (start, [0, height/2], [width, height/2], end)
+  $: pathString = `M ${0} ${startY} C ${0} ${height / 2}, ${width} ${
+    height / 2
+  }, ${width} ${endY}`;
 
   const pathStrokeWidth = 4;
 
@@ -90,7 +90,7 @@
   }
 
   path {
-    stroke: var(--close-color);
+    stroke: var(--cable-color-number);
     stroke-width: var(--pathStrokeWidth);
     fill: transparent;
   }
