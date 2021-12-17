@@ -142,19 +142,19 @@
     box-shadow: 0 2px 4px var(--tp-base-shadow-color);
 
     position: relative;
-    width: var(--width);
+    width: var(--rackWidth);
     height: var(--rackHeight);
     z-index: -3;
     transition: all 300ms;
   }
 
   .in {
-    right: calc(var(--width) + var(--paneOffset));
-    margin-right: calc(0px - var(--width));
+    right: calc(var(--rackWidth) + var(--paneOffset));
+    margin-right: calc(0px - var(--rackWidth));
   }
 
   .out {
-    left: calc(var(--width) + var(--paneOffset));
-    margin-left: calc(0px - var(--width));
+    left: calc(var(--rackWidth) + var(--paneOffset));
+    margin-left: calc(0px - var(--rackWidth));
   }
 </style>
