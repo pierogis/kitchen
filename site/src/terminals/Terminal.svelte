@@ -1,8 +1,11 @@
 <script lang="typescript">
+  import cssVars from "svelte-css-vars";
+
   import type { TerminalDirection } from "./terminals";
 
   export let direction: TerminalDirection;
   export let expanded: boolean;
+  export let terminalHeight: number;
   let selected = false;
 
   export let container: HTMLElement;
@@ -67,6 +70,10 @@
   //       }
   //     };
   // }
+
+  $: styleVars = {
+    terminalHeight: terminalHeight + "px",
+  };
 </script>
 
 <div
@@ -75,6 +82,7 @@
   class:expanded
   class:selected
   on:mouseover={select}
+  use:cssVars={styleVars}
 />
 
 <style>
@@ -83,13 +91,15 @@
     background-color: var(--tp-button-background-color-hover);
     position: relative;
     width: 4px;
-    height: 10px;
+    height: var(--terminalHeight);
     transition: all 300ms, border 300ms;
     z-index: -1;
   }
 
   .selected {
     border: 2px inset hsla(0, 0%, 20%, 0.5);
+
+    margin: -2px;
 
     cursor: grab;
   }
@@ -105,15 +115,15 @@
   }
 
   .expanded {
-    width: 10px;
+    width: var(--terminalHeight);
     border-radius: 50% 50% 50% 50%;
   }
 
   .terminal.expanded.in {
-    margin-right: -8px;
+    right: 0px;
   }
 
   .terminal.expanded.out {
-    margin-left: -8px;
+    left: 0px;
   }
 </style>

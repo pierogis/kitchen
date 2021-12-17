@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { getContext, onMount } from "svelte";
+  import { getContext, onDestroy, onMount } from "svelte";
   import { derived, Readable, Writable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
@@ -20,8 +20,8 @@
   export let inputName: string;
 
   const nearTerminalRackDistance = 12;
-  const terminalWidth = 10;
-  const terminalGap = 4;
+  const rackHeight = 20;
+  const terminalHeight = 10;
 
   let paneOffset = 6;
 
@@ -67,21 +67,32 @@
       return $nodeCallbacks[direction][inputName];
     });
 
-  // repeatedly broadcast terminal rects
-  setInterval(() => {
-    // don't bother if there are none to call
-    if (
-      $rectUpdateCallbacks &&
-      Object.entries($rectUpdateCallbacks).length > 0
-    ) {
-      // calculate the rect and dispatc to all the callbacks
-      Object.entries($rectUpdateCallbacks).forEach(
-        ([connectionId, callback]: [string, RectUpdateCallback], i: number) => {
-          callback(terminalContainers[i].getBoundingClientRect());
-        }
-      );
-    }
-  }, 10);
+  let timer: NodeJS.Timer;
+
+  onMount(() => {
+    // repeatedly broadcast terminal rects
+    timer = setInterval(() => {
+      // don't bother if there are none to call
+      if (
+        $rectUpdateCallbacks &&
+        Object.entries($rectUpdateCallbacks).length > 0
+      ) {
+        // calculate the rect and dispatc to all the callbacks
+        Object.entries($rectUpdateCallbacks).forEach(
+          (
+            [connectionId, callback]: [string, RectUpdateCallback],
+            i: number
+          ) => {
+            callback(terminalContainers[i].getBoundingClientRect());
+          }
+        );
+      }
+    }, 10);
+  });
+
+  onDestroy(() => {
+    clearInterval(timer);
+  });
 
   // 1 more terminal than there are connections
   $: terminals =
@@ -90,14 +101,15 @@
   let terminalContainers: { [key: number]: HTMLElement } = {};
 
   // if expanded, take a width dependent on the number of terminals
-  $: width = !expanded
+  $: rackWidth = !expanded
     ? 4
-    : terminalGap * (terminals + 1) + terminalWidth * terminals;
+    : ((rackHeight - terminalHeight) / 2) * (terminals + 1) +
+      terminalHeight * terminals;
 
   $: styleVars = {
-    width: width + "px",
+    rackWidth: rackWidth + "px",
+    rackHeight: rackHeight + "px",
     paneOffset: paneOffset + "px",
-    terminalGap: terminalGap + "px",
   };
 </script>
 
@@ -110,7 +122,12 @@
   use:cssVars={styleVars}
 >
   {#each [...Array(terminals).keys()] as i (i)}
-    <Terminal bind:container={terminalContainers[i]} {direction} {expanded} />
+    <Terminal
+      bind:container={terminalContainers[i]}
+      {direction}
+      {expanded}
+      {terminalHeight}
+    />
   {/each}
 </div>
 
@@ -118,7 +135,7 @@
   .terminal-rack {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-evenly;
 
     border-radius: 6px 6px 6px 6px;
     background-color: var(--tp-base-background-color);
@@ -126,7 +143,7 @@
 
     position: relative;
     width: var(--width);
-    height: 20px;
+    height: var(--rackHeight);
     z-index: -3;
     transition: all 300ms;
   }
@@ -139,9 +156,5 @@
   .out {
     left: calc(var(--width) + var(--paneOffset));
     margin-left: calc(0px - var(--width));
-  }
-
-  .expanded {
-    gap: var(--terminalGap);
   }
 </style>
