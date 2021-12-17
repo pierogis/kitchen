@@ -214,7 +214,7 @@
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
 
-{#each Object.entries($nodesStore) as [id, node]}
+{#each Object.entries($nodesStore) as [nodeId, node]}
   <Node draggable={true} {...node} />
 {/each}
 

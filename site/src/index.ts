@@ -4,7 +4,7 @@ let onscroll = () => {
 
 window.onscroll = onscroll;
 
-import Restaurant from "./restaurant.svelte";
+import Restaurant from "./Restaurant.svelte";
 
 const restaurant = new Restaurant({
   target: document.body,

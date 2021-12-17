@@ -78,7 +78,7 @@
   // subscribe the type specified on the node
   let ingredientBuilder: Readable<IngredientControl<any>> = derived(
     node,
-    (state: NodeState) => $ingredientsStore[state.type]
+    (state: NodeState) => state && $ingredientsStore[state.type]
   );
 
   // get a list of options for select type
