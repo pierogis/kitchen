@@ -144,11 +144,11 @@
     position: relative;
     width: var(--rackWidth);
     height: var(--rackHeight);
-    z-index: -3;
     transition: all 300ms;
   }
 
   .in {
+    flex-direction: row-reverse;
     right: calc(var(--rackWidth) + var(--paneOffset));
     margin-right: calc(0px - var(--rackWidth));
   }
