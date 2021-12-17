@@ -18,8 +18,8 @@ connect terminals
 - detect connection change
 
   - mousedown
-    - function that starts updating svgs on mousemove 
-  - mouseup 
+    - function that starts updating svgs on mousemove
+  - mouseup
     - if not on terminal
       - deletes the svgs
     - if on terminal
@@ -38,8 +38,3 @@ connect terminals
         - `(x, y) => {updatePosition(this.startX, this.startY, x, y)}`
 
 fix perma-selected on terminals
-
-grab cursor on move node
-
-close node causes state error
-- close node should remove terminals

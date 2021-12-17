@@ -40,7 +40,7 @@
     // get the mouse cursor position at startup
     pos3 = e.clientX;
     pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
+    document.onmouseup = stopDragElement;
     // call a function whenever the cursor moves
     document.onmousemove = elementDrag;
   }
@@ -61,7 +61,7 @@
     }
   }
 
-  function closeDragElement() {
+  function stopDragElement() {
     // stop moving when mouse button is released:
     dragging = false;
     document.onmouseup = null;
@@ -137,14 +137,9 @@
   };
 </script>
 
-<div
-  class="node no-select"
-  class:dragging
-  bind:this={container}
-  use:cssVars={styleVars}
->
+<div class="node no-select" bind:this={container} use:cssVars={styleVars}>
   <div class="header">
-    <div class="grab" on:mousedown={dragMouseDown}>
+    <div class="grab" class:dragging on:mousedown={dragMouseDown}>
       <div class="grab-dot" />
       <div class="grab-dot" />
     </div>
