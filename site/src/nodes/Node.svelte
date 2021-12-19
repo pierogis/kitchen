@@ -34,25 +34,25 @@
     pos4 = 0;
 
   // for dragging the node
-  function dragMouseDown(e: MouseEvent) {
-    e.preventDefault();
+  function dragMouseDown(event: MouseEvent) {
+    event.preventDefault();
     dragging = true;
     // get the mouse cursor position at startup
-    pos3 = e.clientX;
-    pos4 = e.clientY;
+    pos3 = event.clientX;
+    pos4 = event.clientY;
     document.onmouseup = stopDragElement;
     // call a function whenever the cursor moves
     document.onmousemove = elementDrag;
   }
 
-  function elementDrag(e: MouseEvent) {
-    if (dragging && e.button == 0) {
-      e.preventDefault();
+  function elementDrag(event: MouseEvent) {
+    if (dragging && event.button == 0) {
+      event.preventDefault();
       // calculate the new cursor position
-      pos1 = pos3 - e.clientX;
-      pos2 = pos4 - e.clientY;
-      pos3 = e.clientX;
-      pos4 = e.clientY;
+      pos1 = pos3 - event.clientX;
+      pos2 = pos4 - event.clientY;
+      pos3 = event.clientX;
+      pos4 = event.clientY;
       // set the element's new position
       top = container.offsetTop - pos2;
       left = container.offsetLeft - pos1;

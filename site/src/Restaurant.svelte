@@ -62,7 +62,6 @@
   // will contain a nested set of callbacks corresponding to inputName and direction
   // these callbacks are used to notify many subscribers of an element rect
   Object.keys($nodesStore).forEach((nodeId: string) => {
-    console.log(nodeId);
     setContext(
       nodeId,
       writable<NodeTerminalRectsUpdateCallbacksState>({ in: {}, out: {} })
@@ -323,7 +322,7 @@
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
 
-{#each Object.entries($nodesStore) as [nodeId, node]}
+{#each Object.entries($nodesStore) as [nodeId, node] (nodeId)}
   <Node draggable={true} {...node} />
 {/each}
 

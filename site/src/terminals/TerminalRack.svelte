@@ -73,8 +73,7 @@
     derived(
       nodeCallbacksStore,
       (nodeCallbacks: NodeTerminalRectsUpdateCallbacksState) => {
-        console.log(nodeCallbacks);
-        return nodeCallbacks[direction][inputName];
+        return nodeCallbacks && nodeCallbacks[direction][inputName];
       },
       {}
     );
