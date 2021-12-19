@@ -23,7 +23,10 @@
 </script>
 
 <script lang="typescript">
+  import { getContext, setContext } from "svelte";
   import { derived, Unsubscriber, writable, Writable } from "svelte/store";
+
+  import { calculateCenter } from "./utils";
 
   import { nodesStore } from "./nodes/nodes";
   import {
@@ -34,28 +37,19 @@
   import Node from "./nodes/Node.svelte";
   import CursorCircle from "./cursor-circle/CursorCircle.svelte";
   import Cable from "./cable/Cable.svelte";
-  import { getContext, setContext } from "svelte";
-  import type { NodeRectUpdateCallbacksState } from "./terminals/terminals";
-  import { calculateCenter } from "./utils";
 
-  let mouseX: number;
-  let mouseY: number;
+  import type { NodeTerminalRectsUpdateCallbacksState } from "./terminals/terminals";
+  import { TerminalDirection } from "./terminals/terminals";
+  import { terminalHeight } from "./terminals/TerminalRack.svelte";
 
-  function mousemove(event: MouseEvent) {
-    mouseX = event.clientX;
-    mouseY = event.clientY;
-  }
-
-  let holdingCable = false;
-
-  // let anchorTerminal: HTMLElement;
-
-  // let rect = anchorTerminal.getBoundingClientRect();
-
-  function changeViewport() {}
+  import Terminal from "./terminals/Terminal.svelte";
+  import {
+    anchorLiveConnectionKey,
+    detachLiveConnectionKey,
+  } from "./connections/live-connection";
 
   // store to contain 2 (x, y) coords keyed by connectionId
-  let connectionsCoords: Writable<{
+  let connectionsCoordsStore: Writable<{
     [key: string]: {
       x1: number;
       y1: number;
@@ -68,22 +62,23 @@
   // will contain a nested set of callbacks corresponding to inputName and direction
   // these callbacks are used to notify many subscribers of an element rect
   Object.keys($nodesStore).forEach((nodeId: string) => {
+    console.log(nodeId);
     setContext(
       nodeId,
-      writable<NodeRectUpdateCallbacksState>({ in: {}, out: {} })
+      writable<NodeTerminalRectsUpdateCallbacksState>({ in: {}, out: {} })
     );
   });
 
   connectionsStore.subscribe((connections) => {
     // put connectionsCoords updating callbacks in context
-    connectionsCoords.update((coords) => {
+    connectionsCoordsStore.update((coords) => {
       return {};
     });
     Object.entries(connections).forEach(([connectionId, connection]) => {
       // callback that will update half of connection's coordinates
       let updateInCoords = (rect: DOMRect) => {
         let center = calculateCenter(rect);
-        connectionsCoords.update((coords) => {
+        connectionsCoordsStore.update((coords) => {
           coords[connectionId] = {
             ...coords[connectionId],
             x2: center.x,
@@ -96,7 +91,7 @@
       // other half
       let updateOutCoords = (rect: DOMRect) => {
         let center = calculateCenter(rect);
-        connectionsCoords.update((coords) => {
+        connectionsCoordsStore.update((coords) => {
           coords[connectionId] = {
             ...coords[connectionId],
             x1: center.x,
@@ -112,35 +107,40 @@
       let inKey = connection.in.nodeId;
 
       // get the node specific store from context
-      let inNodeCallbacks: Writable<NodeRectUpdateCallbacksState> =
+      let inNodeCallbacks: Writable<NodeTerminalRectsUpdateCallbacksState> =
         getContext(inKey);
 
       // add to the callbacks set for the given connection's "in" input name
       // this corresponds to the in (left) terminal on inputs
-      inNodeCallbacks.update((callbacks: NodeRectUpdateCallbacksState) => {
-        if (callbacks.in[connection.in.inputName] === undefined) {
-          callbacks.in[connection.in.inputName] = {};
+      inNodeCallbacks.update(
+        (callbacks: NodeTerminalRectsUpdateCallbacksState) => {
+          if (callbacks.in[connection.in.inputName] === undefined) {
+            callbacks.in[connection.in.inputName] = {};
+          }
+          callbacks.in[connection.in.inputName][connectionId] = updateInCoords;
+          return callbacks;
         }
-        callbacks.in[connection.in.inputName][connectionId] = updateInCoords;
-        return callbacks;
-      });
+      );
 
       // do the same for out
       let outKey = connection.out.nodeId;
 
-      let outNodeCallbacks: Writable<NodeRectUpdateCallbacksState> =
+      let outNodeCallbacks: Writable<NodeTerminalRectsUpdateCallbacksState> =
         getContext(outKey);
 
       // using a store to ultimately notify terminals of a new callback to use when
       // they providing updates on their bounding rect
-      outNodeCallbacks.update((callbacks: NodeRectUpdateCallbacksState) => {
-        if (callbacks.out[connection.out.inputName] === undefined) {
-          callbacks.out[connection.out.inputName] = {};
+      outNodeCallbacks.update(
+        (callbacks: NodeTerminalRectsUpdateCallbacksState) => {
+          if (callbacks.out[connection.out.inputName] === undefined) {
+            callbacks.out[connection.out.inputName] = {};
+          }
+          // use the out callback
+          callbacks.out[connection.out.inputName][connectionId] =
+            updateOutCoords;
+          return callbacks;
         }
-        // use the out callback
-        callbacks.out[connection.out.inputName][connectionId] = updateOutCoords;
-        return callbacks;
-      });
+      );
     });
   });
 
@@ -182,10 +182,10 @@
         if (node) {
           // type may change
           if (!node.racks.in.includes(inInputName)) {
-            removeConnection(connection);
+            removeConnection(connection.connectionId);
           }
         } else {
-          removeConnection(connection);
+          removeConnection(connection.connectionId);
         }
       });
 
@@ -197,10 +197,10 @@
       let outUnsubscriber = outNode.subscribe((node) => {
         if (node) {
           if (!node.racks.out.includes(outInputName)) {
-            removeConnection(connection);
+            removeConnection(connection.connectionId);
           }
         } else {
-          removeConnection(connection);
+          removeConnection(connection.connectionId);
         }
       });
 
@@ -210,7 +210,116 @@
       unsubscribers.push(outUnsubscriber);
     });
   });
+
+  let dragTerminalDirection: TerminalDirection;
+
+  // store a single set of coords for when a cable is being dragged
+  let liveCoordsStore: Writable<{
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  }> = writable();
+
+  let updateLiveInCoords = (rect: DOMRect) => {
+    let center = calculateCenter(rect);
+    liveCoordsStore.update((coords) => {
+      coords = {
+        ...coords,
+        x2: center.x,
+        y2: center.y,
+      };
+      return coords;
+    });
+  };
+
+  let updateLiveOutCoords = (rect: DOMRect) => {
+    let center = calculateCenter(rect);
+    liveCoordsStore.update((coords) => {
+      coords = {
+        ...coords,
+        x1: center.x,
+        y1: center.y,
+      };
+      return coords;
+    });
+  };
+
+  let holdingCable = false;
+
+  let mouseX: number;
+  let mouseY: number;
+
+  function anchorLiveConnection(
+    direction: TerminalDirection,
+    location: { x: number; y: number }
+  ): (rect: DOMRect) => void {
+    let updateLiveCoords: (rect: DOMRect) => void;
+
+    if (direction == TerminalDirection.in) {
+      updateLiveCoords = updateLiveInCoords;
+      dragTerminalDirection = TerminalDirection.out;
+    } else {
+      updateLiveCoords = updateLiveOutCoords;
+      dragTerminalDirection = TerminalDirection.in;
+    }
+
+    mouseX = location.x;
+    mouseY = location.y;
+
+    holdingCable = true;
+
+    return updateLiveCoords;
+  }
+
+  function detachLiveConnection(
+    connectionId: string,
+    direction: TerminalDirection
+  ) {
+    removeConnection(connectionId);
+
+    holdingCable = true;
+  }
+
+  setContext(anchorLiveConnectionKey, anchorLiveConnection);
+  setContext(detachLiveConnectionKey, detachLiveConnection);
+
+  function dragTerminal(element: HTMLElement) {
+    let dragTerminalTimer: NodeJS.Timer;
+
+    element.style.top = mouseY + "px";
+    element.style.left = mouseX + "px";
+
+    let moveElement = (event: MouseEvent) => {
+      event.preventDefault();
+      element.style.top = event.y + "px";
+      element.style.left = event.x + "px";
+    };
+    window.addEventListener("mousemove", moveElement);
+    dragTerminalTimer = setInterval(() => {
+      let rect = element.getBoundingClientRect();
+      if (dragTerminalDirection == TerminalDirection.in) {
+        updateLiveInCoords(rect);
+      } else if (dragTerminalDirection == TerminalDirection.out) {
+        updateLiveOutCoords(rect);
+      }
+    }, 10);
+    return {
+      destroy() {
+        window.removeEventListener("mousemove", moveElement);
+        clearInterval(dragTerminalTimer);
+        liveCoordsStore.set(undefined);
+      },
+    };
+  }
 </script>
+
+<svelte:window
+  on:scroll|preventDefault={() => {}}
+  on:mouseup={() => {
+    holdingCable = false;
+  }}
+/>
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
 
@@ -218,13 +327,23 @@
   <Node draggable={true} {...node} />
 {/each}
 
-<svelte:window on:mousemove={mousemove} />
+{#if holdingCable}
+  {#if $liveCoordsStore && $liveCoordsStore.x1 && $liveCoordsStore.y1 && $liveCoordsStore.x2 && $liveCoordsStore.y2}
+    <Cable {...$liveCoordsStore} />
+  {/if}
+  <Terminal
+    actionDescription={{
+      action: dragTerminal,
+    }}
+    direction={dragTerminalDirection}
+    expanded={true}
+    cabled={true}
+    live={holdingCable}
+    {terminalHeight}
+  />
+{/if}
 
-<!-- {#if holdingCable}
-  <Cable x1={rect} y1={rect} x2={mouseX} y2={mouseY} />
-{/if} -->
-
-{#each Object.entries($connectionsCoords) as [connectionId, coords]}
+{#each Object.entries($connectionsCoordsStore) as [connectionId, coords]}
   {#if coords.x1 && coords.y1 && coords.x2 && coords.y2}
     <Cable {...coords} />
   {/if}
@@ -240,7 +359,8 @@
     --tp-label-foreground-color: hsla(230, 5%, 30%, 0.7);
     --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
     --close-color: hsla(0, 80%, 70%, 0.8);
-    --cable-color-number: hsla(214, 35%, 60.8%, 0.8);
+    /* --cable-color-number: hsla(214, 35%, 60.8%, 0.8); */
+    --cable-color-number: #99a6bf;
   }
   :global(body) {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",

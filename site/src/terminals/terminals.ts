@@ -5,7 +5,7 @@ export enum TerminalDirection {
 
 export type RectUpdateCallback = (rect: DOMRect) => void;
 
-export type NodeRectUpdateCallbacksState = {
+export type NodeTerminalRectsUpdateCallbacksState = {
   in: {
     // inputName
     [key: string]: {

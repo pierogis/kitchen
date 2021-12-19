@@ -20,6 +20,7 @@
 
   // follow the mouse
   function onmousemove(event: MouseEvent) {
+    event.preventDefault();
     coords = { x: event.clientX, y: event.clientY };
   }
 
@@ -55,7 +56,11 @@
   on:mousedown={onmousedown}
   on:mouseup={onmouseup}
 >
-  <circle cx={$cursorLocation.x} cy={$cursorLocation.y} r={$size} />
+  <circle
+    cx={$cursorLocation.x}
+    cy={$cursorLocation.y}
+    r={$size > 0 ? $size : 0}
+  />
 </svg>
 
 <style>

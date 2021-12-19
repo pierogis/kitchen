@@ -179,7 +179,7 @@
   }
   .node {
     position: absolute;
-    z-index: 9;
+    z-index: 1;
     display: block;
 
     top: 50%;

@@ -1,14 +1,35 @@
 <script lang="typescript">
-  import cssVars from "svelte-css-vars";
+  import { createEventDispatcher } from "svelte";
+
+  import cssVars, { update } from "svelte-css-vars";
 
   import type { TerminalDirection } from "./terminals";
 
   export let direction: TerminalDirection;
   export let expanded: boolean;
   export let terminalHeight: number;
-  export let cabled;
+  export let cabled: boolean;
+  export let live = false;
 
-  export let container: HTMLElement;
+  type ActionDescription<T> = {
+    action: (
+      element: HTMLElement,
+      params?: T
+    ) => {
+      update?: (params?: T) => void;
+      destroy?: () => void;
+    };
+    params?: T;
+  };
+  export let actionDescription: ActionDescription<any> = undefined;
+
+  export let container: HTMLElement = undefined;
+
+  let dispatch = createEventDispatcher();
+
+  function handleMouseDown(event: MouseEvent) {
+    dispatch("grab", { x: event.x, y: event.y });
+  }
 
   // connections
 
@@ -67,6 +88,19 @@
   //     };
   // }
 
+  function useAction(element: HTMLElement, action: ActionDescription<any>) {
+    let actionHandle = action && action.action(element, action.params);
+
+    return {
+      update(params: any) {
+        actionHandle && actionHandle.update(params);
+      },
+      destroy() {
+        actionHandle && actionHandle.destroy();
+      },
+    };
+  }
+
   $: styleVars = {
     terminalHeight: terminalHeight + "px",
   };
@@ -74,19 +108,23 @@
 
 <div
   bind:this={container}
+  use:useAction={actionDescription}
   class="terminal {direction}"
   class:expanded
   class:cabled
+  class:live
+  on:mousedown={handleMouseDown}
   use:cssVars={styleVars}
 />
 
 <style>
   .terminal {
+    --border-width: 2px;
     position: relative;
     width: 0px;
     height: var(--terminalHeight);
 
-    border: 0px outset var(--cable-color-number);
+    border: 0px inset var(--cable-color-number);
     background-color: hsla(0, 0%, 40%, 1);
 
     transition: all 300ms, border 300ms;
@@ -106,7 +144,7 @@
 
   .cabled {
     /* border: 2px inset hsla(0, 0%, 20%, 0.5); */
-    border: 2px inset var(--cable-color-number);
+    border: var(--border-width) inset var(--cable-color-number);
     background-color: var(--tp-button-background-color-hover);
     width: 4px;
 
@@ -136,5 +174,14 @@
   .expanded.out {
     left: 0px;
     border-radius: 50% 50% 50% 50%;
+  }
+
+  .live {
+    position: absolute;
+    transition: all 0s;
+    margin: calc(-1 * (var(--terminalHeight) / 2 + var(--border-width)));
+    z-index: 2;
+
+    cursor: grabbing;
   }
 </style>

@@ -28,9 +28,9 @@ export function updateConnection(state: ConnectionState) {
   });
 }
 
-export function removeConnection(state: ConnectionState) {
+export function removeConnection(connectionId: string): void {
   connectionsStore.update(($connections) => {
-    delete $connections[state.connectionId];
+    delete $connections[connectionId];
     return $connections;
   });
 }

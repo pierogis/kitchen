@@ -1,3 +1,7 @@
+<script lang="typescript" context="module">
+  export const terminalHeight = 10;
+</script>
+
 <script lang="typescript">
   import { getContext, onDestroy, onMount } from "svelte";
   import { derived, Readable, Writable } from "svelte/store";
@@ -5,11 +9,15 @@
   import cssVars from "svelte-css-vars";
 
   import type {
-    NodeRectUpdateCallbacksState,
+    NodeTerminalRectsUpdateCallbacksState,
     RectUpdateCallback,
-    TerminalDirection,
   } from "./terminals";
+  import type { TerminalDirection } from "./terminals";
   import Terminal from "./Terminal.svelte";
+  import {
+    anchorLiveConnectionKey,
+    detachLiveConnectionKey,
+  } from "../connections/live-connection";
 
   export let direction: TerminalDirection;
   export let container: HTMLElement;
@@ -21,7 +29,6 @@
 
   const nearTerminalRackDistance = 12;
   const rackHeight = 20;
-  const terminalHeight = 10;
 
   let paneOffset = 6;
 
@@ -58,52 +65,106 @@
   const callbacksKey = nodeId;
 
   // get store containing callbacks to use to broadcast bounding rect
-  let nodeCallbacksStore: Writable<NodeRectUpdateCallbacksState> =
+  let nodeCallbacksStore: Writable<NodeTerminalRectsUpdateCallbacksState> =
     getContext(callbacksKey);
 
   // look specifically in nested part of this store
   let rectUpdateCallbacks: Readable<{ [key: string]: RectUpdateCallback }> =
-    derived(nodeCallbacksStore, ($nodeCallbacks) => {
-      return $nodeCallbacks[direction][inputName];
-    });
+    derived(
+      nodeCallbacksStore,
+      (nodeCallbacks: NodeTerminalRectsUpdateCallbacksState) => {
+        console.log(nodeCallbacks);
+        return nodeCallbacks[direction][inputName];
+      },
+      {}
+    );
 
-  let timer: NodeJS.Timer;
+  function terminalContainer(
+    element: HTMLElement,
+    params: { connectionId: string }
+  ) {
+    const container = element;
 
-  onMount(() => {
-    // repeatedly broadcast terminal rects
-    timer = setInterval(() => {
+    let rectUpdateCallbackInterval: NodeJS.Timer;
+
+    rectUpdateCallbackInterval = setInterval(() => {
       // don't bother if there are none to call
       if (
         $rectUpdateCallbacks &&
         Object.entries($rectUpdateCallbacks).length > 0
       ) {
-        // calculate the rect and dispatc to all the callbacks
-        Object.entries($rectUpdateCallbacks).forEach(
-          (
-            [connectionId, callback]: [string, RectUpdateCallback],
-            i: number
-          ) => {
-            callback(terminalContainers[i].getBoundingClientRect());
-          }
-        );
+        // calculate the rect and dispatch to the callback
+        let rect: DOMRect = container.getBoundingClientRect();
+        // accounts for scroll
+        rect.x += window.pageXOffset;
+        rect.y += window.pageYOffset;
+        $rectUpdateCallbacks[params.connectionId](rect);
       }
     }, 10);
-  });
+    return {
+      destroy() {
+        clearInterval(rectUpdateCallbackInterval);
+      },
+    };
+  }
+
+  let detachLiveConnection: (
+    connectionId: string,
+    direction: TerminalDirection
+  ) => void = getContext(detachLiveConnectionKey);
+
+  function handleDisconnectGrab(connectionId: string) {
+    detachLiveConnection(connectionId, direction);
+  }
+
+  // on mouse up, check if you are holding a terminal now in store
+  // so you should be able to set that here too
+
+  // need to cancel this interval on mouse up
+  let novelGrabUpdateCallbackInterval: NodeJS.Timer;
+
+  let anchorLiveConnection: (
+    direction: TerminalDirection,
+    location: { x: number; y: number }
+  ) => (rect: DOMRect) => void = getContext(anchorLiveConnectionKey);
+
+  let usingNovelTerminal = false;
+
+  function handleNovelGrab(event: CustomEvent<{ x: number; y: number }>) {
+    let updateLiveCoords = anchorLiveConnection(direction, {
+      x: event.detail.x,
+      y: event.detail.y,
+    });
+    usingNovelTerminal = true;
+    novelGrabUpdateCallbackInterval = setInterval(() => {
+      let rect = emptyTerminalContainer.getBoundingClientRect();
+      updateLiveCoords(rect);
+    }, 10);
+  }
+
+  function handleMouseUp() {
+    if (novelGrabUpdateCallbackInterval !== undefined) {
+      clearInterval(novelGrabUpdateCallbackInterval);
+      usingNovelTerminal = false;
+    }
+  }
 
   onDestroy(() => {
-    clearInterval(timer);
+    clearInterval(novelGrabUpdateCallbackInterval);
   });
 
-  // 1 more terminal than there are connections
-  $: terminals =
-    1 + ($rectUpdateCallbacks ? Object.keys($rectUpdateCallbacks).length : 0);
-  let terminalContainers: { [key: number]: HTMLElement } = {};
+  let emptyTerminalContainer: HTMLElement;
+
+  $: connectionIds = $rectUpdateCallbacks
+    ? Object.keys($rectUpdateCallbacks)
+    : [];
 
   // if expanded, take a width dependent on the number of terminals
+  // 1 more terminal than there are connections
   $: rackWidth = !expanded
     ? 4
-    : ((rackHeight - terminalHeight) / 2) * (terminals + 1) +
-      terminalHeight * terminals;
+    : ((rackHeight - terminalHeight) / 2) * (connectionIds.length + 2) +
+      terminalHeight * (connectionIds.length + 1);
 
   $: styleVars = {
     rackWidth: rackWidth + "px",
@@ -112,7 +173,7 @@
   };
 </script>
 
-<svelte:window on:mousemove={checkNear} />
+<svelte:window on:mousemove={checkNear} on:mouseup={handleMouseUp} />
 
 <div
   bind:this={container}
@@ -120,15 +181,27 @@
   class:expanded
   use:cssVars={styleVars}
 >
-  {#each [...Array(terminals).keys()] as i (i)}
+  {#each connectionIds as connectionId (connectionId)}
     <Terminal
-      bind:container={terminalContainers[i]}
-      cabled={i < terminals - 1}
+      actionDescription={{
+        action: terminalContainer,
+        params: { connectionId: connectionId },
+      }}
+      cabled={true}
       {direction}
       {expanded}
       {terminalHeight}
+      on:grab={() => handleDisconnectGrab(connectionId)}
     />
   {/each}
+  <Terminal
+    bind:container={emptyTerminalContainer}
+    cabled={usingNovelTerminal}
+    {direction}
+    {expanded}
+    {terminalHeight}
+    on:grab={handleNovelGrab}
+  />
 </div>
 
 <style>

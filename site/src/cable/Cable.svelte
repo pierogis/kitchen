@@ -1,6 +1,4 @@
 <script lang="typescript">
-  import { afterUpdate } from "svelte";
-
   import cssVars from "svelte-css-vars";
 
   export let x1, y1, x2, y2;
@@ -58,11 +56,6 @@
     }
   }
 
-  afterUpdate(() => {
-    svg.style.left = left;
-    svg.style.top = top;
-  });
-
   // making bezier with 4 points (start, [0, height/2], [width, height/2], end)
   $: pathString = `M ${0} ${startY} C ${0} ${height / 2}, ${width} ${
     height / 2
@@ -75,7 +68,12 @@
   };
 </script>
 
-<svg bind:this={svg} use:cssVars={styleVars} {width} {height} class:dragging>
+<svg
+  bind:this={svg}
+  use:cssVars={styleVars}
+  style="width: {width}px; height: {height}px; left: {left}px; top: {top}px;"
+  class:dragging
+>
   <path d={pathString} />
 </svg>
 
