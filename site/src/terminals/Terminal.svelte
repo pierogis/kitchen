@@ -1,7 +1,8 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import cssVars, { update } from "svelte-css-vars";
+  import cssVars from "svelte-css-vars";
+  import { ActionDescription, useAction } from "../common/useAction";
 
   import type { TerminalDirection } from "./terminals";
 
@@ -11,16 +12,6 @@
   export let cabled: boolean;
   export let live = false;
 
-  type ActionDescription<T> = {
-    action: (
-      element: HTMLElement,
-      params?: T
-    ) => {
-      update?: (params?: T) => void;
-      destroy?: () => void;
-    };
-    params?: T;
-  };
   export let actionDescription: ActionDescription<any> = undefined;
 
   export let container: HTMLElement = undefined;
@@ -29,76 +20,6 @@
 
   function handleMouseDown(event: MouseEvent) {
     dispatch("grab", { x: event.x, y: event.y });
-  }
-
-  // connections
-
-  // function createCable(event: MouseEvent) {
-  //   if (event.button == 0) {
-  //         terminal.element.onmouseleave = null;
-
-  //         terminalRack.lockExpand();
-
-  //         let terminalRect = terminal.element.getBoundingClientRect();
-  //         let x1 = terminalRect.x + terminalRect.width / 2;
-  //         let y1 = terminalRect.y + terminalRect.height / 2;
-  //         let cable = new Cable(x1, y1);
-
-  //         let release = () => {
-  //           document.body.onmousemove = null;
-  //           document.body.onmouseup = null;
-  //           terminalRack.unlockExpand();
-  //           terminalRack.contract();
-  //         };
-
-  //         document.body.onmousemove = (ev: MouseEvent) => {
-  //           updateLiveCable({x1: x1, y1: y1, x2: ev.clientX, y2: ev.clientY, live:true});
-  //         };
-
-  //         let matchingTerminals = this.getMatchingTerminalsCallback(terminal);
-  //         for (let matchingTerminal of matchingTerminals) {
-  //           matchingTerminal.element.onmouseup = (ev: MouseEvent) => {
-  //             console.log("connection");
-  //             ev.preventDefault();
-  //             release();
-  //             matchingTerminal.element.onmouseleave = null;
-  //             matchingTerminal.element.onmouseup = null;
-
-  //             let terminalRect =
-  //               matchingTerminal.element.getBoundingClientRect();
-  //             let x2 = terminalRect.x + terminalRect.width / 2;
-  //             let y2 = terminalRect.y + terminalRect.height / 2;
-
-  //             cable.draw(x1, y1, x2, y2);
-  //           };
-  //         }
-
-  //         document.body.onmouseup = (ev: MouseEvent) => {
-  //           ev.preventDefault();
-  //           for (let matchingTerminal of matchingTerminals) {
-  //             matchingTerminal.element.onmouseup = null;
-  //           }
-
-  //           console.log;
-
-  //           terminal.deselect();
-  //           cable.dispose();
-  //         };
-  //       }
-  //     };
-  // }
-
-  function useAction(element: HTMLElement, action: ActionDescription<any>) {
-    let actionHandle = action && action.action(element, action.params);
-
-    return {
-      update(params: any) {
-        actionHandle && actionHandle.update(params);
-      },
-      destroy() {
-        actionHandle && actionHandle.destroy();
-      },
-    };
   }
 
   $: styleVars = {
