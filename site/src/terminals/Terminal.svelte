@@ -1,8 +1,7 @@
 <script lang="typescript">
-  import { createEventDispatcher } from "svelte";
-
   import cssVars from "svelte-css-vars";
-  import { ActionDescription, useAction } from "../common/useAction";
+
+  import { ActionDescription, useActions } from "../common/actions/useActions";
 
   import type { TerminalDirection } from "./terminals";
 
@@ -12,15 +11,7 @@
   export let cabled: boolean;
   export let live = false;
 
-  export let actionDescription: ActionDescription<any> = undefined;
-
-  export let container: HTMLElement = undefined;
-
-  let dispatch = createEventDispatcher();
-
-  function handleMouseDown(event: MouseEvent) {
-    dispatch("grab", { x: event.x, y: event.y });
-  }
+  export let actionDescriptions: ActionDescription<any>[];
 
   $: styleVars = {
     terminalHeight: terminalHeight + "px",
@@ -28,13 +19,11 @@
 </script>
 
 <div
-  bind:this={container}
-  use:useAction={actionDescription}
+  use:useActions={actionDescriptions}
   class="terminal {direction}"
   class:expanded
   class:cabled
   class:live
-  on:mousedown={handleMouseDown}
   use:cssVars={styleVars}
 />
 

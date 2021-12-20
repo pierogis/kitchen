@@ -22,8 +22,7 @@
   export let direction: TerminalDirection;
   export let container: HTMLElement;
 
-  let expanded: boolean;
-  let expandedLocked: boolean = false;
+  let near: boolean;
 
   export let inputName: string;
 
@@ -32,13 +31,9 @@
 
   let paneOffset = 6;
 
-  /**
-   * check if a mouse event was close to terminal rack
-   * @param event
-   */
   function checkNear(event: MouseEvent) {
     // sometimes shouldn't change state
-    if (!expandedLocked) {
+    if (!usingNovelTerminal) {
       let rackRect = container.getBoundingClientRect();
 
       // expanding the rect
@@ -53,9 +48,9 @@
 
       // if x within width and y within height, mouse is over
       if (x > left && x < right && y > top && y < bottom) {
-        expanded = true;
+        near = true;
       } else {
-        expanded = false;
+        near = false;
       }
     }
   }
@@ -78,12 +73,10 @@
       {}
     );
 
-  function terminalContainer(
+  function terminalRectCallbackAction(
     element: HTMLElement,
     params: { connectionId: string }
   ) {
-    const container = element;
-
     let rectUpdateCallbackInterval: NodeJS.Timer;
 
     rectUpdateCallbackInterval = setInterval(() => {
@@ -93,7 +86,7 @@
         Object.entries($rectUpdateCallbacks).length > 0
       ) {
         // calculate the rect and dispatch to the callback
-        let rect: DOMRect = container.getBoundingClientRect();
+        let rect: DOMRect = element.getBoundingClientRect();
         // accounts for scroll
         rect.x += window.pageXOffset;
         rect.y += window.pageYOffset;
@@ -116,47 +109,52 @@
     detachLiveConnection(connectionId, direction);
   }
 
-  // on mouse up, check if you are holding a terminal now in store
-  // so you should be able to set that here too
-
-  // need to cancel this interval on mouse up
-  let novelGrabUpdateCallbackInterval: NodeJS.Timer;
-
-  let anchorLiveConnection: (
-    direction: TerminalDirection,
-    location: { x: number; y: number }
-  ) => (rect: DOMRect) => void = getContext(anchorLiveConnectionKey);
-
   let usingNovelTerminal = false;
 
-  function handleNovelGrab(event: CustomEvent<{ x: number; y: number }>) {
-    let updateLiveCoords = anchorLiveConnection(direction, {
-      x: event.detail.x,
-      y: event.detail.y,
-    });
-    usingNovelTerminal = true;
-    novelGrabUpdateCallbackInterval = setInterval(() => {
-      let rect = emptyTerminalContainer.getBoundingClientRect();
-      updateLiveCoords(rect);
-    }, 10);
-  }
+  // grabbing novel terminal should start relaying the coords of the terminal
+  // and add event listeners for release
+  function handleNovelGrabAction(element: HTMLElement) {
+    let novelGrabUpdateCallbackInterval: NodeJS.Timer;
 
-  function handleMouseUp() {
-    if (novelGrabUpdateCallbackInterval !== undefined) {
+    let anchorLiveConnection: (
+      direction: TerminalDirection,
+      location: { x: number; y: number }
+    ) => (rect: DOMRect) => void = getContext(anchorLiveConnectionKey);
+
+    let handleMouseUp = () => {
       clearInterval(novelGrabUpdateCallbackInterval);
       usingNovelTerminal = false;
-    }
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    let handleNovelGrab = (event: MouseEvent) => {
+      let updateLiveCoords = anchorLiveConnection(direction, {
+        x: event.x,
+        y: event.y,
+      });
+      usingNovelTerminal = true;
+      novelGrabUpdateCallbackInterval = setInterval(() => {
+        let rect = element.getBoundingClientRect();
+        updateLiveCoords(rect);
+      }, 10);
+      document.addEventListener("mouseup", handleMouseUp);
+    };
+
+    element.addEventListener("mousedown", handleNovelGrab);
+
+    return {
+      destroy() {
+        element.removeEventListener("mousedown", handleNovelGrab);
+        document.removeEventListener("mouseup", handleMouseUp);
+      },
+    };
   }
-
-  onDestroy(() => {
-    clearInterval(novelGrabUpdateCallbackInterval);
-  });
-
-  let emptyTerminalContainer: HTMLElement;
 
   $: connectionIds = $rectUpdateCallbacks
     ? Object.keys($rectUpdateCallbacks)
     : [];
+
+  $: expanded = near || usingNovelTerminal;
 
   // if expanded, take a width dependent on the number of terminals
   // 1 more terminal than there are connections
@@ -172,7 +170,7 @@
   };
 </script>
 
-<svelte:window on:mousemove={checkNear} on:mouseup={handleMouseUp} />
+<svelte:window on:mousemove={checkNear} />
 
 <div
   bind:this={container}
@@ -182,24 +180,28 @@
 >
   {#each connectionIds as connectionId (connectionId)}
     <Terminal
-      actionDescription={{
-        action: terminalContainer,
-        params: { connectionId: connectionId },
-      }}
+      actionDescriptions={[
+        {
+          action: terminalRectCallbackAction,
+          params: { connectionId: connectionId },
+        },
+      ]}
       cabled={true}
       {direction}
       {expanded}
       {terminalHeight}
-      on:grab={() => handleDisconnectGrab(connectionId)}
     />
   {/each}
   <Terminal
-    bind:container={emptyTerminalContainer}
+    actionDescriptions={[
+      {
+        action: handleNovelGrabAction,
+      },
+    ]}
     cabled={usingNovelTerminal}
     {direction}
     {expanded}
     {terminalHeight}
-    on:grab={handleNovelGrab}
   />
 </div>
 

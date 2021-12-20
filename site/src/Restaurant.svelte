@@ -331,9 +331,11 @@
     <Cable {...$liveCoordsStore} />
   {/if}
   <Terminal
-    actionDescription={{
-      action: dragTerminal,
-    }}
+    actionDescriptions={[
+      {
+        action: dragTerminal,
+      },
+    ]}
     direction={dragTerminalDirection}
     expanded={true}
     cabled={true}
