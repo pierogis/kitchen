@@ -16,57 +16,13 @@
   import { deleteNode, nodesStore, NodeState, updateNode } from "./nodes";
 
   import PaneWrapper from "./PaneWrapper.svelte";
+  import { draggableAction } from "../common/actions/draggableAction";
 
   export let draggable: boolean;
   export let nodeId: string;
 
   setContext("nodeId", nodeId);
-
-  let container: HTMLElement;
-
-  let top: number;
-  let left: number;
   let dragging = false;
-
-  var pos1 = 0,
-    pos2 = 0,
-    pos3 = 0,
-    pos4 = 0;
-
-  // for dragging the node
-  function dragMouseDown(event: MouseEvent) {
-    event.preventDefault();
-    dragging = true;
-    // get the mouse cursor position at startup
-    pos3 = event.clientX;
-    pos4 = event.clientY;
-    document.onmouseup = stopDragElement;
-    // call a function whenever the cursor moves
-    document.onmousemove = elementDrag;
-  }
-
-  function elementDrag(event: MouseEvent) {
-    if (dragging && event.button == 0) {
-      event.preventDefault();
-      // calculate the new cursor position
-      pos1 = pos3 - event.clientX;
-      pos2 = pos4 - event.clientY;
-      pos3 = event.clientX;
-      pos4 = event.clientY;
-      // set the element's new position
-      top = container.offsetTop - pos2;
-      left = container.offsetLeft - pos1;
-      container.style.top = top + "px";
-      container.style.left = left + "px";
-    }
-  }
-
-  function stopDragElement() {
-    // stop moving when mouse button is released:
-    dragging = false;
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
 
   // subscribe to just this node in the nodesStore
   let node: Readable<NodeState> = derived(
@@ -131,15 +87,21 @@
     deleteNode($node);
   }
 
+  let grabTarget: HTMLElement;
+
   const nodeHeaderSize = 12;
   $: styleVars = {
     nodeHeaderSize: nodeHeaderSize + "px",
   };
 </script>
 
-<div class="node no-select" bind:this={container} use:cssVars={styleVars}>
+<div
+  class="node no-select"
+  use:draggableAction={grabTarget}
+  use:cssVars={styleVars}
+>
   <div class="header">
-    <div class="grab" class:dragging on:mousedown={dragMouseDown}>
+    <div class="grab" bind:this={grabTarget} class:dragging>
       <div class="grab-dot" />
       <div class="grab-dot" />
     </div>
@@ -215,10 +177,6 @@
     height: 4px;
     width: 4px;
     margin: 2px;
-  }
-
-  .dragging {
-    cursor: grabbing;
   }
 
   .close {
