@@ -18,11 +18,12 @@
     anchorLiveConnectionKey,
     detachLiveConnectionKey,
   } from "../connections/live-connection";
+  import { checkNearAction } from "../common/actions/checkNear";
 
   export let direction: TerminalDirection;
   export let container: HTMLElement;
 
-  let near: boolean;
+  let near: boolean = false;
 
   export let inputName: string;
 
@@ -30,28 +31,6 @@
   const rackHeight = 20;
 
   let paneOffset = 6;
-
-  function checkNear(event: MouseEvent) {
-    // sometimes shouldn't change state
-    let rackRect = container.getBoundingClientRect();
-
-    // expanding the rect
-    let left = rackRect.left - nearTerminalRackDistance;
-    let top = rackRect.top - nearTerminalRackDistance;
-    let right = rackRect.right + nearTerminalRackDistance;
-    let bottom = rackRect.bottom + nearTerminalRackDistance;
-
-    // get mouse location
-    let x = event.pageX;
-    let y = event.pageY;
-
-    // if x within width and y within height, mouse is over
-    if (x > left && x < right && y > top && y < bottom) {
-      near = true;
-    } else {
-      near = false;
-    }
-  }
 
   let nodeId = getContext("nodeId");
 
@@ -77,7 +56,7 @@
   ) {
     let rectUpdateCallbackInterval: NodeJS.Timer;
 
-    rectUpdateCallbackInterval = setInterval(() => {
+    let updateRect = () => {
       // don't bother if there are none to call
       if (
         $rectUpdateCallbacks &&
@@ -90,8 +69,13 @@
         rect.y += window.pageYOffset;
         $rectUpdateCallbacks[params.connectionId](rect);
       }
-    }, 10);
+    };
+
+    rectUpdateCallbackInterval = setInterval(updateRect, 10);
     return {
+      update(newParams: { connectionId: string }) {
+        params = newParams;
+      },
       destroy() {
         clearInterval(rectUpdateCallbackInterval);
       },
@@ -168,13 +152,15 @@
   };
 </script>
 
-<svelte:window on:mousemove={checkNear} />
-
 <div
   bind:this={container}
   class="terminal-rack {direction}"
   class:expanded
   use:cssVars={styleVars}
+  use:checkNearAction={nearTerminalRackDistance}
+  on:near={(event) => {
+    near = event.detail;
+  }}
 >
   {#each connectionIds as connectionId (connectionId)}
     <Terminal
