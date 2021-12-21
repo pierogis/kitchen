@@ -3,7 +3,7 @@
 </script>
 
 <script lang="typescript">
-  import { getContext, onDestroy, onMount } from "svelte";
+  import { getContext } from "svelte";
   import { derived, Readable, Writable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
@@ -33,25 +33,23 @@
 
   function checkNear(event: MouseEvent) {
     // sometimes shouldn't change state
-    if (!usingNovelTerminal) {
-      let rackRect = container.getBoundingClientRect();
+    let rackRect = container.getBoundingClientRect();
 
-      // expanding the rect
-      let left = rackRect.left - nearTerminalRackDistance;
-      let top = rackRect.top - nearTerminalRackDistance;
-      let right = rackRect.right + nearTerminalRackDistance;
-      let bottom = rackRect.bottom + nearTerminalRackDistance;
+    // expanding the rect
+    let left = rackRect.left - nearTerminalRackDistance;
+    let top = rackRect.top - nearTerminalRackDistance;
+    let right = rackRect.right + nearTerminalRackDistance;
+    let bottom = rackRect.bottom + nearTerminalRackDistance;
 
-      // get mouse location
-      let x = event.pageX;
-      let y = event.pageY;
+    // get mouse location
+    let x = event.pageX;
+    let y = event.pageY;
 
-      // if x within width and y within height, mouse is over
-      if (x > left && x < right && y > top && y < bottom) {
-        near = true;
-      } else {
-        near = false;
-      }
+    // if x within width and y within height, mouse is over
+    if (x > left && x < right && y > top && y < bottom) {
+      near = true;
+    } else {
+      near = false;
     }
   }
 
@@ -124,7 +122,7 @@
     let handleMouseUp = () => {
       clearInterval(novelGrabUpdateCallbackInterval);
       usingNovelTerminal = false;
-      document.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
 
     let handleNovelGrab = (event: MouseEvent) => {
@@ -137,7 +135,7 @@
         let rect = element.getBoundingClientRect();
         updateLiveCoords(rect);
       }, 10);
-      document.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("mouseup", handleMouseUp);
     };
 
     element.addEventListener("mousedown", handleNovelGrab);
@@ -145,7 +143,7 @@
     return {
       destroy() {
         element.removeEventListener("mousedown", handleNovelGrab);
-        document.removeEventListener("mouseup", handleMouseUp);
+        window.removeEventListener("mouseup", handleMouseUp);
       },
     };
   }

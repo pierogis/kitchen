@@ -283,18 +283,19 @@
   setContext(anchorLiveConnectionKey, anchorLiveConnection);
   setContext(detachLiveConnectionKey, detachLiveConnection);
 
-  function dragTerminal(element: HTMLElement) {
+  function dragTerminalAction(element: HTMLElement) {
     let dragTerminalTimer: NodeJS.Timer;
 
     element.style.top = mouseY + "px";
     element.style.left = mouseX + "px";
 
-    let moveElement = (event: MouseEvent) => {
+    let moveTerminal = (event: MouseEvent) => {
       event.preventDefault();
       element.style.top = event.y + "px";
       element.style.left = event.x + "px";
     };
-    window.addEventListener("mousemove", moveElement);
+    window.addEventListener("mousemove", moveTerminal);
+
     dragTerminalTimer = setInterval(() => {
       let rect = element.getBoundingClientRect();
       if (dragTerminalDirection == TerminalDirection.in) {
@@ -303,9 +304,18 @@
         updateLiveOutCoords(rect);
       }
     }, 10);
+
+    // update restaurant that cable has been dropped
+    let dropCable = () => {
+      holdingCable = false;
+      window.removeEventListener("mouseup", dropCable);
+    };
+    window.addEventListener("mouseup", dropCable);
+
     return {
       destroy() {
-        window.removeEventListener("mousemove", moveElement);
+        window.removeEventListener("mousemove", moveTerminal);
+        window.removeEventListener("mouseup", dropCable);
         clearInterval(dragTerminalTimer);
         liveCoordsStore.set(undefined);
       },
@@ -313,12 +323,7 @@
   }
 </script>
 
-<svelte:window
-  on:scroll|preventDefault={() => {}}
-  on:mouseup={() => {
-    holdingCable = false;
-  }}
-/>
+<svelte:window on:scroll|preventDefault={() => {}} />
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
 
@@ -333,7 +338,7 @@
   <Terminal
     actionDescriptions={[
       {
-        action: dragTerminal,
+        action: dragTerminalAction,
       },
     ]}
     direction={dragTerminalDirection}
