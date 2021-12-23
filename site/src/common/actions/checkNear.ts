@@ -1,3 +1,5 @@
+import { checkPointWithinBox } from "../utils";
+
 export function checkNearAction(element: HTMLElement, nearDistance: number) {
   let near = false;
 
@@ -10,16 +12,10 @@ export function checkNearAction(element: HTMLElement, nearDistance: number) {
     let right = rect.right + nearDistance;
     let bottom = rect.bottom + nearDistance;
 
-    // get mouse location
-    let x = event.pageX;
-    let y = event.pageY;
-
-    // if x within width and y within height, mouse is over
-    if (x > left && x < right && y > top && y < bottom) {
-      near = true;
-    } else {
-      near = false;
-    }
+    near = checkPointWithinBox(
+      { x: event.pageX, y: event.pageY },
+      { top: top, bottom: bottom, left: left, right: right }
+    );
     element.dispatchEvent(new CustomEvent("near", { detail: near }));
   };
 
