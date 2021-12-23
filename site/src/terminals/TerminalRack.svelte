@@ -12,13 +12,17 @@
     NodeTerminalRectsUpdateCallbacksState,
     RectUpdateCallback,
   } from "./terminals";
-  import type { TerminalDirection } from "./terminals";
+  import { TerminalDirection } from "./terminals";
   import Terminal from "./Terminal.svelte";
   import {
     anchorLiveConnectionKey,
-    detachLiveConnectionKey,
+    disconnectLiveConnectionKey,
+    liveTerminalKey,
   } from "../connections/live-connection";
   import { checkNearAction } from "../common/actions/checkNear";
+  import { checkPointWithinBox } from "../common/utils";
+  import { ConnectionInputType } from "../connections/connections";
+  import type { ActionDescription } from "../common/actions/useActions";
 
   export let direction: TerminalDirection;
   export let container: HTMLElement;
@@ -30,18 +34,16 @@
   const nearTerminalRackDistance = 12;
   const rackHeight = 20;
 
-  let paneOffset = 6;
+  const paneOffset = 6;
 
-  let nodeId = getContext("nodeId");
-
-  const callbacksKey = nodeId;
+  const nodeId: string = getContext("nodeId");
 
   // get store containing callbacks to use to broadcast bounding rect
-  let nodeCallbacksStore: Writable<NodeTerminalRectsUpdateCallbacksState> =
-    getContext(callbacksKey);
+  const nodeCallbacksStore: Readable<NodeTerminalRectsUpdateCallbacksState> =
+    getContext(nodeId);
 
   // look specifically in nested part of this store
-  let rectUpdateCallbacks: Readable<{ [key: string]: RectUpdateCallback }> =
+  const rectUpdateCallbacks: Readable<{ [key: string]: RectUpdateCallback }> =
     derived(
       nodeCallbacksStore,
       (nodeCallbacks: NodeTerminalRectsUpdateCallbacksState) => {
@@ -82,13 +84,86 @@
     };
   }
 
-  let detachLiveConnection: (
-    connectionId: string,
-    direction: TerminalDirection
-  ) => void = getContext(detachLiveConnectionKey);
+  function handleDisconnectGrabAction(
+    element: HTMLElement,
+    params: { connectionId: string }
+  ) {
+    let disconnectLiveConnection: (
+      connectionId: string,
+      direction: TerminalDirection,
+      location: { x: number; y: number }
+    ) => void = getContext(disconnectLiveConnectionKey);
 
-  function handleDisconnectGrab(connectionId: string) {
-    detachLiveConnection(connectionId, direction);
+    let handleDisconnectGrab = (event: MouseEvent) => {
+      if (event.button == 0) {
+        let location = {
+          x: event.x,
+          y: event.y,
+        };
+        disconnectLiveConnection(params.connectionId, direction, location);
+      }
+    };
+
+    element.addEventListener("mousedown", handleDisconnectGrab);
+
+    return {
+      destroy() {
+        element.removeEventListener("mousedown", handleDisconnectGrab);
+      },
+    };
+  }
+
+  const inputType = ConnectionInputType.color;
+
+  const liveTerminalStore: Readable<{
+    // only react if this a compatible terminal
+    anchorNodeId: string;
+    anchorInputName: string;
+    inputType: ConnectionInputType;
+    dragTerminalDirection: TerminalDirection;
+    // call this when releasing the live terminal, if this live cable is compatible
+    attach: () => void;
+  } | null> = getContext(liveTerminalKey);
+
+  function liveCableAction(element: HTMLElement) {
+    const nearTerminalDistance = 4;
+
+    // take action on change in the liveCable state
+    const unsubscriber = liveTerminalStore.subscribe((liveTerminal) => {
+      if (
+        liveTerminal &&
+        liveTerminal.inputType == inputType &&
+        liveTerminal.dragTerminalDirection == direction
+      ) {
+        const handleMouseUp = (event: MouseEvent) => {
+          const rect = element.getBoundingClientRect();
+
+          // expanding the rect
+          const left = rect.left - nearTerminalDistance;
+          const top = rect.top - nearTerminalDistance;
+          const right = rect.right + nearTerminalDistance;
+          const bottom = rect.bottom + nearTerminalDistance;
+
+          if (
+            checkPointWithinBox(
+              { x: event.pageX, y: event.pageY },
+              { top: top, bottom: bottom, left: left, right: right }
+            )
+          )
+            // use the callback from the liveCable context store
+            liveTerminal.attach();
+          window.removeEventListener("mouseup", handleMouseUp);
+        };
+        // handle on mouseup near compatible terminal
+        window.addEventListener("mouseup", handleMouseUp);
+      }
+    });
+
+    return {
+      destroy() {
+        unsubscriber();
+      },
+    };
   }
 
   let usingNovelTerminal = false;
@@ -96,30 +171,34 @@
   // grabbing novel terminal should start relaying the coords of the terminal
   // and add event listeners for release
   function handleNovelGrabAction(element: HTMLElement) {
-    let novelGrabUpdateCallbackInterval: NodeJS.Timer;
-
-    let anchorLiveConnection: (
+    const anchorLiveConnection: (
       direction: TerminalDirection,
-      location: { x: number; y: number }
-    ) => (rect: DOMRect) => void = getContext(anchorLiveConnectionKey);
+      location: { x: number; y: number },
+      inputType: ConnectionInputType,
+      nodeId: string,
+      inputName: string
+    ) => void = getContext(anchorLiveConnectionKey);
 
-    let handleMouseUp = () => {
-      clearInterval(novelGrabUpdateCallbackInterval);
+    const handleMouseUp = (event: MouseEvent) => {
       usingNovelTerminal = false;
       window.removeEventListener("mouseup", handleMouseUp);
     };
 
-    let handleNovelGrab = (event: MouseEvent) => {
-      let updateLiveCoords = anchorLiveConnection(direction, {
-        x: event.x,
-        y: event.y,
-      });
-      usingNovelTerminal = true;
-      novelGrabUpdateCallbackInterval = setInterval(() => {
-        let rect = element.getBoundingClientRect();
-        updateLiveCoords(rect);
-      }, 10);
-      window.addEventListener("mouseup", handleMouseUp);
+    const handleNovelGrab = (event: MouseEvent) => {
+      if (event.button == 0) {
+        anchorLiveConnection(
+          direction,
+          {
+            x: event.x,
+            y: event.y,
+          },
+          inputType,
+          nodeId,
+          inputName
+        );
+        usingNovelTerminal = true;
+        window.addEventListener("mouseup", handleMouseUp);
+      }
     };
 
     element.addEventListener("mousedown", handleNovelGrab);
@@ -127,7 +206,6 @@
     return {
       destroy() {
         element.removeEventListener("mousedown", handleNovelGrab);
-        window.removeEventListener("mouseup", handleMouseUp);
       },
     };
   }
@@ -138,12 +216,50 @@
 
   $: expanded = near || usingNovelTerminal;
 
+  $: terminals = [...connectionIds, "novel"].reduce<
+    {
+      actionDescriptions: ActionDescription<any>[];
+      cabled: boolean;
+    }[]
+  >((result, connectionId) => {
+    if (connectionId == "novel") {
+      if (direction != TerminalDirection.in || connectionIds.length == 0) {
+        result.push({
+          actionDescriptions: [
+            {
+              action: handleNovelGrabAction,
+            },
+          ],
+          cabled: false,
+        });
+      }
+    } else {
+      result.push({
+        actionDescriptions: [
+          {
+            action: terminalRectCallbackAction,
+            params: { connectionId: connectionId },
+          },
+          {
+            action: handleDisconnectGrabAction,
+            params: { connectionId: connectionId },
+          },
+          {
+            action: liveCableAction,
+          },
+        ],
+        cabled: true,
+      });
+    }
+    return result;
+  }, []);
+
   // if expanded, take a width dependent on the number of terminals
   // 1 more terminal than there are connections
   $: rackWidth = !expanded
     ? 4
-    : ((rackHeight - terminalHeight) / 2) * (connectionIds.length + 2) +
-      terminalHeight * (connectionIds.length + 1);
+    : ((rackHeight - terminalHeight) / 2) * (terminals.length + 1) +
+      terminalHeight * terminals.length;
 
   $: styleVars = {
     rackWidth: rackWidth + "px",
@@ -155,45 +271,29 @@
 <div
   bind:this={container}
   class="terminal-rack {direction}"
-  class:expanded
   use:cssVars={styleVars}
   use:checkNearAction={nearTerminalRackDistance}
   on:near={(event) => {
     near = event.detail;
   }}
 >
-  {#each connectionIds as connectionId (connectionId)}
-    <Terminal
-      actionDescriptions={[
-        {
-          action: terminalRectCallbackAction,
-          params: { connectionId: connectionId },
-        },
-      ]}
-      cabled={true}
-      {direction}
-      {expanded}
-      {terminalHeight}
-    />
-  {/each}
-  <Terminal
-    actionDescriptions={[
-      {
-        action: handleNovelGrabAction,
-      },
-    ]}
-    cabled={usingNovelTerminal}
-    {direction}
-    {expanded}
-    {terminalHeight}
-  />
+  <div class="terminals-container" class:expanded use:cssVars={styleVars}>
+    {#each Object.entries(terminals) as [connectionId, terminal], i (i)}
+      <Terminal
+        actionDescriptions={terminal.actionDescriptions}
+        cabled={terminal.cabled}
+        {direction}
+        {expanded}
+        {terminalHeight}
+      />
+    {/each}
+  </div>
 </div>
 
 <style>
   .terminal-rack {
     display: flex;
     align-items: center;
-    justify-content: space-evenly;
 
     border-radius: 6px 6px 6px 6px;
     background-color: var(--tp-base-background-color);
@@ -202,7 +302,25 @@
     position: relative;
     width: var(--rackWidth);
     height: var(--rackHeight);
-    transition: all 300ms;
+    transition: width 300ms, margin 300ms, left 300ms, right 300ms;
+  }
+
+  .terminal-rack:hover {
+    transition: all 0s;
+  }
+
+  .terminals-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+
+    width: 10px;
+    transition: width 500ms;
+  }
+
+  .terminals-container.expanded {
+    width: var(--rackWidth);
+    transition: width 0ms;
   }
 
   .in {

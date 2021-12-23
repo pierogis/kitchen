@@ -37,7 +37,8 @@
     border: 0px inset var(--cable-color-number);
     background-color: hsla(0, 0%, 40%, 1);
 
-    transition: all 300ms, border 300ms;
+    transition: border-radius 300ms, border 100ms, margin 100ms, width 300ms,
+      left 300ms, right 300ms;
     z-index: 1;
     cursor: grab;
   }
@@ -53,10 +54,9 @@
   }
 
   .cabled {
-    /* border: 2px inset hsla(0, 0%, 20%, 0.5); */
     border: var(--border-width) inset var(--cable-color-number);
     background-color: var(--tp-button-background-color-hover);
-    width: 4px;
+    width: 2px;
 
     margin: -2px;
     z-index: 2;
