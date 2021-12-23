@@ -94,6 +94,11 @@
       location: { x: number; y: number }
     ) => void = getContext(disconnectLiveConnectionKey);
 
+    let handleMouseUp = () => {
+      element.style.cursor = "";
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
     let handleDisconnectGrab = (event: MouseEvent) => {
       if (event.button == 0) {
         let location = {
@@ -101,6 +106,8 @@
           y: event.y,
         };
         disconnectLiveConnection(params.connectionId, direction, location);
+        element.style.cursor = "grabbing";
+        window.addEventListener("mouseup", handleMouseUp);
       }
     };
 
@@ -182,6 +189,7 @@
     const handleMouseUp = (event: MouseEvent) => {
       usingNovelTerminal = false;
       window.removeEventListener("mouseup", handleMouseUp);
+      element.style.cursor = "";
     };
 
     const handleNovelGrab = (event: MouseEvent) => {
@@ -198,6 +206,7 @@
         );
         usingNovelTerminal = true;
         window.addEventListener("mouseup", handleMouseUp);
+        element.style.cursor = "grabbing";
       }
     };
 

@@ -23,6 +23,7 @@ export function draggableAction(element: HTMLElement, handle?) {
     document.addEventListener("mouseup", stopDragElement);
     // call a function whenever the cursor moves
     document.addEventListener("mousemove", elementDrag);
+    grabTarget.style.cursor = "grabbing";
   }
 
   function elementDrag(event: MouseEvent) {
@@ -38,7 +39,6 @@ export function draggableAction(element: HTMLElement, handle?) {
       let left = element.offsetLeft - pos1;
       element.style.top = top + "px";
       element.style.left = left + "px";
-      grabTarget.style.cursor = "grabbing";
     }
   }
 
