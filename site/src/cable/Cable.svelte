@@ -1,4 +1,4 @@
-<script lang="typescript">
+<script lang="ts">
   import cssVars from "svelte-css-vars";
 
   export let x1, y1, x2, y2;

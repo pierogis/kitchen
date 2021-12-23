@@ -1,10 +1,10 @@
-<script lang="typescript" context="module">
+<script lang="ts" context="module">
   export const terminalHeight = 10;
 </script>
 
-<script lang="typescript">
+<script lang="ts">
   import { getContext } from "svelte";
-  import { derived, Readable, Writable } from "svelte/store";
+  import { derived, Readable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
 
@@ -17,7 +17,7 @@
   import {
     anchorLiveConnectionKey,
     disconnectLiveConnectionKey,
-    liveTerminalKey,
+    liveTerminalStore,
   } from "../connections/live-connection";
   import { checkNearAction } from "../common/actions/checkNear";
   import { checkPointWithinBox } from "../common/utils";
@@ -83,17 +83,16 @@
       },
     };
   }
+  let disconnectLiveConnection: (
+    connectionId: string,
+    direction: TerminalDirection,
+    location: { x: number; y: number }
+  ) => void = getContext(disconnectLiveConnectionKey);
 
   function handleDisconnectGrabAction(
     element: HTMLElement,
     params: { connectionId: string }
   ) {
-    let disconnectLiveConnection: (
-      connectionId: string,
-      direction: TerminalDirection,
-      location: { x: number; y: number }
-    ) => void = getContext(disconnectLiveConnectionKey);
-
     let handleMouseUp = () => {
       element.style.cursor = "";
       window.removeEventListener("mouseup", handleMouseUp);
@@ -121,16 +120,6 @@
   }
 
   const inputType = ConnectionInputType.color;
-
-  const liveTerminalStore: Readable<{
-    // only react if this a compatible terminal
-    anchorNodeId: string;
-    anchorInputName: string;
-    inputType: ConnectionInputType;
-    dragTerminalDirection: TerminalDirection;
-    // call this when releasing the live terminal, if this live cable is compatible
-    attach: () => void;
-  } | null> = getContext(liveTerminalKey);
 
   function liveCableAction(element: HTMLElement) {
     const nearTerminalDistance = 4;
@@ -175,17 +164,17 @@
 
   let usingNovelTerminal = false;
 
+  const anchorLiveConnection: (
+    direction: TerminalDirection,
+    location: { x: number; y: number },
+    inputType: ConnectionInputType,
+    nodeId: string,
+    inputName: string
+  ) => void = getContext(anchorLiveConnectionKey);
+
   // grabbing novel terminal should start relaying the coords of the terminal
   // and add event listeners for release
   function handleNovelGrabAction(element: HTMLElement) {
-    const anchorLiveConnection: (
-      direction: TerminalDirection,
-      location: { x: number; y: number },
-      inputType: ConnectionInputType,
-      nodeId: string,
-      inputName: string
-    ) => void = getContext(anchorLiveConnectionKey);
-
     const handleMouseUp = (event: MouseEvent) => {
       usingNovelTerminal = false;
       window.removeEventListener("mouseup", handleMouseUp);
