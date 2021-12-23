@@ -1,7 +1,14 @@
 import { Writable, writable } from "svelte/store";
 
+// the different types of data linking
+export enum ConnectionInputType {
+  number,
+  color,
+}
+
 export interface ConnectionState {
   connectionId: string;
+  inputType: ConnectionInputType;
   in: {
     nodeId: string;
     inputName: string;

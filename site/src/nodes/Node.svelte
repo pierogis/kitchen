@@ -83,7 +83,7 @@
   }
 
   // delete node on close button
-  function handleClose(e: MouseEvent) {
+  function handleClose(event: MouseEvent) {
     deleteNode($node);
   }
 

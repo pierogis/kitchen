@@ -2,13 +2,17 @@
   import { v4 as uuidv4 } from "uuid";
 
   import { addNode } from "./nodes/nodes";
-  import { addConnection } from "./connections/connections";
+  import {
+    addConnection,
+    ConnectionInputType,
+  } from "./connections/connections";
   import { ColorControl } from "./ingredients/color";
 
   addNode(new ColorControl().default("color"));
 
   addConnection({
     connectionId: "init",
+    inputType: ConnectionInputType.number,
     in: {
       nodeId: "plate",
       inputName: "height",
@@ -23,10 +27,10 @@
 </script>
 
 <script lang="typescript">
-  import { getContext, setContext } from "svelte";
+  import { setContext } from "svelte";
   import { derived, Unsubscriber, writable, Writable } from "svelte/store";
 
-  import { calculateCenter } from "./utils";
+  import { calculateCenter } from "./common/utils";
 
   import { nodesStore } from "./nodes/nodes";
   import {
@@ -45,7 +49,8 @@
   import Terminal from "./terminals/Terminal.svelte";
   import {
     anchorLiveConnectionKey,
-    detachLiveConnectionKey,
+    disconnectLiveConnectionKey,
+    liveTerminalKey,
   } from "./connections/live-connection";
 
   // store to contain 2 (x, y) coords keyed by connectionId
@@ -61,17 +66,31 @@
   // set a store for each nodes in context
   // will contain a nested set of callbacks corresponding to inputName and direction
   // these callbacks are used to notify many subscribers of an element rect
-  Object.keys($nodesStore).forEach((nodeId: string) => {
+  let nodeIds = Object.keys($nodesStore);
+  let allNodesTerminalRectsUpdateCallbacksStore: Writable<{
+    [nodeId: string]: { in: {}; out: {} };
+  }> = writable({
+    ...Object.fromEntries(
+      nodeIds.map((nodeId) => [nodeId, { in: {}, out: {} }])
+    ),
+  });
+
+  nodeIds.forEach((nodeId: string) => {
     setContext(
       nodeId,
-      writable<NodeTerminalRectsUpdateCallbacksState>({ in: {}, out: {} })
+      derived(allNodesTerminalRectsUpdateCallbacksStore, (nodesCallbacks) => {
+        return nodesCallbacks[nodeId];
+      })
     );
   });
 
   connectionsStore.subscribe((connections) => {
     // put connectionsCoords updating callbacks in context
-    connectionsCoordsStore.update((coords) => {
-      return {};
+    connectionsCoordsStore.set({});
+    allNodesTerminalRectsUpdateCallbacksStore.set({
+      ...Object.fromEntries(
+        nodeIds.map((nodeId) => [nodeId, { in: {}, out: {} }])
+      ),
     });
     Object.entries(connections).forEach(([connectionId, connection]) => {
       // callback that will update half of connection's coordinates
@@ -103,41 +122,43 @@
       // the context is keyed by nodeId as a string
       // using an object key requires matching the reference
       // maybe pass down through props
-      let inKey = connection.in.nodeId;
+      let inNodeId = connection.in.nodeId;
+      // do the same for out
+      let outNodeId = connection.out.nodeId;
 
       // get the node specific store from context
-      let inNodeCallbacks: Writable<NodeTerminalRectsUpdateCallbacksState> =
-        getContext(inKey);
 
       // add to the callbacks set for the given connection's "in" input name
       // this corresponds to the in (left) terminal on inputs
-      inNodeCallbacks.update(
-        (callbacks: NodeTerminalRectsUpdateCallbacksState) => {
-          if (callbacks.in[connection.in.inputName] === undefined) {
-            callbacks.in[connection.in.inputName] = {};
-          }
-          callbacks.in[connection.in.inputName][connectionId] = updateInCoords;
-          return callbacks;
-        }
-      );
-
-      // do the same for out
-      let outKey = connection.out.nodeId;
-
-      let outNodeCallbacks: Writable<NodeTerminalRectsUpdateCallbacksState> =
-        getContext(outKey);
 
       // using a store to ultimately notify terminals of a new callback to use when
       // they providing updates on their bounding rect
-      outNodeCallbacks.update(
-        (callbacks: NodeTerminalRectsUpdateCallbacksState) => {
-          if (callbacks.out[connection.out.inputName] === undefined) {
-            callbacks.out[connection.out.inputName] = {};
+      allNodesTerminalRectsUpdateCallbacksStore.update(
+        (allNodesCallbacks: {
+          [nodeId: string]: NodeTerminalRectsUpdateCallbacksState;
+        }) => {
+          if (
+            allNodesCallbacks[outNodeId].out[connection.out.inputName] ===
+            undefined
+          ) {
+            allNodesCallbacks[outNodeId].out[connection.out.inputName] = {};
           }
           // use the out callback
-          callbacks.out[connection.out.inputName][connectionId] =
-            updateOutCoords;
-          return callbacks;
+          allNodesCallbacks[outNodeId].out[connection.out.inputName][
+            connectionId
+          ] = updateOutCoords;
+
+          if (
+            allNodesCallbacks[inNodeId].in[connection.in.inputName] ===
+            undefined
+          ) {
+            allNodesCallbacks[inNodeId].in[connection.in.inputName] = {};
+          }
+          allNodesCallbacks[inNodeId].in[connection.in.inputName][
+            connectionId
+          ] = updateInCoords;
+
+          return allNodesCallbacks;
         }
       );
     });
@@ -210,17 +231,15 @@
     });
   });
 
-  let dragTerminalDirection: TerminalDirection;
-
   // store a single set of coords for when a cable is being dragged
-  let liveCoordsStore: Writable<{
+  const liveCoordsStore: Writable<{
     x1: number;
     y1: number;
     x2: number;
     y2: number;
   }> = writable();
 
-  let updateLiveInCoords = (rect: DOMRect) => {
+  const updateLiveInCoords = (rect: DOMRect) => {
     let center = calculateCenter(rect);
     liveCoordsStore.update((coords) => {
       coords = {
@@ -232,7 +251,7 @@
     });
   };
 
-  let updateLiveOutCoords = (rect: DOMRect) => {
+  const updateLiveOutCoords = (rect: DOMRect) => {
     let center = calculateCenter(rect);
     liveCoordsStore.update((coords) => {
       coords = {
@@ -244,52 +263,142 @@
     });
   };
 
-  let holdingCable = false;
+  const liveTerminalStore: Writable<{
+    // only react if this a compatible terminal
+    anchorNodeId: string;
+    anchorInputName: string;
+    inputType: ConnectionInputType;
+    dragTerminalDirection: TerminalDirection;
+    // call this when releasing the live terminal, if this live cable is compatible
+    attach: () => void;
+  } | null> = writable(null);
+  setContext(
+    liveTerminalKey,
+    derived(liveTerminalStore, (liveTerminal) => liveTerminal)
+  );
 
   let mouseX: number;
   let mouseY: number;
 
   function anchorLiveConnection(
     direction: TerminalDirection,
-    location: { x: number; y: number }
-  ): (rect: DOMRect) => void {
-    let updateLiveCoords: (rect: DOMRect) => void;
-
+    location: { x: number; y: number },
+    inputType: ConnectionInputType,
+    nodeId: string,
+    inputName: string
+  ) {
+    let dragTerminalDirection;
     if (direction == TerminalDirection.in) {
-      updateLiveCoords = updateLiveInCoords;
       dragTerminalDirection = TerminalDirection.out;
     } else {
-      updateLiveCoords = updateLiveOutCoords;
       dragTerminalDirection = TerminalDirection.in;
     }
 
     mouseX = location.x;
     mouseY = location.y;
 
-    holdingCable = true;
-
-    return updateLiveCoords;
+    liveTerminalStore.set({
+      anchorNodeId: nodeId,
+      anchorInputName: inputName,
+      inputType: inputType,
+      dragTerminalDirection: dragTerminalDirection,
+      attach: () => {},
+    });
   }
 
-  function detachLiveConnection(
+  // create a live connection by disconnecting and existing one
+  function disconnectLiveConnection(
     connectionId: string,
-    direction: TerminalDirection
+    direction: TerminalDirection,
+    location: { x: number; y: number }
   ) {
+    const connection = $connectionsStore[connectionId];
+
+    // anchorDirection is the opposite of the direction that engaged
+    // this callback
+    const anchorDirection =
+      direction == TerminalDirection.in
+        ? TerminalDirection.out
+        : TerminalDirection.in;
+
+    const inputType = connection.inputType;
+
+    const { nodeId: anchorNodeId, inputName: anchorInputName } =
+      connection[anchorDirection];
     removeConnection(connectionId);
 
-    holdingCable = true;
+    mouseX = location.x;
+    mouseY = location.y;
+
+    liveTerminalStore.set({
+      anchorNodeId: anchorNodeId,
+      anchorInputName: anchorInputName,
+      inputType: inputType,
+      dragTerminalDirection: direction,
+      attach: () => {},
+    });
+  }
+
+  let liveAnchorNodeId: string;
+  let liveAnchorTerminalDirection: TerminalDirection;
+  let liveAnchorInputName: string;
+
+  $: if ($liveTerminalStore) {
+    liveAnchorNodeId = $liveTerminalStore.anchorNodeId;
+    liveAnchorInputName = $liveTerminalStore.anchorInputName;
+
+    // use an update live coords callback on the anchored terminal
+    let updateLiveCoords: (rect: DOMRect) => void;
+
+    if ($liveTerminalStore.dragTerminalDirection == TerminalDirection.in) {
+      updateLiveCoords = updateLiveOutCoords;
+      liveAnchorTerminalDirection = TerminalDirection.out;
+    } else {
+      updateLiveCoords = updateLiveInCoords;
+      liveAnchorTerminalDirection = TerminalDirection.in;
+    }
+
+    allNodesTerminalRectsUpdateCallbacksStore.update((allNodesCallbacks) => {
+      // TODO: logic here to keep the nodes in the right order
+      allNodesCallbacks[liveAnchorNodeId][liveAnchorTerminalDirection][
+        liveAnchorInputName
+      ] = {
+        ...allNodesCallbacks[liveAnchorNodeId][liveAnchorTerminalDirection][
+          liveAnchorInputName
+        ],
+        live: updateLiveCoords,
+      };
+      return allNodesCallbacks;
+    });
+  } else {
+    if (
+      liveAnchorNodeId &&
+      liveAnchorTerminalDirection &&
+      liveAnchorInputName
+    ) {
+      // remove the live position callback from this input terminal
+      allNodesTerminalRectsUpdateCallbacksStore.update((allNodesCallbacks) => {
+        delete allNodesCallbacks[liveAnchorNodeId][liveAnchorTerminalDirection][
+          liveAnchorInputName
+        ]["live"];
+        return allNodesCallbacks;
+      });
+    }
   }
 
   setContext(anchorLiveConnectionKey, anchorLiveConnection);
-  setContext(detachLiveConnectionKey, detachLiveConnection);
+  setContext(disconnectLiveConnectionKey, disconnectLiveConnection);
 
-  function dragTerminalAction(element: HTMLElement) {
+  function dragTerminalAction(
+    element: HTMLElement,
+    params: { direction: TerminalDirection }
+  ) {
     let dragTerminalTimer: NodeJS.Timer;
 
     element.style.top = mouseY + "px";
     element.style.left = mouseX + "px";
 
-    let moveTerminal = (event: MouseEvent) => {
+    const moveTerminal = (event: MouseEvent) => {
       event.preventDefault();
       element.style.top = event.y + "px";
       element.style.left = event.x + "px";
@@ -297,22 +406,25 @@
     window.addEventListener("mousemove", moveTerminal);
 
     dragTerminalTimer = setInterval(() => {
-      let rect = element.getBoundingClientRect();
-      if (dragTerminalDirection == TerminalDirection.in) {
+      const rect = element.getBoundingClientRect();
+      if (params.direction == TerminalDirection.in) {
         updateLiveInCoords(rect);
-      } else if (dragTerminalDirection == TerminalDirection.out) {
+      } else if (params.direction == TerminalDirection.out) {
         updateLiveOutCoords(rect);
       }
     }, 10);
 
     // update restaurant that cable has been dropped
-    let dropCable = () => {
-      holdingCable = false;
+    const dropCable = () => {
+      liveTerminalStore.set(null);
       window.removeEventListener("mouseup", dropCable);
     };
     window.addEventListener("mouseup", dropCable);
 
     return {
+      update(newParams: { direction: TerminalDirection }) {
+        params = newParams;
+      },
       destroy() {
         window.removeEventListener("mousemove", moveTerminal);
         window.removeEventListener("mouseup", dropCable);
@@ -331,7 +443,7 @@
   <Node draggable={true} {...node} />
 {/each}
 
-{#if holdingCable}
+{#if $liveTerminalStore}
   {#if $liveCoordsStore && $liveCoordsStore.x1 && $liveCoordsStore.y1 && $liveCoordsStore.x2 && $liveCoordsStore.y2}
     <Cable {...$liveCoordsStore} />
   {/if}
@@ -339,12 +451,13 @@
     actionDescriptions={[
       {
         action: dragTerminalAction,
+        params: { direction: $liveTerminalStore.dragTerminalDirection },
       },
     ]}
-    direction={dragTerminalDirection}
+    direction={$liveTerminalStore.dragTerminalDirection}
     expanded={true}
     cabled={true}
-    live={holdingCable}
+    live={true}
     {terminalHeight}
   />
 {/if}
