@@ -8,7 +8,7 @@ export type ActionDescription<T> = {
   ) => {
     update?: (params?: T) => void;
     destroy?: () => void;
-  };
+  } | void;
   params?: T;
 };
 
@@ -16,10 +16,10 @@ export function useActions(
   node: HTMLElement | SVGElement,
   actions: ActionDescription<any>[]
 ) {
-  let actionHandles: {
+  let actionHandles: ({
     update?: (params?: any) => void;
     destroy?: () => void;
-  }[] = [];
+  } | void)[] = [];
 
   if (actions) {
     actions.forEach((action: ActionDescription<any>, i: number) => {
@@ -35,16 +35,33 @@ export function useActions(
 
   return {
     update(actions: ActionDescription<any>[]) {
+      // if actions changes length, destroy the old handles and attach the new ones
       if (((actions && actions.length) || 0) != actionHandles.length) {
-        throw new Error("You must not change the length of an actions array.");
+        actionHandles.forEach((handle) => {
+          if (handle && handle.destroy) {
+            handle.destroy();
+          }
+        });
+
+        actionHandles = [];
+
+        actions.forEach((action: ActionDescription<any>, i: number) => {
+          if (action.params) {
+            actionHandles.push(
+              action.action(node as HTMLElement & SVGElement, action.params)
+            );
+          } else {
+            actionHandles.push(action.action(node as HTMLElement & SVGElement));
+          }
+        });
       }
 
+      // update all of the handles
       if (actions) {
         actions.forEach((action, i) => {
           let handle = actionHandles[i];
           if (handle && handle.update) {
-            let action = actions[i];
-            if (Array.isArray(action) && action.length > 1) {
+            if (action.params) {
               handle.update(action.params);
             } else {
               handle.update();
