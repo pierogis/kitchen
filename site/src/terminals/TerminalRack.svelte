@@ -17,7 +17,7 @@
   import {
     anchorLiveConnectionKey,
     disconnectLiveConnectionKey,
-    liveTerminalStore,
+    liveConnectionStore,
   } from "../connections/live-connection";
   import { checkNearAction } from "../common/actions/checkNear";
   import { checkPointWithinBox } from "../common/utils";
@@ -125,7 +125,7 @@
     const nearTerminalDistance = 4;
 
     // take action on change in the liveCable state
-    const unsubscriber = liveTerminalStore.subscribe((liveTerminal) => {
+    const unsubscriber = liveConnectionStore.subscribe((liveTerminal) => {
       if (
         liveTerminal &&
         liveTerminal.inputType == inputType &&
@@ -147,7 +147,7 @@
             )
           )
             // use the callback from the liveCable context store
-            liveTerminal.attach();
+            liveTerminal.attach(nodeId, inputName);
           window.removeEventListener("mouseup", handleMouseUp);
         };
         // handle on mouseup near compatible terminal
@@ -208,6 +208,30 @@
     };
   }
 
+  function handleDropInTerminalAction(element: HTMLElement) {
+    let unsubscriber = liveConnectionStore.subscribe((liveConnection) => {
+      if (liveConnection) {
+        const handleDropInTerminal = (event: MouseEvent) => {
+          liveConnection.attach(nodeId, inputName);
+          element.removeEventListener("mouseup", handleDropInTerminal);
+        };
+        const liveTerminalDirection = liveConnection.dragTerminalDirection;
+        if (
+          liveTerminalDirection == direction &&
+          liveConnection.inputType == inputType
+        ) {
+          element.addEventListener("mouseup", handleDropInTerminal);
+        }
+      }
+    });
+
+    return {
+      destroy() {
+        unsubscriber();
+      },
+    };
+  }
+
   $: connectionIds = $rectUpdateCallbacks
     ? Object.keys($rectUpdateCallbacks)
     : [];
@@ -227,6 +251,9 @@
             {
               action: handleNovelGrabAction,
             },
+            {
+              action: handleDropInTerminalAction,
+            },
           ],
           cabled: false,
         });
@@ -244,6 +271,9 @@
           },
           {
             action: liveCableAction,
+          },
+          {
+            action: handleDropInTerminalAction,
           },
         ],
         cabled: true,

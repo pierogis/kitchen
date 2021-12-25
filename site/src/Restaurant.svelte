@@ -27,8 +27,6 @@
 </script>
 
 <script lang="ts">
-  import { derived, Unsubscriber } from "svelte/store";
-
   import { nodesStore } from "./nodes/nodes";
 
   import Node from "./nodes/Node.svelte";

@@ -10,6 +10,7 @@
     TerminalDirection,
   } from "../terminals/terminals";
   import {
+    addConnection,
     allNodesTerminalRectsUpdateCallbacksKey,
     ConnectionInputType,
     connectionsStore,
@@ -18,7 +19,7 @@
   import {
     anchorLiveConnectionKey,
     disconnectLiveConnectionKey,
-    liveTerminalStore,
+    liveConnectionStore,
   } from "./live-connection";
   import LiveConnection from "./LiveConnection.svelte";
 
@@ -47,72 +48,20 @@
     );
   });
 
-  // need to know when a connection should be deleted
-  // this is based on whether its referenced nodes stop existing
+  // let nodeIdsStore = derived(nodesStore, (nodes) => {
+  //   return Object.keys(nodes);
+  // });
 
-  // create derived stores (from nodesStore) that will callback
-  // a "check for delete connection" function
-
-  // need to unsubscribe to derived stores so multiple callbacks
-  // aren't registered for the same derived node store
-  let unsubscribers: Unsubscriber[] = [];
-
-  connectionsStore.subscribe((connections) => {
-    // call the unsubscribe functions previously set
-    unsubscribers.forEach((unsubscriber) => {
-      unsubscriber();
-    });
-
-    unsubscribers = [];
-
-    // loop each connection
-    Object.entries(connections).forEach(([connectionId, connection]) => {
-      let inNodeId = connection.in.nodeId;
-      let outNodeId = connection.out.nodeId;
-
-      let inInputName = connection.in.inputName;
-      let outInputName = connection.out.inputName;
-
-      // make a derived store with the state of the in node
-      let inNode = derived(nodesStore, (nodes) => {
-        return nodes[inNodeId];
-      });
-
-      // subscribe to changes in the in node's state
-      // and remove connection if necessary
-      let inUnsubscriber = inNode.subscribe((node) => {
-        // node may be removed
-        if (node) {
-          // type may change
-          if (!node.racks.in.includes(inInputName)) {
-            removeConnection(connection.connectionId);
-          }
-        } else {
-          removeConnection(connection.connectionId);
-        }
-      });
-
-      // do the same for the out node
-      let outNode = derived(nodesStore, (nodes) => {
-        return nodes[outNodeId];
-      });
-
-      let outUnsubscriber = outNode.subscribe((node) => {
-        if (node) {
-          if (!node.racks.out.includes(outInputName)) {
-            removeConnection(connection.connectionId);
-          }
-        } else {
-          removeConnection(connection.connectionId);
-        }
-      });
-
-      // add these unsubscribers to this list that will be called
-      // next time connectionsStore updates
-      unsubscribers.push(inUnsubscriber);
-      unsubscribers.push(outUnsubscriber);
-    });
-  });
+  // let allNodesTerminalRectsUpdateCallbacksStore = derived(
+  //   [nodeIdsStore, connectionsStore],
+  //   ([nodeIds, connections]) => {
+  //     let callbacks = {
+  //       ...Object.fromEntries(
+  //         nodeIds.map((nodeId) => [nodeId, { in: {}, out: {} }])
+  //       ),
+  //     };
+  //   }
+  // );
 
   // store to contain 2 (x, y) coords keyed by connectionId
   let connectionsCoordsStore: Writable<{
@@ -123,6 +72,8 @@
       y2: number;
     };
   }> = writable({});
+
+  // nodeIdsStore.subscribe((nodeIds) => {});
 
   connectionsStore.subscribe((connections) => {
     // update all of the connections coords callbacks
@@ -207,29 +158,130 @@
   let mouseX: number;
   let mouseY: number;
 
+  // probably should make these into one function
   function anchorLiveConnection(
-    direction: TerminalDirection,
+    anchorDirection: TerminalDirection,
     location: { x: number; y: number },
-    inputType: ConnectionInputType,
-    nodeId: string,
-    inputName: string
+    anchorInputType: ConnectionInputType,
+    anchorNodeId: string,
+    anchorInputName: string
   ) {
     let dragTerminalDirection;
-    if (direction == TerminalDirection.in) {
+    let attach: (targetNodeId: string, targetInputName: string) => void;
+    // when a terminal gets a mouseup, add a new connection depending on the in/out
+    // TODO: this code should be the same for disconnectLiveConnection
+    if (anchorDirection == TerminalDirection.in) {
       dragTerminalDirection = TerminalDirection.out;
+      attach = (targetNodeId: string, targetInputName: string) => {
+        console.log("out");
+        addConnection({
+          connectionId: "new",
+          inputType: anchorInputType,
+          in: {
+            nodeId: anchorNodeId,
+            inputName: anchorInputName,
+          },
+          out: {
+            nodeId: targetNodeId,
+            inputName: targetInputName,
+          },
+        });
+      };
     } else {
       dragTerminalDirection = TerminalDirection.in;
+      attach = (targetNodeId: string, targetInputName: string) => {
+        console.log("in");
+        addConnection({
+          connectionId: "new",
+          inputType: anchorInputType,
+          in: {
+            nodeId: targetNodeId,
+            inputName: targetInputName,
+          },
+          out: {
+            nodeId: anchorNodeId,
+            inputName: anchorInputName,
+          },
+        });
+      };
     }
+
+    // need to know when a connection should be deleted
+    // this is based on whether its referenced nodes stop existing
+
+    // create derived stores (from nodesStore) that will callback
+    // a "check for delete connection" function
+
+    // need to unsubscribe to derived stores so multiple callbacks
+    // aren't registered for the same derived node store
+    let unsubscribers: Unsubscriber[] = [];
+
+    connectionsStore.subscribe((connections) => {
+      // call the unsubscribe functions previously set
+      unsubscribers.forEach((unsubscriber) => {
+        unsubscriber();
+      });
+
+      unsubscribers = [];
+
+      // loop each connection
+      Object.entries(connections).forEach(([connectionId, connection]) => {
+        let inNodeId = connection.in.nodeId;
+        let outNodeId = connection.out.nodeId;
+
+        let inInputName = connection.in.inputName;
+        let outInputName = connection.out.inputName;
+
+        // make a derived store with the state of the in node
+        let inNode = derived(nodesStore, (nodes) => {
+          return nodes[inNodeId];
+        });
+
+        // subscribe to changes in the in node's state
+        // and remove connection if necessary
+        let inUnsubscriber = inNode.subscribe((node) => {
+          // node may be removed
+          if (node) {
+            // type may change
+            if (!node.racks.in.includes(inInputName)) {
+              removeConnection(connection.connectionId);
+            }
+          } else {
+            removeConnection(connection.connectionId);
+          }
+        });
+
+        // do the same for the out node
+        let outNode = derived(nodesStore, (nodes) => {
+          return nodes[outNodeId];
+        });
+
+        let outUnsubscriber = outNode.subscribe((node) => {
+          if (node) {
+            if (!node.racks.out.includes(outInputName)) {
+              removeConnection(connection.connectionId);
+            }
+          } else {
+            removeConnection(connection.connectionId);
+          }
+        });
+
+        // add these unsubscribers to this list that will be called
+        // next time connectionsStore updates
+        unsubscribers.push(inUnsubscriber);
+        unsubscribers.push(outUnsubscriber);
+      });
+    });
 
     mouseX = location.x;
     mouseY = location.y;
 
-    liveTerminalStore.set({
-      anchorNodeId: nodeId,
-      anchorInputName: inputName,
-      inputType: inputType,
+    liveConnectionStore.set({
+      anchorNodeId: anchorNodeId,
+      anchorInputName: anchorInputName,
+      inputType: anchorInputType,
       dragTerminalDirection: dragTerminalDirection,
-      attach: () => {},
+      attach: attach,
     });
   }
 
@@ -257,7 +309,7 @@
     mouseX = location.x;
     mouseY = location.y;
 
-    liveTerminalStore.set({
+    liveConnectionStore.set({
       anchorNodeId: anchorNodeId,
       anchorInputName: anchorInputName,
       inputType: inputType,

@@ -14,12 +14,12 @@ export const disconnectLiveConnectionKey = {};
 // including callback should a new connection happen in ui
 // export const liveTerminalKey = {};
 
-export const liveTerminalStore: Writable<{
+export const liveConnectionStore: Writable<{
   // only react if this a compatible terminal
   anchorNodeId: string;
   anchorInputName: string;
   inputType: ConnectionInputType;
   dragTerminalDirection: TerminalDirection;
   // call this when releasing the live terminal, if this live cable is compatible
-  attach: () => void;
+  attach: (targetNodeId: string, targetInputName: string) => void;
 } | null> = writable(null);

@@ -1,14 +1,14 @@
 <script lang="ts">
   import { getContext } from "svelte";
 
-  import { Writable, writable } from "svelte/store";
+  import { Readable, Writable, writable } from "svelte/store";
   import Cable from "../cable/Cable.svelte";
   import { calculateCenter } from "../common/utils";
   import Terminal from "../terminals/Terminal.svelte";
   import { terminalHeight } from "../terminals/TerminalRack.svelte";
   import { TerminalDirection } from "../terminals/terminals";
   import { allNodesTerminalRectsUpdateCallbacksKey } from "./connections";
-  import { liveTerminalStore } from "./live-connection";
+  import { liveConnectionStore } from "./live-connection";
 
   export let mouseX: number;
   export let mouseY: number;
@@ -53,7 +53,7 @@
     [nodeId: string]: { in: {}; out: {} };
   }> = getContext(allNodesTerminalRectsUpdateCallbacksKey);
 
-  liveTerminalStore.subscribe((liveTerminal) => {
+  liveConnectionStore.subscribe((liveTerminal) => {
     if (liveTerminal) {
       liveAnchorNodeId = liveTerminal.anchorNodeId;
       liveAnchorInputName = liveTerminal.anchorInputName;
@@ -71,6 +71,17 @@
 
       allNodesTerminalRectsUpdateCallbacksStore.update((allNodesCallbacks) => {
         // TODO: logic here to keep the nodes in the right order
+        // make sure the inputName is in the callbacks store
+        console.log(allNodesCallbacks);
+        if (
+          !allNodesCallbacks[liveAnchorNodeId][liveAnchorTerminalDirection][
+            liveAnchorInputName
+          ]
+        ) {
+          allNodesCallbacks[liveAnchorNodeId][liveAnchorTerminalDirection][
+            liveAnchorInputName
+          ] = {};
+        }
         allNodesCallbacks[liveAnchorNodeId][liveAnchorTerminalDirection][
           liveAnchorInputName
         ] = {
@@ -127,7 +138,7 @@
 
     // update restaurant that cable has been dropped
     const dropCable = () => {
-      liveTerminalStore.set(null);
+      liveConnectionStore.set(null);
       window.removeEventListener("mouseup", dropCable);
     };
     window.addEventListener("mouseup", dropCable);
@@ -146,7 +157,7 @@
   }
 </script>
 
-{#if $liveTerminalStore}
+{#if $liveConnectionStore}
   {#if $liveCoordsStore && $liveCoordsStore.x1 && $liveCoordsStore.y1 && $liveCoordsStore.x2 && $liveCoordsStore.y2}
     <Cable {...$liveCoordsStore} />
   {/if}
@@ -154,10 +165,10 @@
     actionDescriptions={[
       {
         action: dragTerminalAction,
-        params: { direction: $liveTerminalStore.dragTerminalDirection },
+        params: { direction: $liveConnectionStore.dragTerminalDirection },
       },
     ]}
-    direction={$liveTerminalStore.dragTerminalDirection}
+    direction={$liveConnectionStore.dragTerminalDirection}
     expanded={true}
     cabled={true}
     live={true}
