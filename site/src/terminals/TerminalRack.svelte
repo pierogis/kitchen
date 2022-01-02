@@ -4,15 +4,15 @@
 
 <script lang="ts">
   import { getContext } from "svelte";
-  import { derived, Readable } from "svelte/store";
+  import { derived, Readable, Writable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
 
-  import type {
-    NodeTerminalRectsUpdateCallbacksState,
-    RectUpdateCallback,
+  import {
+    allNodesTerminalCentersStore,
+    NodeTerminalCentersState,
+    TerminalDirection,
   } from "./terminals";
-  import { TerminalDirection } from "./terminals";
   import Terminal from "./Terminal.svelte";
   import {
     anchorLiveConnectionKey,
@@ -20,7 +20,7 @@
     liveConnectionStore,
   } from "../connections/live-connection";
   import { checkNearAction } from "../common/actions/checkNear";
-  import { checkPointWithinBox } from "../common/utils";
+  import { calculateCenter, checkPointWithinBox } from "../common/utils";
   import { ConnectionInputType } from "../connections/connections";
   import type { ActionDescription } from "../common/actions/useActions";
 
@@ -39,47 +39,57 @@
   const nodeId: string = getContext("nodeId");
 
   // get store containing callbacks to use to broadcast bounding rect
-  const nodeCallbacksStore: Readable<NodeTerminalRectsUpdateCallbacksState> =
-    getContext(nodeId);
+  // const nodeCentersStore: Readable<NodeTerminalCentersState> =
+  //   getContext(nodeId);
 
   // look specifically in nested part of this store
-  const rectUpdateCallbacks: Readable<{ [key: string]: RectUpdateCallback }> =
-    derived(
-      nodeCallbacksStore,
-      (nodeCallbacks: NodeTerminalRectsUpdateCallbacksState) => {
-        return nodeCallbacks && nodeCallbacks[direction][inputName];
-      },
-      {}
-    );
+  const rectCenterStores: Readable<{
+    [connectionId: string]: NodeTerminalCentersState;
+  }> = derived(
+    allNodesTerminalCentersStore,
+    (allNodeTerminalCenters: NodeTerminalCentersState[]) => {
+      let nodeCenters = allNodeTerminalCenters.filter((center) => {
+        return (
+          center.nodeId == nodeId &&
+          center.direction == direction &&
+          center.inputName == inputName
+        );
+      });
+      return nodeCenters.reduce((prev, center) => {
+        prev[center.connectionId] = center;
+        return prev;
+      }, {});
+    },
+    {}
+  );
 
-  function terminalRectCallbackAction(
+  function terminalCenterUpdateAction(
     element: HTMLElement,
     params: { connectionId: string }
   ) {
-    let rectUpdateCallbackInterval: NodeJS.Timer;
-
     let updateRect = () => {
       // don't bother if there are none to call
-      if (
-        $rectUpdateCallbacks &&
-        Object.entries($rectUpdateCallbacks).length > 0
-      ) {
+      if ($rectCenterStores && Object.entries($rectCenterStores).length > 0) {
         // calculate the rect and dispatch to the callback
         let rect: DOMRect = element.getBoundingClientRect();
         // accounts for scroll
         rect.x += window.pageXOffset;
         rect.y += window.pageYOffset;
-        $rectUpdateCallbacks[params.connectionId](rect);
+        let center = calculateCenter(rect);
+        $rectCenterStores[params.connectionId].coords.set({
+          x: center.x,
+          y: center.y,
+        });
       }
     };
 
-    rectUpdateCallbackInterval = setInterval(updateRect, 10);
+    let rectUpdateInterval = setInterval(updateRect, 10);
     return {
       update(newParams: { connectionId: string }) {
         params = newParams;
       },
       destroy() {
-        clearInterval(rectUpdateCallbackInterval);
+        clearInterval(rectUpdateInterval);
       },
     };
   }
@@ -232,9 +242,7 @@
     };
   }
 
-  $: connectionIds = $rectUpdateCallbacks
-    ? Object.keys($rectUpdateCallbacks)
-    : [];
+  $: connectionIds = $rectCenterStores ? Object.keys($rectCenterStores) : [];
 
   $: expanded = near || usingNovelTerminal;
 
@@ -262,7 +270,7 @@
       result.push({
         actionDescriptions: [
           {
-            action: terminalRectCallbackAction,
+            action: terminalCenterUpdateAction,
             params: { connectionId: connectionId },
           },
           {

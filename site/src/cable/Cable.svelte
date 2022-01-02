@@ -1,7 +1,14 @@
 <script lang="ts">
   import cssVars from "svelte-css-vars";
+  import type { Readable } from "svelte/store";
 
-  export let x1, y1, x2, y2;
+  export let inCoords: Readable<{ x: number; y: number }>;
+  export let outCoords: Readable<{ x: number; y: number }>;
+
+  $: x1 = $inCoords.x;
+  $: y1 = $inCoords.y;
+  $: x2 = $outCoords.x;
+  $: y2 = $outCoords.y;
 
   let dragging = false;
 

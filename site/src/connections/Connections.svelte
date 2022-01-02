@@ -1,17 +1,18 @@
 <script lang="ts">
+  import { v4 as uuidv4 } from "uuid";
   import { beforeUpdate, setContext } from "svelte";
 
-  import { derived, Unsubscriber, Writable, writable } from "svelte/store";
+  import { derived, Unsubscriber, Readable, Writable } from "svelte/store";
   import Cable from "../cable/Cable.svelte";
   import { calculateCenter } from "../common/utils";
   import { nodesStore } from "../nodes/nodes";
   import {
-    NodeTerminalRectsUpdateCallbacksState,
+    allNodesTerminalCentersStore,
+    NodeTerminalCentersState,
     TerminalDirection,
   } from "../terminals/terminals";
   import {
     addConnection,
-    allNodesTerminalRectsUpdateCallbacksKey,
     ConnectionInputType,
     connectionsStore,
     removeConnection,
@@ -23,136 +24,29 @@
   } from "./live-connection";
   import LiveConnection from "./LiveConnection.svelte";
 
-  // set a store for each nodes in context
-  // will contain a nested set of callbacks corresponding to inputName and direction
-  // these callbacks are used to notify many subscribers of an element rect
-  let nodeIds = Object.keys($nodesStore);
-  let allNodesTerminalRectsUpdateCallbacksStore: Writable<{
-    [nodeId: string]: { in: {}; out: {} };
-  }> = writable({
-    ...Object.fromEntries(
-      nodeIds.map((nodeId) => [nodeId, { in: {}, out: {} }])
-    ),
-  });
-  setContext(
-    allNodesTerminalRectsUpdateCallbacksKey,
-    allNodesTerminalRectsUpdateCallbacksStore
-  );
-
-  nodeIds.forEach((nodeId: string) => {
-    setContext(
-      nodeId,
-      derived(allNodesTerminalRectsUpdateCallbacksStore, (nodesCallbacks) => {
-        return nodesCallbacks[nodeId];
-      })
-    );
-  });
-
-  // let nodeIdsStore = derived(nodesStore, (nodes) => {
-  //   return Object.keys(nodes);
-  // });
-
-  // let allNodesTerminalRectsUpdateCallbacksStore = derived(
-  //   [nodeIdsStore, connectionsStore],
-  //   ([nodeIds, connections]) => {
-  //     let callbacks = {
-  //       ...Object.fromEntries(
-  //         nodeIds.map((nodeId) => [nodeId, { in: {}, out: {} }])
-  //       ),
-  //     };
-  //   }
-  // );
-
   // store to contain 2 (x, y) coords keyed by connectionId
-  let connectionsCoordsStore: Writable<{
-    [key: string]: {
-      x1: number;
-      y1: number;
-      x2: number;
-      y2: number;
+  let connectionsCoordsStore: Readable<{
+    [connectionId: string]: {
+      in: Writable<{
+        x: number;
+        y: number;
+      }>;
+      out: Writable<{
+        x: number;
+        y: number;
+      }>;
     };
-  }> = writable({});
-
-  // nodeIdsStore.subscribe((nodeIds) => {});
-
-  connectionsStore.subscribe((connections) => {
-    // update all of the connections coords callbacks
-    connectionsCoordsStore.set({});
-
-    // reset all the terminal rect callbacks
-    allNodesTerminalRectsUpdateCallbacksStore.set({
-      ...Object.fromEntries(
-        nodeIds.map((nodeId) => [nodeId, { in: {}, out: {} }])
-      ),
+  }> = derived(allNodesTerminalCentersStore, (nodesTerminalCenters) => {
+    let allCoords = {};
+    nodesTerminalCenters.forEach((terminalCenter) => {
+      if (!allCoords[terminalCenter.connectionId]) {
+        allCoords[terminalCenter.connectionId] = { in: null, out: null };
+      }
+      allCoords[terminalCenter.connectionId][terminalCenter.direction] =
+        terminalCenter.coords;
     });
-    Object.entries(connections).forEach(([connectionId, connection]) => {
-      // callback that will update half of connection's coordinates
-      let updateInCoords = (rect: DOMRect) => {
-        let center = calculateCenter(rect);
-        connectionsCoordsStore.update((coords) => {
-          coords[connectionId] = {
-            ...coords[connectionId],
-            x2: center.x,
-            y2: center.y,
-          };
-          return coords;
-        });
-      };
 
-      // other half
-      let updateOutCoords = (rect: DOMRect) => {
-        let center = calculateCenter(rect);
-        connectionsCoordsStore.update((coords) => {
-          coords[connectionId] = {
-            ...coords[connectionId],
-            x1: center.x,
-            y1: center.y,
-          };
-          return coords;
-        });
-      };
-
-      // the context is keyed by nodeId as a string
-      // using an object key requires matching the reference
-      // maybe pass down through props
-      let inNodeId = connection.in.nodeId;
-      // do the same for out
-      let outNodeId = connection.out.nodeId;
-
-      // add to the callbacks set for the given connection's "in" input name
-      // this corresponds to the in (left) terminal on inputs
-
-      // using a store to ultimately notify terminals of a new callback to use when
-      // they providing updates on their bounding rect
-      allNodesTerminalRectsUpdateCallbacksStore.update(
-        (allNodesCallbacks: {
-          [nodeId: string]: NodeTerminalRectsUpdateCallbacksState;
-        }) => {
-          if (
-            allNodesCallbacks[outNodeId].out[connection.out.inputName] ===
-            undefined
-          ) {
-            allNodesCallbacks[outNodeId].out[connection.out.inputName] = {};
-          }
-          // use the out callback
-          allNodesCallbacks[outNodeId].out[connection.out.inputName][
-            connectionId
-          ] = updateOutCoords;
-
-          if (
-            allNodesCallbacks[inNodeId].in[connection.in.inputName] ===
-            undefined
-          ) {
-            allNodesCallbacks[inNodeId].in[connection.in.inputName] = {};
-          }
-          allNodesCallbacks[inNodeId].in[connection.in.inputName][
-            connectionId
-          ] = updateInCoords;
-
-          return allNodesCallbacks;
-        }
-      );
-    });
+    return allCoords;
   });
 
   let mouseX: number;
@@ -166,7 +60,7 @@
     anchorNodeId: string,
     anchorInputName: string
   ) {
-    let dragTerminalDirection;
+    let dragTerminalDirection: TerminalDirection;
     let attach: (targetNodeId: string, targetInputName: string) => void;
     // when a terminal gets a mouseup, add a new connection depending on the in/out
     // TODO: this code should be the same for disconnectLiveConnection
@@ -277,9 +171,11 @@
     mouseY = location.y;
 
     liveConnectionStore.set({
+      connectionId: uuidv4(),
       anchorNodeId: anchorNodeId,
       anchorInputName: anchorInputName,
       inputType: anchorInputType,
+      anchorTerminalDirection: anchorDirection,
       dragTerminalDirection: dragTerminalDirection,
       attach: attach,
     });
@@ -310,9 +206,11 @@
     mouseY = location.y;
 
     liveConnectionStore.set({
+      connectionId: connectionId,
       anchorNodeId: anchorNodeId,
       anchorInputName: anchorInputName,
       inputType: inputType,
+      anchorTerminalDirection: anchorDirection,
       dragTerminalDirection: direction,
       attach: () => {},
     });
@@ -325,9 +223,7 @@
 <slot />
 
 {#each Object.entries($connectionsCoordsStore) as [connectionId, coords]}
-  {#if coords.x1 && coords.y1 && coords.x2 && coords.y2}
-    <Cable {...coords} />
-  {/if}
+  <Cable inCoords={coords.in} outCoords={coords.out} />
 {/each}
 
 <LiveConnection {mouseX} {mouseY} />

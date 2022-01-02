@@ -1,4 +1,4 @@
-import { get, Writable, writable } from "svelte/store";
+import { derived, get, Readable, Writable, writable } from "svelte/store";
 import { viewportStore } from "../viewport/viewport";
 
 export type NodeProperties = {
@@ -35,8 +35,16 @@ const initialState = {
   },
 };
 
-export const nodesStore: Writable<{ [key: string]: NodeState }> =
+export const nodesStore: Writable<{ [nodeId: string]: NodeState }> =
   writable(initialState);
+
+export const nodesRacksStore: Readable<{ [nodeId: string]: RacksState }> =
+  derived(nodesStore, (nodes) => {
+    return Object.entries(nodes).reduce((nodesRacks, [nodeId, node]) => {
+      nodesRacks[nodeId] = node.racks;
+      return nodesRacks;
+    }, {});
+  });
 
 export function addNode(node: NodeState) {
   nodesStore.update(($nodes) => {

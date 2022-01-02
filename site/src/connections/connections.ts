@@ -1,7 +1,6 @@
 import { Writable, writable } from "svelte/store";
 
 // context key for stashing all nodes updates callbacks
-export const allNodesTerminalRectsUpdateCallbacksKey = {};
 
 // the different types of data linking
 export enum ConnectionInputType {
