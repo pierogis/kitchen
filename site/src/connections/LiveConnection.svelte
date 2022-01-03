@@ -1,40 +1,15 @@
 <script lang="ts">
-  import { Writable, writable } from "svelte/store";
-  import Cable from "../cable/Cable.svelte";
   import { calculateCenter } from "../common/utils";
-  import Terminal from "../terminals/Terminal.svelte";
-  import { terminalHeight } from "../terminals/TerminalRack.svelte";
-  import { TerminalDirection } from "../terminals/terminals";
   import { liveConnectionStore } from "./live-connection";
+  import { terminalHeight } from "../terminals/TerminalRack.svelte";
 
-  export let mouseX: number;
-  export let mouseY: number;
+  import Cable from "../cable/Cable.svelte";
+  import Terminal from "../terminals/Terminal.svelte";
+  import type { TerminalDirection } from "../terminals/terminals";
 
-  // store a single set of coords for when a cable is being dragged
-  const inCoords: Writable<{
-    x: number;
-    y: number;
-  }> = writable(null);
-  const outCoords: Writable<{
-    x: number;
-    y: number;
-  }> = writable(null);
-
-  const updateLiveInCoords = (rect: DOMRect) => {
-    let center = calculateCenter(rect);
-    inCoords.set({
-      x: center.x,
-      y: center.y,
-    });
-  };
-
-  const updateLiveOutCoords = (rect: DOMRect) => {
-    let center = calculateCenter(rect);
-    outCoords.set({
-      x: center.x,
-      y: center.y,
-    });
-  };
+  // access to a store of the coords for when a cable is being dragged
+  $: dragCoordsStore =
+    $liveConnectionStore && $liveConnectionStore.dragCoordsStore;
 
   function dragTerminalAction(
     element: HTMLElement,
@@ -42,8 +17,8 @@
   ) {
     let dragTerminalTimer: NodeJS.Timer;
 
-    element.style.top = mouseY + "px";
-    element.style.left = mouseX + "px";
+    element.style.top = $dragCoordsStore.x + "px";
+    element.style.left = $dragCoordsStore.y + "px";
 
     const moveTerminal = (event: MouseEvent) => {
       event.preventDefault();
@@ -54,11 +29,11 @@
 
     dragTerminalTimer = setInterval(() => {
       const rect = element.getBoundingClientRect();
-      if (params.direction == TerminalDirection.in) {
-        updateLiveInCoords(rect);
-      } else if (params.direction == TerminalDirection.out) {
-        updateLiveOutCoords(rect);
-      }
+      const center = calculateCenter(rect);
+      dragCoordsStore.set({
+        x: center.x,
+        y: center.y,
+      });
     }, 10);
 
     // update restaurant that cable has been dropped
@@ -76,18 +51,18 @@
         window.removeEventListener("mousemove", moveTerminal);
         window.removeEventListener("mouseup", dropCable);
         clearInterval(dragTerminalTimer);
-        $inCoords = null;
-        $outCoords = null;
       },
     };
   }
+
+  console.log($liveConnectionStore);
 </script>
 
 {#if $liveConnectionStore}
-  {#if $inCoords && $outCoords}
-    <!-- {#if $liveCoordsStore} -->
-    <Cable {inCoords} {outCoords} />
-  {/if}
+  <Cable
+    inCoords={$liveConnectionStore.dragCoordsStore}
+    outCoords={$liveConnectionStore.anchorCoordsStore}
+  />
   <Terminal
     actionDescriptions={[
       {

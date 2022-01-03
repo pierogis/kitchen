@@ -38,11 +38,11 @@
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
 
-<Connections>
-  {#each Object.entries($nodesStore) as [nodeId, node] (nodeId)}
-    <Node draggable={true} {...node} />
-  {/each}
-</Connections>
+{#each Object.entries($nodesStore) as [nodeId, node]}
+  <Node draggable={true} {...node} />
+{/each}
+
+<Connections />
 
 <CursorCircle on:longpress={() => addNode(defaultNode())} />
 

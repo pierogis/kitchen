@@ -58,7 +58,7 @@ export function updateNode(node: NodeState) {
     return $nodes;
   });
 }
-export function deleteNode(node: NodeState) {
+export function removeNode(node: NodeState) {
   nodesStore.update(($nodes) => {
     delete $nodes[node.nodeId];
     return $nodes;

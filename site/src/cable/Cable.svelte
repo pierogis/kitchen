@@ -75,14 +75,16 @@
   };
 </script>
 
-<svg
-  bind:this={svg}
-  use:cssVars={styleVars}
-  style="width: {width}px; height: {height}px; left: {left}px; top: {top}px;"
-  class:dragging
->
-  <path d={pathString} />
-</svg>
+{#if $inCoords.x && $inCoords.y && $outCoords.x && $outCoords.y}
+  <svg
+    bind:this={svg}
+    use:cssVars={styleVars}
+    style="width: {width}px; height: {height}px; left: {left}px; top: {top}px;"
+    class:dragging
+  >
+    <path d={pathString} />
+  </svg>
+{/if}
 
 <style>
   .dragging {

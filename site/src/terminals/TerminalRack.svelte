@@ -4,25 +4,23 @@
 
 <script lang="ts">
   import { getContext } from "svelte";
-  import { derived, Readable, Writable } from "svelte/store";
+  import { derived, Readable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
 
   import {
     allNodesTerminalCentersStore,
+    anchorLiveConnection,
+    disconnectLiveConnection,
     NodeTerminalCentersState,
     TerminalDirection,
   } from "./terminals";
-  import Terminal from "./Terminal.svelte";
-  import {
-    anchorLiveConnectionKey,
-    disconnectLiveConnectionKey,
-    liveConnectionStore,
-  } from "../connections/live-connection";
+  import { liveConnectionStore } from "../connections/live-connection";
+  import type { ActionDescription } from "../common/actions/useActions";
   import { checkNearAction } from "../common/actions/checkNear";
   import { calculateCenter, checkPointWithinBox } from "../common/utils";
   import { ConnectionInputType } from "../connections/connections";
-  import type { ActionDescription } from "../common/actions/useActions";
+  import Terminal from "./Terminal.svelte";
 
   export let direction: TerminalDirection;
   export let container: HTMLElement;
@@ -38,11 +36,8 @@
 
   const nodeId: string = getContext("nodeId");
 
-  // get store containing callbacks to use to broadcast bounding rect
-  // const nodeCentersStore: Readable<NodeTerminalCentersState> =
-  //   getContext(nodeId);
-
-  // look specifically in nested part of this store
+  // get store containing coord stores to use to broadcast bounding rect
+  // look for matching node, input name, direction
   const rectCenterStores: Readable<{
     [connectionId: string]: NodeTerminalCentersState;
   }> = derived(
@@ -93,94 +88,7 @@
       },
     };
   }
-  let disconnectLiveConnection: (
-    connectionId: string,
-    direction: TerminalDirection,
-    location: { x: number; y: number }
-  ) => void = getContext(disconnectLiveConnectionKey);
-
-  function handleDisconnectGrabAction(
-    element: HTMLElement,
-    params: { connectionId: string }
-  ) {
-    let handleMouseUp = () => {
-      element.style.cursor = "";
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-
-    let handleDisconnectGrab = (event: MouseEvent) => {
-      if (event.button == 0) {
-        let location = {
-          x: event.x,
-          y: event.y,
-        };
-        disconnectLiveConnection(params.connectionId, direction, location);
-        element.style.cursor = "grabbing";
-        window.addEventListener("mouseup", handleMouseUp);
-      }
-    };
-
-    element.addEventListener("mousedown", handleDisconnectGrab);
-
-    return {
-      destroy() {
-        element.removeEventListener("mousedown", handleDisconnectGrab);
-      },
-    };
-  }
-
-  const inputType = ConnectionInputType.color;
-
-  function liveCableAction(element: HTMLElement) {
-    const nearTerminalDistance = 4;
-
-    // take action on change in the liveCable state
-    const unsubscriber = liveConnectionStore.subscribe((liveTerminal) => {
-      if (
-        liveTerminal &&
-        liveTerminal.inputType == inputType &&
-        liveTerminal.dragTerminalDirection == direction
-      ) {
-        const handleMouseUp = (event: MouseEvent) => {
-          const rect = element.getBoundingClientRect();
-
-          // expanding the rect
-          const left = rect.left - nearTerminalDistance;
-          const top = rect.top - nearTerminalDistance;
-          const right = rect.right + nearTerminalDistance;
-          const bottom = rect.bottom + nearTerminalDistance;
-
-          if (
-            checkPointWithinBox(
-              { x: event.pageX, y: event.pageY },
-              { top: top, bottom: bottom, left: left, right: right }
-            )
-          )
-            // use the callback from the liveCable context store
-            liveTerminal.attach(nodeId, inputName);
-          window.removeEventListener("mouseup", handleMouseUp);
-        };
-        // handle on mouseup near compatible terminal
-        window.addEventListener("mouseup", handleMouseUp);
-      }
-    });
-
-    return {
-      destroy() {
-        unsubscriber();
-      },
-    };
-  }
-
   let usingNovelTerminal = false;
-
-  const anchorLiveConnection: (
-    direction: TerminalDirection,
-    location: { x: number; y: number },
-    inputType: ConnectionInputType,
-    nodeId: string,
-    inputName: string
-  ) => void = getContext(anchorLiveConnectionKey);
 
   // grabbing novel terminal should start relaying the coords of the terminal
   // and add event listeners for release
@@ -214,6 +122,79 @@
     return {
       destroy() {
         element.removeEventListener("mousedown", handleNovelGrab);
+      },
+    };
+  }
+
+  function handleDisconnectGrabAction(
+    element: HTMLElement,
+    params: { connectionId: string }
+  ) {
+    let handleMouseUp = () => {
+      element.style.cursor = "";
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    let handleDisconnectGrab = (event: MouseEvent) => {
+      if (event.button == 0) {
+        let location = {
+          x: event.x,
+          y: event.y,
+        };
+        disconnectLiveConnection(params.connectionId, direction, location);
+        element.style.cursor = "grabbing";
+        window.addEventListener("mouseup", handleMouseUp);
+      }
+    };
+
+    element.addEventListener("mousedown", handleDisconnectGrab);
+
+    return {
+      destroy() {
+        element.removeEventListener("mousedown", handleDisconnectGrab);
+      },
+    };
+  }
+
+  const inputType = ConnectionInputType.color;
+
+  function liveConnectionAction(element: HTMLElement) {
+    const nearTerminalDistance = 4;
+
+    // take action on change in the liveCable state
+    const unsubscriber = liveConnectionStore.subscribe((liveConnection) => {
+      if (
+        liveConnection &&
+        liveConnection.inputType == inputType &&
+        liveConnection.dragTerminalDirection == direction
+      ) {
+        const handleMouseUp = (event: MouseEvent) => {
+          const rect = element.getBoundingClientRect();
+
+          // expanding the rect
+          const left = rect.left - nearTerminalDistance;
+          const top = rect.top - nearTerminalDistance;
+          const right = rect.right + nearTerminalDistance;
+          const bottom = rect.bottom + nearTerminalDistance;
+
+          if (
+            checkPointWithinBox(
+              { x: event.pageX, y: event.pageY },
+              { top: top, bottom: bottom, left: left, right: right }
+            )
+          )
+            // use the callback from the liveCable context store
+            liveConnection.attach(nodeId, inputName);
+          window.removeEventListener("mouseup", handleMouseUp);
+        };
+        // handle on mouseup near compatible terminal
+        window.addEventListener("mouseup", handleMouseUp);
+      }
+    });
+
+    return {
+      destroy() {
+        unsubscriber();
       },
     };
   }
@@ -278,7 +259,7 @@
             params: { connectionId: connectionId },
           },
           {
-            action: liveCableAction,
+            action: liveConnectionAction,
           },
           {
             action: handleDropInTerminalAction,

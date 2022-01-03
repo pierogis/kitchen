@@ -13,7 +13,7 @@
   } from "../ingredients/ingredients";
   import TerminalRack from "../terminals/TerminalRack.svelte";
   import { TerminalDirection } from "../terminals/terminals";
-  import { deleteNode, nodesStore, NodeState, updateNode } from "./nodes";
+  import { removeNode, nodesStore, NodeState, updateNode } from "./nodes";
 
   import PaneWrapper from "./PaneWrapper.svelte";
   import { draggableAction } from "../common/actions/draggableAction";
@@ -84,7 +84,7 @@
 
   // delete node on close button
   function handleClose(event: MouseEvent) {
-    deleteNode($node);
+    removeNode($node);
   }
 
   let grabTarget: HTMLElement;
