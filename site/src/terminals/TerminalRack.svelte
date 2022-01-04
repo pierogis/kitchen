@@ -3,6 +3,7 @@
 </script>
 
 <script lang="ts">
+  import { v4 as uuidv4 } from "uuid";
   import { getContext } from "svelte";
   import { derived, Readable } from "svelte/store";
 
@@ -10,12 +11,15 @@
 
   import {
     allNodesTerminalCentersStore,
-    anchorLiveConnection,
     disconnectLiveConnection,
     NodeTerminalCentersState,
     TerminalDirection,
   } from "./terminals";
-  import { liveConnectionStore } from "../connections/live-connection";
+  import {
+    createLiveConnection,
+    LiveConnectionState,
+    liveConnectionStore,
+  } from "../connections/live-connection";
   import type { ActionDescription } from "../common/actions/useActions";
   import { checkNearAction } from "../common/actions/checkNear";
   import { calculateCenter, checkPointWithinBox } from "../common/utils";
@@ -38,11 +42,14 @@
 
   // get store containing coord stores to use to broadcast bounding rect
   // look for matching node, input name, direction
-  const rectCenterStores: Readable<{
+  const nodeTerminalRectCenterStores: Readable<{
     [connectionId: string]: NodeTerminalCentersState;
   }> = derived(
-    allNodesTerminalCentersStore,
-    (allNodeTerminalCenters: NodeTerminalCentersState[]) => {
+    [allNodesTerminalCentersStore, liveConnectionStore],
+    ([allNodeTerminalCenters, liveConnection]: [
+      NodeTerminalCentersState[],
+      LiveConnectionState
+    ]) => {
       let nodeCenters = allNodeTerminalCenters.filter((center) => {
         return (
           center.nodeId == nodeId &&
@@ -50,10 +57,31 @@
           center.inputName == inputName
         );
       });
-      return nodeCenters.reduce((prev, center) => {
+
+      let centerStores: {
+        [connectionId: string]: NodeTerminalCentersState;
+      } = nodeCenters.reduce((prev, center) => {
         prev[center.connectionId] = center;
         return prev;
       }, {});
+
+      // add a rect center store to update from the live connection
+      if (
+        liveConnection &&
+        liveConnection.anchorNodeId == nodeId &&
+        liveConnection.anchorTerminalDirection == direction &&
+        liveConnection.anchorInputName == inputName
+      ) {
+        centerStores[liveConnection.connectionId] = {
+          nodeId: nodeId,
+          direction: direction,
+          inputName: inputName,
+          connectionId: liveConnection.connectionId,
+          coords: liveConnection.anchorCoordsStore,
+        };
+      }
+
+      return centerStores;
     },
     {}
   );
@@ -64,14 +92,17 @@
   ) {
     let updateRect = () => {
       // don't bother if there are none to call
-      if ($rectCenterStores && Object.entries($rectCenterStores).length > 0) {
+      if (
+        $nodeTerminalRectCenterStores &&
+        Object.entries($nodeTerminalRectCenterStores).length > 0
+      ) {
         // calculate the rect and dispatch to the callback
         let rect: DOMRect = element.getBoundingClientRect();
         // accounts for scroll
         rect.x += window.pageXOffset;
         rect.y += window.pageYOffset;
         let center = calculateCenter(rect);
-        $rectCenterStores[params.connectionId].coords.set({
+        $nodeTerminalRectCenterStores[params.connectionId].coords.set({
           x: center.x,
           y: center.y,
         });
@@ -92,7 +123,10 @@
 
   // grabbing novel terminal should start relaying the coords of the terminal
   // and add event listeners for release
-  function handleNovelGrabAction(element: HTMLElement) {
+  function handleNovelGrabAction(
+    element: HTMLElement,
+    params: { connectionId: string }
+  ) {
     const handleMouseUp = (event: MouseEvent) => {
       usingNovelTerminal = false;
       window.removeEventListener("mouseup", handleMouseUp);
@@ -101,15 +135,21 @@
 
     const handleNovelGrab = (event: MouseEvent) => {
       if (event.button == 0) {
-        anchorLiveConnection(
+        const dragDirection =
+          direction == TerminalDirection.in
+            ? TerminalDirection.out
+            : TerminalDirection.in;
+        createLiveConnection(
+          params.connectionId,
+          nodeId,
+          inputName,
           direction,
+          dragDirection,
+          inputType,
           {
             x: event.x,
             y: event.y,
-          },
-          inputType,
-          nodeId,
-          inputName
+          }
         );
         usingNovelTerminal = true;
         window.addEventListener("mouseup", handleMouseUp);
@@ -141,6 +181,7 @@
           x: event.x,
           y: event.y,
         };
+
         disconnectLiveConnection(params.connectionId, direction, location);
         element.style.cursor = "grabbing";
         window.addEventListener("mouseup", handleMouseUp);
@@ -158,10 +199,10 @@
 
   const inputType = ConnectionInputType.color;
 
-  function liveConnectionAction(element: HTMLElement) {
+  function listenLiveConnectionAction(element: HTMLElement) {
     const nearTerminalDistance = 4;
 
-    // take action on change in the liveCable state
+    // take action on change in the liveConnection state
     const unsubscriber = liveConnectionStore.subscribe((liveConnection) => {
       if (
         liveConnection &&
@@ -199,31 +240,9 @@
     };
   }
 
-  function handleDropInTerminalAction(element: HTMLElement) {
-    let unsubscriber = liveConnectionStore.subscribe((liveConnection) => {
-      if (liveConnection) {
-        const handleDropInTerminal = (event: MouseEvent) => {
-          liveConnection.attach(nodeId, inputName);
-          element.removeEventListener("mouseup", handleDropInTerminal);
-        };
-        const liveTerminalDirection = liveConnection.dragTerminalDirection;
-        if (
-          liveTerminalDirection == direction &&
-          liveConnection.inputType == inputType
-        ) {
-          element.addEventListener("mouseup", handleDropInTerminal);
-        }
-      }
-    });
-
-    return {
-      destroy() {
-        unsubscriber();
-      },
-    };
-  }
-
-  $: connectionIds = $rectCenterStores ? Object.keys($rectCenterStores) : [];
+  $: connectionIds = $nodeTerminalRectCenterStores
+    ? Object.keys($nodeTerminalRectCenterStores)
+    : [];
 
   $: expanded = near || usingNovelTerminal;
 
@@ -239,9 +258,10 @@
           actionDescriptions: [
             {
               action: handleNovelGrabAction,
+              params: { connectionId: uuidv4() },
             },
             {
-              action: handleDropInTerminalAction,
+              action: listenLiveConnectionAction,
             },
           ],
           cabled: false,
@@ -259,10 +279,7 @@
             params: { connectionId: connectionId },
           },
           {
-            action: liveConnectionAction,
-          },
-          {
-            action: handleDropInTerminalAction,
+            action: listenLiveConnectionAction,
           },
         ],
         cabled: true,

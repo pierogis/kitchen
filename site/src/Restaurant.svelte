@@ -54,8 +54,7 @@
     --tp-label-foreground-color: hsla(230, 5%, 30%, 0.7);
     --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
     --close-color: hsla(0, 80%, 70%, 0.8);
-    /* --cable-color-number: hsla(214, 35%, 60.8%, 0.8); */
-    --cable-color-number: #99a6bf;
+    --cable-color-number: rgba(120, 150, 190, 1);
   }
   :global(body) {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",

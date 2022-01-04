@@ -5,20 +5,16 @@
 
   import Cable from "../cable/Cable.svelte";
   import Terminal from "../terminals/Terminal.svelte";
-  import type { TerminalDirection } from "../terminals/terminals";
 
   // access to a store of the coords for when a cable is being dragged
   $: dragCoordsStore =
     $liveConnectionStore && $liveConnectionStore.dragCoordsStore;
 
-  function dragTerminalAction(
-    element: HTMLElement,
-    params: { direction: TerminalDirection }
-  ) {
+  function dragTerminalAction(element: HTMLElement) {
     let dragTerminalTimer: NodeJS.Timer;
 
-    element.style.top = $dragCoordsStore.x + "px";
-    element.style.left = $dragCoordsStore.y + "px";
+    element.style.left = $dragCoordsStore.x + "px";
+    element.style.top = $dragCoordsStore.y + "px";
 
     const moveTerminal = (event: MouseEvent) => {
       event.preventDefault();
@@ -44,9 +40,6 @@
     window.addEventListener("mouseup", dropCable);
 
     return {
-      update(newParams: { direction: TerminalDirection }) {
-        params = newParams;
-      },
       destroy() {
         window.removeEventListener("mousemove", moveTerminal);
         window.removeEventListener("mouseup", dropCable);
@@ -54,8 +47,6 @@
       },
     };
   }
-
-  console.log($liveConnectionStore);
 </script>
 
 {#if $liveConnectionStore}
@@ -67,7 +58,6 @@
     actionDescriptions={[
       {
         action: dragTerminalAction,
-        params: { direction: $liveConnectionStore.dragTerminalDirection },
       },
     ]}
     direction={$liveConnectionStore.dragTerminalDirection}

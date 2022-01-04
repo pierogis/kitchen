@@ -7,7 +7,6 @@
 
   import Cable from "../cable/Cable.svelte";
   import LiveConnection from "./LiveConnection.svelte";
-  import { liveConnectionStore } from "./live-connection";
 
   // store to contain 2 (x, y) coords keyed by connectionId
   let connectionsCoordsStore: Readable<{
@@ -21,21 +20,18 @@
         y: number;
       }>;
     };
-  }> = derived(
-    [allNodesTerminalCentersStore, liveConnectionStore],
-    ([nodesTerminalCenters]) => {
-      let allCoords = {};
-      nodesTerminalCenters.forEach((terminalCenter) => {
-        if (!allCoords[terminalCenter.connectionId]) {
-          allCoords[terminalCenter.connectionId] = { in: null, out: null };
-        }
-        allCoords[terminalCenter.connectionId][terminalCenter.direction] =
-          terminalCenter.coords;
-      });
+  }> = derived(allNodesTerminalCentersStore, (nodesTerminalCenters) => {
+    let allCoords = {};
+    nodesTerminalCenters.forEach((terminalCenter) => {
+      if (!allCoords[terminalCenter.connectionId]) {
+        allCoords[terminalCenter.connectionId] = { in: null, out: null };
+      }
+      allCoords[terminalCenter.connectionId][terminalCenter.direction] =
+        terminalCenter.coords;
+    });
 
-      return allCoords;
-    }
-  );
+    return allCoords;
+  });
 
   // need to know when a connection should be deleted
   // this is based on whether its referenced nodes stop existing

@@ -1,15 +1,7 @@
-import { v4 as uuidv4 } from "uuid";
+import { get, derived, writable, Writable } from "svelte/store";
 
-import { get } from "svelte/store";
-import { derived, writable, Writable } from "svelte/store";
-
-import {
-  addConnection,
-  ConnectionInputType,
-  connectionsStore,
-  removeConnection,
-} from "../connections/connections";
-import { liveConnectionStore } from "../connections/live-connection";
+import { connectionsStore, removeConnection } from "../connections/connections";
+import { createLiveConnection } from "../connections/live-connection";
 
 export enum TerminalDirection {
   in = "in",
@@ -62,67 +54,6 @@ export const allNodesTerminalCentersStore = derived(
   }
 );
 
-// probably should make these into one function
-export function anchorLiveConnection(
-  anchorDirection: TerminalDirection,
-  location: { x: number; y: number },
-  anchorInputType: ConnectionInputType,
-  anchorNodeId: string,
-  anchorInputName: string
-) {
-  let dragTerminalDirection: TerminalDirection;
-  let attach: (targetNodeId: string, targetInputName: string) => void;
-  // when a terminal gets a mouseup, add a new connection depending on the in/out
-  // TODO: this code should be the same for disconnectLiveConnection
-  if (anchorDirection == TerminalDirection.in) {
-    dragTerminalDirection = TerminalDirection.out;
-    attach = (targetNodeId: string, targetInputName: string) => {
-      console.log("attach out");
-      addConnection({
-        connectionId: "new",
-        inputType: anchorInputType,
-        in: {
-          nodeId: anchorNodeId,
-          inputName: anchorInputName,
-        },
-        out: {
-          nodeId: targetNodeId,
-          inputName: targetInputName,
-        },
-      });
-    };
-  } else {
-    dragTerminalDirection = TerminalDirection.in;
-    attach = (targetNodeId: string, targetInputName: string) => {
-      console.log("attach in");
-      addConnection({
-        connectionId: "new",
-        inputType: anchorInputType,
-        in: {
-          nodeId: targetNodeId,
-          inputName: targetInputName,
-        },
-        out: {
-          nodeId: anchorNodeId,
-          inputName: anchorInputName,
-        },
-      });
-    };
-  }
-
-  liveConnectionStore.set({
-    connectionId: uuidv4(),
-    anchorNodeId: anchorNodeId,
-    anchorInputName: anchorInputName,
-    inputType: anchorInputType,
-    anchorTerminalDirection: anchorDirection,
-    dragTerminalDirection: dragTerminalDirection,
-    dragCoordsStore: writable(location),
-    anchorCoordsStore: writable(null),
-    attach: attach,
-  });
-}
-
 // create a live connection by disconnecting an existing one
 export function disconnectLiveConnection(
   connectionId: string,
@@ -144,15 +75,13 @@ export function disconnectLiveConnection(
     connection[anchorDirection];
   removeConnection(connectionId);
 
-  liveConnectionStore.set({
-    connectionId: connectionId,
-    anchorNodeId: anchorNodeId,
-    anchorInputName: anchorInputName,
-    inputType: inputType,
-    anchorTerminalDirection: anchorDirection,
-    dragTerminalDirection: direction,
-    dragCoordsStore: writable(location),
-    anchorCoordsStore: writable(null),
-    attach: () => {},
-  });
+  createLiveConnection(
+    connectionId,
+    anchorNodeId,
+    anchorInputName,
+    anchorDirection,
+    direction,
+    inputType,
+    location
+  );
 }
