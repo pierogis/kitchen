@@ -1,4 +1,5 @@
 import type { Pane } from "tweakpane";
+import { ConnectionInputType } from "../connections/connections";
 import { NodeProperties, NodeState, updateNode } from "../nodes/nodes";
 import type { IngredientControl } from "./ingredients";
 
@@ -12,12 +13,15 @@ export class ColorControl implements IngredientControl<ColorProperties> {
   type = "color";
 
   default(id: string): NodeState {
-    let defaultProperties = {
+    const defaultProperties = {
       r: 120,
       g: 150,
       b: 190,
     };
-    let defaultRacks = { in: ["color"], out: ["color"] };
+    const defaultRacks = {
+      in: { color: { inputType: ConnectionInputType.color } },
+      out: { color: { inputType: ConnectionInputType.color } },
+    };
 
     return {
       nodeId: id,

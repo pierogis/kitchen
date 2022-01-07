@@ -2,26 +2,19 @@
   import { v4 as uuidv4 } from "uuid";
 
   import { addNode } from "./nodes/nodes";
-  import {
-    addConnection,
-    ConnectionInputType,
-  } from "./connections/connections";
   import { ColorControl } from "./ingredients/color";
 
-  addNode(new ColorControl().default("color"));
+  let color1 = new ColorControl().default("1");
+  color1.racks.out = {};
+  let color2 = new ColorControl().default("2");
+  color2.racks.in = {};
 
-  addConnection({
-    connectionId: "init",
-    inputType: ConnectionInputType.number,
-    in: {
-      nodeId: "plate",
-      inputName: "height",
-    },
-    out: {
-      nodeId: "color",
-      inputName: "color",
-    },
-  });
+  const initialState = {
+    1: color1,
+    2: color2,
+  };
+
+  nodesStore.set(initialState);
 
   const defaultNode = () => new ColorControl().default(uuidv4());
 </script>

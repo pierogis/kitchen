@@ -1,13 +1,17 @@
-import { derived, get, Readable, Writable, writable } from "svelte/store";
-import { viewportStore } from "../viewport/viewport";
+import { derived, Readable, Writable, writable } from "svelte/store";
+import type { ConnectionInputType } from "../connections/connections";
 
 export type NodeProperties = {
   [key: string]: any;
 };
 
+export type RackState = {
+  inputType: ConnectionInputType;
+};
+
 export type RacksState = {
-  in: string[];
-  out: string[];
+  in: { [inputName: string]: RackState };
+  out: { [inputName: string]: RackState };
 };
 
 export interface NodeState {
@@ -18,25 +22,14 @@ export interface NodeState {
   racks: RacksState;
 }
 
-let initialProps = get(viewportStore);
+// let initialPlateProps = get(viewportStore);
 
-let initialRacks = { in: [], out: [] };
-Object.keys(initialProps).forEach((key) => {
-  initialRacks.in.push(key);
-});
+// let initialPlateRacks = { in: [], out: [] };
+// initialPlateRacks.in = Object.keys(initialPlateProps)
 
-const initialState = {
-  plate: {
-    nodeId: "plate",
-    type: "plate",
-    style: "top: 50%; right: 0px;",
-    properties: initialProps,
-    racks: initialRacks,
-  },
-};
-
-export const nodesStore: Writable<{ [nodeId: string]: NodeState }> =
-  writable(initialState);
+export const nodesStore: Writable<{ [nodeId: string]: NodeState }> = writable(
+  {}
+);
 
 export const nodesRacksStore: Readable<{ [nodeId: string]: RacksState }> =
   derived(nodesStore, (nodes) => {

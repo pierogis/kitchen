@@ -67,13 +67,13 @@
     await tick();
     // attaching bound divs to terminal racks
     // $node.racks specifies if a rack should be attached
-    $node.racks.in.forEach((inputName) => {
+    Object.keys($node.racks.in).forEach((inputName) => {
       inputs[inputName].controller_.view.element.prepend(
         terminalRackContainers.in[inputName]
       );
     });
 
-    $node.racks.out.forEach((inputName) => {
+    Object.keys($node.racks.out).forEach((inputName) => {
       inputs[inputName].controller_.view.element.append(
         terminalRackContainers.out[inputName]
       );
@@ -116,18 +116,20 @@
   />
 </div>
 
-{#each $node.racks.in as inputName (inputName)}
+{#each Object.entries($node.racks.in) as [inputName, rackState] (inputName)}
   <TerminalRack
     bind:container={terminalRackContainers.in[inputName]}
     {inputName}
+    inputType={rackState.inputType}
     direction={TerminalDirection.in}
   />
 {/each}
 
-{#each $node.racks.out as inputName (inputName)}
+{#each Object.entries($node.racks.out) as [inputName, rackState] (inputName)}
   <TerminalRack
     bind:container={terminalRackContainers.out[inputName]}
     {inputName}
+    inputType={rackState.inputType}
     direction={TerminalDirection.out}
   />
 {/each}

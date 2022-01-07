@@ -1,8 +1,9 @@
 import { get } from "svelte/store";
 import type { Pane } from "tweakpane";
 import * as ImagePlugin from "tweakpane-image-plugin";
+import { ConnectionInputType } from "../connections/connections";
 
-import { NodeState, updateNode } from "../nodes/nodes";
+import { NodeState, RacksState, updateNode } from "../nodes/nodes";
 import { viewportStore } from "../viewport/viewport";
 import type { IngredientControl } from "./ingredients";
 
@@ -16,10 +17,14 @@ export class PierogiControl implements IngredientControl<PierogiProperties> {
   type = "pierogi";
   default(id: string): NodeState {
     let defaultProperties = { ...get(viewportStore), image: new Image() };
-    let defaultRacks = { in: [], out: [] };
+    let defaultRacks: RacksState = { in: {}, out: {} };
     for (let propertyName in defaultProperties) {
-      defaultRacks.in.push(propertyName);
-      defaultRacks.out.push(propertyName);
+      defaultRacks.in[propertyName] = {
+        inputType: ConnectionInputType.number,
+      };
+      defaultRacks.out[propertyName] = {
+        inputType: ConnectionInputType.number,
+      };
     }
 
     return {

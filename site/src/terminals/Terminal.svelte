@@ -43,6 +43,17 @@
     cursor: grab;
   }
 
+  .terminal:focus {
+    border: var(--border-width) inset var(--cable-color-number);
+    width: 2px;
+
+    margin: -2px;
+    z-index: 2;
+
+    /* outline-color: transparent;
+    outline-style: none; */
+  }
+
   .in {
     border-radius: 10% 50% 50% 10%;
     right: 2px;
@@ -62,26 +73,31 @@
     z-index: 2;
   }
 
-  .cabled.in {
+  .cabled.in,
+  .terminal.in:focus {
     border-radius: 50% 10% 10% 50%;
     right: 4px;
   }
 
-  .cabled.out {
+  .cabled.out,
+  .terminal.out:focus {
     border-radius: 10% 50% 50% 10%;
     left: 4px;
   }
 
-  .expanded {
+  .expanded,
+  .terminal.expanded:focus {
     width: var(--terminalHeight);
   }
 
-  .expanded.in {
+  .expanded.in,
+  .terminal.expanded.in:focus {
     right: 0px;
     border-radius: 50% 50% 50% 50%;
   }
 
-  .expanded.out {
+  .expanded.out,
+  .terminal.expanded.out:focus {
     left: 0px;
     border-radius: 50% 50% 50% 50%;
   }

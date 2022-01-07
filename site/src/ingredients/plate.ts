@@ -1,8 +1,9 @@
 import type { Pane } from "tweakpane";
-import { NodeState, updateNode } from "../nodes/nodes";
+import { NodeState, RacksState, updateNode } from "../nodes/nodes";
 import { viewportStore } from "../viewport/viewport";
 import type { IngredientControl } from "./ingredients";
 import { get } from "svelte/store";
+import { ConnectionInputType } from "../connections/connections";
 
 interface PlateProperties {
   width: number;
@@ -13,10 +14,14 @@ export class PlateControl implements IngredientControl<PlateProperties> {
   type = "plate";
   default(id: string): NodeState {
     let defaultProperties = get(viewportStore);
-    let defaultRacks = { in: [], out: [] };
+    let defaultRacks: RacksState = { in: {}, out: {} };
     for (let propertyName in defaultProperties) {
-      defaultRacks.in.push(propertyName);
-      defaultRacks.out.push(propertyName);
+      defaultRacks.in[propertyName] = {
+        inputType: ConnectionInputType.number,
+      };
+      defaultRacks.out[propertyName] = {
+        inputType: ConnectionInputType.number,
+      };
     }
 
     return {

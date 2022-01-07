@@ -34,9 +34,10 @@ export function useActions(
   }
 
   return {
-    update(actions: ActionDescription<any>[]) {
-      // if actions changes length, destroy the old handles and attach the new ones
-      if (((actions && actions.length) || 0) != actionHandles.length) {
+    update(newActions: ActionDescription<any>[]) {
+      // if actions changes, destroy the old handles and attach the new ones
+      if (actions != newActions) {
+        actions = newActions;
         actionHandles.forEach((handle) => {
           if (handle && handle.destroy) {
             handle.destroy();
@@ -45,7 +46,7 @@ export function useActions(
 
         actionHandles = [];
 
-        actions.forEach((action: ActionDescription<any>, i: number) => {
+        newActions.forEach((action: ActionDescription<any>, i: number) => {
           if (action.params) {
             actionHandles.push(
               action.action(node as HTMLElement & SVGElement, action.params)
@@ -57,8 +58,8 @@ export function useActions(
       }
 
       // update all of the handles
-      if (actions) {
-        actions.forEach((action, i) => {
+      if (newActions) {
+        newActions.forEach((action, i) => {
           let handle = actionHandles[i];
           if (handle && handle.update) {
             if (action.params) {
