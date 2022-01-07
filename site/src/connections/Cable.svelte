@@ -98,7 +98,7 @@
 
   path {
     stroke: var(--cable-color-number);
-    opacity: 0.4;
+    opacity: 0.9;
     stroke-width: var(--pathStrokeWidth);
     fill: transparent;
   }

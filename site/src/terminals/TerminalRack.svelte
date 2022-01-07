@@ -1,29 +1,29 @@
-<script lang="ts" context="module">
-  export const terminalHeight = 10;
-</script>
-
 <script lang="ts">
   import { v4 as uuidv4 } from "uuid";
   import { getContext } from "svelte";
-  import { derived, Readable } from "svelte/store";
+  import { derived, Readable, writable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
 
   import {
     allNodesTerminalCentersStore,
-    disconnectLiveConnection,
     NodeTerminalCentersState,
     TerminalDirection,
+    terminalHeight,
   } from "./terminals";
   import {
-    createLiveConnection,
+    anchorLiveConnection,
     LiveConnectionState,
     liveConnectionStore,
   } from "../connections/live-connection";
   import type { ActionDescription } from "../common/actions/useActions";
   import { checkNearAction } from "../common/actions/checkNear";
-  import { calculateCenter, checkPointWithinBox } from "../common/utils";
-  import { ConnectionInputType } from "../connections/connections";
+  import { calculateCenter } from "../common/utils";
+  import {
+    ConnectionInputType,
+    connectionsStore,
+    removeConnection,
+  } from "../connections/connections";
   import Terminal from "./Terminal.svelte";
 
   export let direction: TerminalDirection;
@@ -32,6 +32,7 @@
   let near: boolean = false;
 
   export let inputName: string;
+  export let inputType: ConnectionInputType;
 
   const nearTerminalRackDistance = 12;
   const rackHeight = 20;
@@ -61,7 +62,11 @@
       let centerStores: {
         [connectionId: string]: NodeTerminalCentersState;
       } = nodeCenters.reduce((prev, center) => {
-        prev[center.connectionId] = center;
+        if (center.connectionId) {
+          prev[center.connectionId] = center;
+        } else {
+          prev["novel"] = center;
+        }
         return prev;
       }, {});
 
@@ -77,6 +82,7 @@
           direction: direction,
           inputName: inputName,
           connectionId: liveConnection.connectionId,
+          inputType: liveConnection.inputType,
           coords: liveConnection.anchorCoordsStore,
         };
       }
@@ -139,7 +145,7 @@
           direction == TerminalDirection.in
             ? TerminalDirection.out
             : TerminalDirection.in;
-        createLiveConnection(
+        anchorLiveConnection(
           params.connectionId,
           nodeId,
           inputName,
@@ -160,6 +166,9 @@
     element.addEventListener("mousedown", handleNovelGrab);
 
     return {
+      update(newParams: { connectionId: string }) {
+        params = newParams;
+      },
       destroy() {
         element.removeEventListener("mousedown", handleNovelGrab);
       },
@@ -181,8 +190,31 @@
           x: event.x,
           y: event.y,
         };
+        const connection = $connectionsStore[params.connectionId];
 
-        disconnectLiveConnection(params.connectionId, direction, location);
+        // anchorDirection is the opposite of the direction that engaged
+        // this callback
+        const anchorDirection =
+          direction == TerminalDirection.in
+            ? TerminalDirection.out
+            : TerminalDirection.in;
+
+        const inputType = connection.inputType;
+
+        const { nodeId: anchorNodeId, inputName: anchorInputName } =
+          connection[anchorDirection];
+        removeConnection(params.connectionId);
+
+        anchorLiveConnection(
+          params.connectionId,
+          anchorNodeId,
+          anchorInputName,
+          anchorDirection,
+          direction,
+          inputType,
+          location
+        );
+
         element.style.cursor = "grabbing";
         window.addEventListener("mouseup", handleMouseUp);
       }
@@ -191,51 +223,11 @@
     element.addEventListener("mousedown", handleDisconnectGrab);
 
     return {
+      update(newParams: { connectionId: string }) {
+        params = newParams;
+      },
       destroy() {
         element.removeEventListener("mousedown", handleDisconnectGrab);
-      },
-    };
-  }
-
-  const inputType = ConnectionInputType.color;
-
-  function listenLiveConnectionAction(element: HTMLElement) {
-    const nearTerminalDistance = 4;
-
-    // take action on change in the liveConnection state
-    const unsubscriber = liveConnectionStore.subscribe((liveConnection) => {
-      if (
-        liveConnection &&
-        liveConnection.inputType == inputType &&
-        liveConnection.dragTerminalDirection == direction
-      ) {
-        const handleMouseUp = (event: MouseEvent) => {
-          const rect = element.getBoundingClientRect();
-
-          // expanding the rect
-          const left = rect.left - nearTerminalDistance;
-          const top = rect.top - nearTerminalDistance;
-          const right = rect.right + nearTerminalDistance;
-          const bottom = rect.bottom + nearTerminalDistance;
-
-          if (
-            checkPointWithinBox(
-              { x: event.pageX, y: event.pageY },
-              { top: top, bottom: bottom, left: left, right: right }
-            )
-          )
-            // use the callback from the liveCable context store
-            liveConnection.attach(nodeId, inputName);
-          window.removeEventListener("mouseup", handleMouseUp);
-        };
-        // handle on mouseup near compatible terminal
-        window.addEventListener("mouseup", handleMouseUp);
-      }
-    });
-
-    return {
-      destroy() {
-        unsubscriber();
       },
     };
   }
@@ -246,47 +238,59 @@
 
   $: expanded = near || usingNovelTerminal;
 
-  $: terminals = [...connectionIds, "novel"].reduce<
-    {
-      actionDescriptions: ActionDescription<any>[];
-      cabled: boolean;
-    }[]
-  >((result, connectionId) => {
-    if (connectionId == "novel") {
-      if (direction != TerminalDirection.in || connectionIds.length == 0) {
-        result.push({
+  let terminals: {
+    actionDescriptions: ActionDescription<any>[];
+    cabled: boolean;
+  }[];
+  $: {
+    let showNovelTerminal;
+    terminals = [...connectionIds].reduce<
+      {
+        actionDescriptions: ActionDescription<any>[];
+        cabled: boolean;
+      }[]
+    >((result, connectionId) => {
+      if (connectionId != "novel") {
+        const terminal = {
           actionDescriptions: [
             {
-              action: handleNovelGrabAction,
-              params: { connectionId: uuidv4() },
+              action: terminalCenterUpdateAction,
+              params: { connectionId: connectionId },
             },
             {
-              action: listenLiveConnectionAction,
+              action: handleDisconnectGrabAction,
+              params: { connectionId: connectionId },
             },
           ],
-          cabled: false,
-        });
+          cabled: true,
+        };
+
+        result.push(terminal);
+      } else {
+        showNovelTerminal = true;
       }
-    } else {
-      result.push({
+
+      return result;
+    }, []);
+
+    if (showNovelTerminal) {
+      const novelTerminal = {
         actionDescriptions: [
           {
             action: terminalCenterUpdateAction,
-            params: { connectionId: connectionId },
+            params: { connectionId: "novel" },
           },
           {
-            action: handleDisconnectGrabAction,
-            params: { connectionId: connectionId },
-          },
-          {
-            action: listenLiveConnectionAction,
+            action: handleNovelGrabAction,
+            params: { connectionId: uuidv4() },
           },
         ],
-        cabled: true,
-      });
+        cabled: false,
+      };
+
+      terminals.push(novelTerminal);
     }
-    return result;
-  }, []);
+  }
 
   // if expanded, take a width dependent on the number of terminals
   // 1 more terminal than there are connections
@@ -312,7 +316,7 @@
   }}
 >
   <div class="terminals-container" class:expanded use:cssVars={styleVars}>
-    {#each Object.entries(terminals) as [connectionId, terminal], i (i)}
+    {#each Object.entries(terminals) as [connectionId, terminal] (connectionId)}
       <Terminal
         actionDescriptions={terminal.actionDescriptions}
         cabled={terminal.cabled}

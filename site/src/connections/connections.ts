@@ -23,23 +23,23 @@ export interface ConnectionState {
 export const connectionsStore: Writable<{ [key: string]: ConnectionState }> =
   writable({});
 
-export function addConnection(state: ConnectionState) {
-  connectionsStore.update(($connections) => {
-    $connections[state.connectionId] = state;
-    return $connections;
+export function addConnection(connection: ConnectionState) {
+  connectionsStore.update((connections) => {
+    connections[connection.connectionId] = connection;
+    return connections;
   });
 }
 
-export function updateConnection(state: ConnectionState) {
-  connectionsStore.update(($connections) => {
-    $connections[state.connectionId] = state;
-    return $connections;
+export function updateConnection(connection: ConnectionState) {
+  connectionsStore.update((connections) => {
+    connections[connection.connectionId] = connection;
+    return connections;
   });
 }
 
 export function removeConnection(connectionId: string): void {
-  connectionsStore.update(($connections) => {
-    delete $connections[connectionId];
-    return $connections;
+  connectionsStore.update((connections) => {
+    delete connections[connectionId];
+    return connections;
   });
 }

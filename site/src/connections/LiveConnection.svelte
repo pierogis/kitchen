@@ -1,9 +1,9 @@
 <script lang="ts">
   import { calculateCenter } from "../common/utils";
-  import { liveConnectionStore } from "./live-connection";
-  import { terminalHeight } from "../terminals/TerminalRack.svelte";
+  import { dropCableStore, liveConnectionStore } from "./live-connection";
+  import { terminalHeight } from "../terminals/terminals";
 
-  import Cable from "../cable/Cable.svelte";
+  import Cable from "./Cable.svelte";
   import Terminal from "../terminals/Terminal.svelte";
 
   // access to a store of the coords for when a cable is being dragged
@@ -33,8 +33,9 @@
     }, 10);
 
     // update restaurant that cable has been dropped
-    const dropCable = () => {
-      liveConnectionStore.set(null);
+    const dropCable = (event: MouseEvent) => {
+      $dropCableStore({ x: event.pageX, y: event.pageY });
+      // this is causing the live connection attach callback to disappear
       window.removeEventListener("mouseup", dropCable);
     };
     window.addEventListener("mouseup", dropCable);

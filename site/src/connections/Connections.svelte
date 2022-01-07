@@ -5,7 +5,7 @@
   import { allNodesTerminalCentersStore } from "../terminals/terminals";
   import { connectionsStore, removeConnection } from "./connections";
 
-  import Cable from "../cable/Cable.svelte";
+  import Cable from "./Cable.svelte";
   import LiveConnection from "./LiveConnection.svelte";
 
   // store to contain 2 (x, y) coords keyed by connectionId
@@ -23,11 +23,13 @@
   }> = derived(allNodesTerminalCentersStore, (nodesTerminalCenters) => {
     let allCoords = {};
     nodesTerminalCenters.forEach((terminalCenter) => {
-      if (!allCoords[terminalCenter.connectionId]) {
-        allCoords[terminalCenter.connectionId] = { in: null, out: null };
+      if (terminalCenter.connectionId) {
+        if (!allCoords[terminalCenter.connectionId]) {
+          allCoords[terminalCenter.connectionId] = { in: null, out: null };
+        }
+        allCoords[terminalCenter.connectionId][terminalCenter.direction] =
+          terminalCenter.coords;
       }
-      allCoords[terminalCenter.connectionId][terminalCenter.direction] =
-        terminalCenter.coords;
     });
 
     return allCoords;
@@ -70,7 +72,7 @@
         // node may be removed
         if (node) {
           // type may change
-          if (!node.racks.in.includes(inInputName)) {
+          if (!Object.keys(node.racks.in).includes(inInputName)) {
             removeConnection(connection.connectionId);
           }
         } else {
@@ -85,7 +87,7 @@
 
       let outUnsubscriber = outNode.subscribe((node) => {
         if (node) {
-          if (!node.racks.out.includes(outInputName)) {
+          if (!Object.keys(node.racks.out).includes(outInputName)) {
             removeConnection(connection.connectionId);
           }
         } else {
