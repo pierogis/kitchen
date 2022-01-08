@@ -20,7 +20,7 @@
   import { checkNearAction } from "../common/actions/checkNear";
   import { calculateCenter } from "../common/utils";
   import {
-    ConnectionParameterType,
+    ParameterType,
     connectionsStore,
     removeConnection,
   } from "../connections/connections";
@@ -32,7 +32,7 @@
   let near: boolean = false;
 
   export let parameterName: string;
-  export let parameterType: ConnectionParameterType;
+  export let parameterType: ParameterType;
 
   const nearTerminalRackDistance = 12;
   const rackHeight = 20;
