@@ -20,7 +20,7 @@
   import { checkNearAction } from "../common/actions/checkNear";
   import { calculateCenter } from "../common/utils";
   import {
-    ConnectionInputType,
+    ConnectionParameterType,
     connectionsStore,
     removeConnection,
   } from "../connections/connections";
@@ -31,8 +31,8 @@
 
   let near: boolean = false;
 
-  export let inputName: string;
-  export let inputType: ConnectionInputType;
+  export let parameterName: string;
+  export let parameterType: ConnectionParameterType;
 
   const nearTerminalRackDistance = 12;
   const rackHeight = 20;
@@ -42,7 +42,7 @@
   const nodeId: string = getContext("nodeId");
 
   // get store containing coord stores to use to broadcast bounding rect
-  // look for matching node, input name, direction
+  // look for matching node, parameter name, direction
   const nodeTerminalRectCenterStores: Readable<{
     [connectionId: string]: NodeTerminalCentersState;
   }> = derived(
@@ -55,7 +55,7 @@
         return (
           center.nodeId == nodeId &&
           center.direction == direction &&
-          center.inputName == inputName
+          center.parameterName == parameterName
         );
       });
 
@@ -75,14 +75,14 @@
         liveConnection &&
         liveConnection.anchorNodeId == nodeId &&
         liveConnection.anchorTerminalDirection == direction &&
-        liveConnection.anchorInputName == inputName
+        liveConnection.anchorParameterName == parameterName
       ) {
         centerStores[liveConnection.connectionId] = {
           nodeId: nodeId,
           direction: direction,
-          inputName: inputName,
+          parameterName: parameterName,
           connectionId: liveConnection.connectionId,
-          inputType: liveConnection.inputType,
+          parameterType: liveConnection.parameterType,
           coords: liveConnection.anchorCoordsStore,
         };
       }
@@ -148,10 +148,10 @@
         anchorLiveConnection(
           params.connectionId,
           nodeId,
-          inputName,
+          parameterName,
           direction,
           dragDirection,
-          inputType,
+          parameterType,
           {
             x: event.x,
             y: event.y,
@@ -199,19 +199,19 @@
             ? TerminalDirection.out
             : TerminalDirection.in;
 
-        const inputType = connection.inputType;
+        const parameterType = connection.parameterType;
 
-        const { nodeId: anchorNodeId, inputName: anchorInputName } =
+        const { nodeId: anchorNodeId, parameterName: anchorParameterName } =
           connection[anchorDirection];
         removeConnection(params.connectionId);
 
         anchorLiveConnection(
           params.connectionId,
           anchorNodeId,
-          anchorInputName,
+          anchorParameterName,
           anchorDirection,
           direction,
-          inputType,
+          parameterType,
           location
         );
 

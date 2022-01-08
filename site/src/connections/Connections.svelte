@@ -58,8 +58,8 @@
       let inNodeId = connection.in.nodeId;
       let outNodeId = connection.out.nodeId;
 
-      let inInputName = connection.in.inputName;
-      let outInputName = connection.out.inputName;
+      let inParameterName = connection.in.parameterName;
+      let outParameterName = connection.out.parameterName;
 
       // make a derived store with the state of the in node
       let inNode = derived(nodesStore, (nodes) => {
@@ -72,7 +72,7 @@
         // node may be removed
         if (node) {
           // type may change
-          if (!Object.keys(node.racks.in).includes(inInputName)) {
+          if (!Object.keys(node.racks.in).includes(inParameterName)) {
             removeConnection(connection.connectionId);
           }
         } else {
@@ -87,7 +87,7 @@
 
       let outUnsubscriber = outNode.subscribe((node) => {
         if (node) {
-          if (!Object.keys(node.racks.out).includes(outInputName)) {
+          if (!Object.keys(node.racks.out).includes(outParameterName)) {
             removeConnection(connection.connectionId);
           }
         } else {

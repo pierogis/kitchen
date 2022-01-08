@@ -7,7 +7,7 @@ import { PierogiControl } from "./pierogi";
 import { ColorControl } from "./color";
 
 export type IngredientControlHandle = {
-  [key: string]: InputBindingApi<unknown, any>;
+  [parameterName: string]: InputBindingApi<unknown, any>;
 };
 
 export interface IngredientControl<P extends NodeProperties> {
@@ -23,7 +23,7 @@ const initialState = {
 };
 
 export const ingredientsStore: Writable<{
-  [key: string]: IngredientControl<{}>;
+  [ingredientName: string]: IngredientControl<{}>;
 }> = writable(initialState);
 
 export function addIngredient(type: string, control: IngredientControl<any>) {

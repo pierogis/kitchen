@@ -1,17 +1,17 @@
 import { derived, Readable, Writable, writable } from "svelte/store";
-import type { ConnectionInputType } from "../connections/connections";
+import type { ParameterType } from "../connections/connections";
 
 export type NodeProperties = {
   [key: string]: any;
 };
 
 export type RackState = {
-  inputType: ConnectionInputType;
+  parameterType: ParameterType;
 };
 
 export type RacksState = {
-  in: { [inputName: string]: RackState };
-  out: { [inputName: string]: RackState };
+  in: { [parameterName: string]: RackState };
+  out: { [parameterName: string]: RackState };
 };
 
 export interface NodeState {

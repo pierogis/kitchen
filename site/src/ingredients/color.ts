@@ -1,7 +1,8 @@
+import { derived } from "svelte/store";
 import type { Pane } from "tweakpane";
-import { ConnectionInputType } from "../connections/connections";
+import { ParameterType, connectionsStore } from "../connections/connections";
 import { NodeProperties, NodeState, updateNode } from "../nodes/nodes";
-import type { IngredientControl } from "./ingredients";
+import type { IngredientControl, IngredientControlHandle } from "./ingredients";
 
 interface ColorProperties extends NodeProperties {
   r: number;
@@ -19,8 +20,8 @@ export class ColorControl implements IngredientControl<ColorProperties> {
       b: 190,
     };
     const defaultRacks = {
-      in: { color: { inputType: ConnectionInputType.color } },
-      out: { color: { inputType: ConnectionInputType.color } },
+      in: { color: { parameterType: ParameterType.color } },
+      out: { color: { parameterType: ParameterType.color } },
     };
 
     return {
@@ -32,7 +33,7 @@ export class ColorControl implements IngredientControl<ColorProperties> {
     };
   }
 
-  attach(pane: Pane, node: NodeState) {
+  attach(pane: Pane, node: NodeState): IngredientControlHandle {
     const params = {
       color: {
         r: node.properties.r,
@@ -47,8 +48,27 @@ export class ColorControl implements IngredientControl<ColorProperties> {
       updateNode(node);
     });
 
-    return {
+    const parameterInputs = {
       color: colorInput,
     };
+
+    // // look for connection with this node, parameter name as "in"
+    // derived(connectionsStore, (connections) => {
+    //   const inConnection = Object.entries(connections).find(
+    //     ([connectionId, connection]) =>
+    //       connection.in.nodeId == node.nodeId &&
+    //       connection.in.parameterName == "color"
+    //   );
+
+    //   if (inConnection) {
+    //     const valueStore = connection.valueStore;
+
+    //     pane.remove(colorInput);
+    //     let monitor = pane.addMonitor(connection.valueStore);
+    //   }
+    // });
+    // node.racks.in["color"];
+
+    return parameterInputs;
   }
 }

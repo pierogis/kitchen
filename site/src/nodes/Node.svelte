@@ -25,66 +25,73 @@
   let dragging = false;
 
   // subscribe to just this node in the nodesStore
-  let node: Readable<NodeState> = derived(
+  const nodeStore: Readable<NodeState> = derived(
     nodesStore,
     ($nodes) => $nodes[nodeId]
   );
 
   // use these IngredientControl classes to do non svelte display stuff
   // subscribe the type specified on the node
-  let ingredientBuilder: Readable<IngredientControl<any>> = derived(
-    node,
-    (state: NodeState) => state && $ingredientsStore[state.type]
+  const ingredient: Readable<IngredientControl<any>> = derived(
+    [nodeStore, ingredientsStore],
+    ([state, ingredients]: [
+      NodeState,
+      {
+        [ingredientName: string]: IngredientControl<{}>;
+      }
+    ]) => state && ingredients[state.type]
   );
 
   // get a list of options for select type
   // just take all from the ingredients store and make them key and value
-  let typeOptions: {
-    [key: string]: string;
-  } = Object.keys($ingredientsStore).reduce(
-    (previous, current) => ({ ...previous, [current]: current }),
-    {}
+  const typeOptionsStore: Readable<{
+    [typeName: string]: string;
+  }> = derived(ingredientsStore, (ingredients) =>
+    Object.keys(ingredients).reduce(
+      (previous, current) => ({ ...previous, [current]: current }),
+      {}
+    )
   );
 
   // these will bind to the terminal racks inside
   let terminalRackContainers: {
-    in: { [key: string]: HTMLElement };
-    out: { [key: string]: HTMLElement };
+    in: { [parameterName: string]: HTMLElement };
+    out: { [parameterName: string]: HTMLElement };
   } = { in: {}, out: {} };
 
   // if the node type changes update the store
   function updateType(event: CustomEvent<string>) {
-    let defaultNode = $ingredientsStore[event.detail].default($node.nodeId);
+    let defaultNode = $ingredientsStore[event.detail].default(
+      $nodeStore.nodeId
+    );
 
     updateNode(defaultNode);
   }
 
   // use the selected ingredient to attach tweakpane
-  async function attach(pane: Pane): Promise<IngredientControlHandle> {
-    let inputs = $ingredientBuilder.attach(pane, $node);
+  function attach(pane: Pane): IngredientControlHandle {
+    let parameterInputs = $ingredient.attach(pane, $nodeStore);
 
-    // attach will cause an update
-    await tick();
     // attaching bound divs to terminal racks
     // $node.racks specifies if a rack should be attached
-    Object.keys($node.racks.in).forEach((inputName) => {
-      inputs[inputName].controller_.view.element.prepend(
-        terminalRackContainers.in[inputName]
+    Object.keys($nodeStore.racks.in).forEach((parameterName) => {
+      parameterInputs[parameterName].controller_.view.element.prepend(
+        terminalRackContainers.in[parameterName]
       );
     });
 
-    Object.keys($node.racks.out).forEach((inputName) => {
-      inputs[inputName].controller_.view.element.append(
-        terminalRackContainers.out[inputName]
+    Object.keys($nodeStore.racks.out).forEach((parameterName) => {
+      parameterInputs[parameterName].controller_.view.element.append(
+        terminalRackContainers.out[parameterName]
       );
     });
 
-    return inputs;
+    return parameterInputs;
   }
 
   // delete node on close button
   function handleClose(event: MouseEvent) {
-    removeNode($node);
+    removeNode($nodeStore);
   }
 
   let grabTarget: HTMLElement;
@@ -109,27 +116,28 @@
     <div class="close" on:click={handleClose} />
   </div>
   <PaneWrapper
-    type={$node.type}
-    options={typeOptions}
+    actionDescriptions={[]}
+    type={$nodeStore.type}
+    typeOptions={$typeOptionsStore}
     {attach}
     on:updateType={updateType}
   />
 </div>
 
-{#each Object.entries($node.racks.in) as [inputName, rackState] (inputName)}
+{#each Object.entries($nodeStore.racks.in) as [parameterName, rackState] (parameterName)}
   <TerminalRack
-    bind:container={terminalRackContainers.in[inputName]}
-    {inputName}
-    inputType={rackState.inputType}
+    bind:container={terminalRackContainers.in[parameterName]}
+    {parameterName}
+    parameterType={rackState.parameterType}
     direction={TerminalDirection.in}
   />
 {/each}
 
-{#each Object.entries($node.racks.out) as [inputName, rackState] (inputName)}
+{#each Object.entries($nodeStore.racks.out) as [parameterName, rackState] (parameterName)}
   <TerminalRack
-    bind:container={terminalRackContainers.out[inputName]}
-    {inputName}
-    inputType={rackState.inputType}
+    bind:container={terminalRackContainers.out[parameterName]}
+    {parameterName}
+    parameterType={rackState.parameterType}
     direction={TerminalDirection.out}
   />
 {/each}

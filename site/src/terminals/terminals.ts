@@ -1,9 +1,6 @@
 import { derived, writable, Writable } from "svelte/store";
 
-import {
-  ConnectionInputType,
-  connectionsStore,
-} from "../connections/connections";
+import { ParameterType, connectionsStore } from "../connections/connections";
 import { nodesStore } from "../nodes/nodes";
 
 export const terminalHeight = 10;
@@ -15,9 +12,9 @@ export enum TerminalDirection {
 export type NodeTerminalCentersState = {
   nodeId: string;
   direction: TerminalDirection;
-  inputName: string;
+  parameterName: string;
   connectionId: string | null;
-  inputType: ConnectionInputType;
+  parameterType: ParameterType;
   coords: Writable<{ x: number; y: number }>;
 };
 
@@ -34,8 +31,8 @@ export const allNodesTerminalCentersStore = derived(
       // do the same for out
       let outNodeId = connection.out.nodeId;
 
-      // add to the callbacks set for the given connection's "in" input name
-      // this corresponds to the in (left) terminal on inputs
+      // add to the callbacks set for the given connection's "in" parameter name
+      // this corresponds to the in (left) terminal on parameters
 
       // using a store to ultimately notify terminals of a new callback to use when
       // they providing updates on their bounding rect
@@ -43,28 +40,29 @@ export const allNodesTerminalCentersStore = derived(
       connectionCenters.push({
         nodeId: inNodeId,
         direction: TerminalDirection.in,
-        inputName: connection.in.inputName,
+        parameterName: connection.in.parameterName,
         connectionId: connectionId,
-        inputType: connection.inputType,
+        parameterType: connection.parameterType,
         coords: writable({ x: undefined, y: undefined }),
       });
       connectionCenters.push({
         nodeId: outNodeId,
         direction: TerminalDirection.out,
-        inputName: connection.out.inputName,
+        parameterName: connection.out.parameterName,
         connectionId: connectionId,
-        inputType: connection.inputType,
+        parameterType: connection.parameterType,
         coords: writable({ x: undefined, y: undefined }),
       });
     });
 
     let novelCenters: NodeTerminalCentersState[] = [];
     Object.entries(nodes).forEach(([nodeId, node]) => {
-      Object.entries(node.racks.in).forEach(([inputName, inRack]) => {
+      Object.entries(node.racks.in).forEach(([parameterName, inRack]) => {
         if (
           !connectionCenters.find((center) => {
             return (
               center.direction == TerminalDirection.in &&
+              center.parameterName == parameterName &&
               center.nodeId == nodeId
             );
           })
@@ -72,21 +70,21 @@ export const allNodesTerminalCentersStore = derived(
           const novelCenter = {
             nodeId: nodeId,
             direction: TerminalDirection.in,
-            inputName: inputName,
+            parameterName: parameterName,
             connectionId: null,
-            inputType: inRack.inputType,
+            parameterType: inRack.parameterType,
             coords: writable({ x: undefined, y: undefined }),
           };
           novelCenters.push(novelCenter);
         }
       });
-      Object.entries(node.racks.out).forEach(([inputName, outRack]) => {
+      Object.entries(node.racks.out).forEach(([parameterName, outRack]) => {
         const novelCenter = {
           nodeId: nodeId,
           direction: TerminalDirection.out,
-          inputName: inputName,
+          parameterName: parameterName,
           connectionId: null,
-          inputType: outRack.inputType,
+          parameterType: outRack.parameterType,
           coords: writable({ x: undefined, y: undefined }),
         };
         novelCenters.push(novelCenter);

@@ -3,25 +3,26 @@ import { Writable, writable } from "svelte/store";
 // context key for stashing all nodes updates callbacks
 
 // the different types of data linking
-export enum ConnectionInputType {
+export enum ParameterType {
   number,
   color,
 }
 
 export interface ConnectionState {
   connectionId: string;
-  inputType: ConnectionInputType;
+  parameterType: ParameterType;
   in: {
     nodeId: string;
-    inputName: string;
+    parameterName: string;
   };
   out: {
     nodeId: string;
-    inputName: string;
+    parameterName: string;
   };
 }
-export const connectionsStore: Writable<{ [key: string]: ConnectionState }> =
-  writable({});
+export const connectionsStore: Writable<{
+  [connectionId: string]: ConnectionState;
+}> = writable({});
 
 export function addConnection(connection: ConnectionState) {
   connectionsStore.update((connections) => {

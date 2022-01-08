@@ -7,7 +7,7 @@ import {
 } from "../terminals/terminals";
 import {
   addConnection,
-  ConnectionInputType,
+  ParameterType,
   ConnectionState,
   updateConnection,
 } from "./connections";
@@ -15,9 +15,9 @@ import {
 export type LiveConnectionState = {
   // only react if this a compatible terminal
   connectionId: string;
-  inputType: ConnectionInputType;
+  parameterType: ParameterType;
   anchorNodeId: string;
-  anchorInputName: string;
+  anchorParameterName: string;
   anchorTerminalDirection: TerminalDirection;
   dragTerminalDirection: TerminalDirection;
   anchorCoordsStore: Writable<{ x: number; y: number }>;
@@ -25,7 +25,7 @@ export type LiveConnectionState = {
   // call this when releasing the live terminal, if this live cable is compatible
   attach: (
     targetNodeId: string,
-    targetInputName: string,
+    targetParameterName: string,
     existingConnectionId?: string
   ) => void;
 } | null;
@@ -38,36 +38,36 @@ export const liveConnectionStore: Writable<LiveConnectionState> =
 export function anchorLiveConnection(
   connectionId: string,
   anchorNodeId: string,
-  anchorInputName: string,
+  anchorParameterName: string,
   anchorDirection: TerminalDirection,
   dragDirection: TerminalDirection,
-  inputType: ConnectionInputType,
+  parameterType: ParameterType,
   location: { x: number; y: number }
 ) {
   let attach: (
     targetNodeId: string,
-    targetInputName: string,
+    targetParameterName: string,
     existingConnectionId?: string
   ) => void;
   // when a terminal gets a mouseup, add a new connection depending on the in/out
   if (anchorDirection == TerminalDirection.in) {
     attach = (
       targetNodeId: string,
-      targetInputName: string,
+      targetParameterName: string,
       existingConnectionId?: string
     ) => {
       // if this terminal is already connected, just update the connection's state to the new
-      // node id, input name,
+      // node id, parameter name,
       let connectionState: ConnectionState = {
         connectionId: connectionId,
-        inputType: inputType,
+        parameterType: parameterType,
         in: {
           nodeId: anchorNodeId,
-          inputName: anchorInputName,
+          parameterName: anchorParameterName,
         },
         out: {
           nodeId: targetNodeId,
-          inputName: targetInputName,
+          parameterName: targetParameterName,
         },
       };
 
@@ -84,19 +84,19 @@ export function anchorLiveConnection(
   } else {
     attach = (
       targetNodeId: string,
-      targetInputName: string,
+      targetParameterName: string,
       existingConnectionId?: string
     ) => {
       let connectionState: ConnectionState = {
         connectionId: connectionId,
-        inputType: inputType,
+        parameterType: parameterType,
         in: {
           nodeId: targetNodeId,
-          inputName: targetInputName,
+          parameterName: targetParameterName,
         },
         out: {
           nodeId: anchorNodeId,
-          inputName: anchorInputName,
+          parameterName: anchorParameterName,
         },
       };
 
@@ -115,8 +115,8 @@ export function anchorLiveConnection(
   liveConnectionStore.set({
     connectionId: connectionId,
     anchorNodeId: anchorNodeId,
-    anchorInputName: anchorInputName,
-    inputType: inputType,
+    anchorParameterName: anchorParameterName,
+    parameterType: parameterType,
     anchorTerminalDirection: anchorDirection,
     dragTerminalDirection: dragDirection,
     dragCoordsStore: writable(location),
@@ -134,12 +134,14 @@ export const dropCableStore = derived(
         const targetTerminals = allNodesTerminalCenters.filter(
           (nodeTerminalCenter) => {
             return (
-              liveConnection.inputType == nodeTerminalCenter.inputType &&
+              liveConnection.parameterType ==
+                nodeTerminalCenter.parameterType &&
               liveConnection.dragTerminalDirection ==
                 nodeTerminalCenter.direction &&
               !(
                 liveConnection.anchorNodeId == nodeTerminalCenter.nodeId &&
-                liveConnection.anchorInputName == nodeTerminalCenter.inputName
+                liveConnection.anchorParameterName ==
+                  nodeTerminalCenter.parameterName
               )
             );
           }
@@ -169,7 +171,7 @@ export const dropCableStore = derived(
         if (targetTerminal) {
           liveConnection.attach(
             targetTerminal.nodeId,
-            targetTerminal.inputName,
+            targetTerminal.parameterName,
             targetTerminal.connectionId
           );
         } else {

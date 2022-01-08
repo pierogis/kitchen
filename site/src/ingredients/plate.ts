@@ -3,7 +3,7 @@ import { NodeState, RacksState, updateNode } from "../nodes/nodes";
 import { viewportStore } from "../viewport/viewport";
 import type { IngredientControl } from "./ingredients";
 import { get } from "svelte/store";
-import { ConnectionInputType } from "../connections/connections";
+import { ParameterType } from "../connections/connections";
 
 interface PlateProperties {
   width: number;
@@ -17,10 +17,10 @@ export class PlateControl implements IngredientControl<PlateProperties> {
     let defaultRacks: RacksState = { in: {}, out: {} };
     for (let propertyName in defaultProperties) {
       defaultRacks.in[propertyName] = {
-        inputType: ConnectionInputType.number,
+        parameterType: ParameterType.number,
       };
       defaultRacks.out[propertyName] = {
-        inputType: ConnectionInputType.number,
+        parameterType: ParameterType.number,
       };
     }
 
@@ -46,9 +46,6 @@ export class PlateControl implements IngredientControl<PlateProperties> {
         updateNode(node);
       });
 
-    // widthInput.controller_.view.element.prepend(widthInRack);
-    // widthInput.controller_.view.element.append(widthOutRack);
-
     let heightInput = pane
       .addInput(params, "height", {
         step: 1,
@@ -57,9 +54,6 @@ export class PlateControl implements IngredientControl<PlateProperties> {
         node.properties.height = ev.value;
         updateNode(node);
       });
-
-    // heightInput.controller_.view.element.prepend(heightInRack);
-    // heightInput.controller_.view.element.append(heightOutRack);
 
     return {
       width: widthInput,
