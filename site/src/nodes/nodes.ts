@@ -17,15 +17,13 @@ export type RacksState = {
 export interface NodeState {
   nodeId: string;
   type: string;
-  style: string;
+  coords: Writable<{
+    x: number;
+    y: number;
+  }>;
   properties: NodeProperties;
   racks: RacksState;
 }
-
-// let initialPlateProps = get(viewportStore);
-
-// let initialPlateRacks = { in: [], out: [] };
-// initialPlateRacks.in = Object.keys(initialPlateProps)
 
 export const nodesStore: Writable<{ [nodeId: string]: NodeState }> = writable(
   {}

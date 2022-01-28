@@ -1,6 +1,6 @@
 <script lang="typescript">
-  import { setContext, tick } from "svelte";
-  import { derived, Readable } from "svelte/store";
+  import { setContext } from "svelte";
+  import { derived, get, Readable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
 
@@ -62,7 +62,8 @@
   // if the node type changes update the store
   function updateType(event: CustomEvent<string>) {
     let defaultNode = $ingredientsStore[event.detail].default(
-      $nodeStore.nodeId
+      $nodeStore.nodeId,
+      get($nodeStore.coords)
     );
 
     updateNode(defaultNode);
@@ -71,6 +72,11 @@
   // use the selected ingredient to attach tweakpane
   function attach(pane: Pane): IngredientControlHandle {
     let parameterInputs = $ingredient.attach(pane, $nodeStore);
+
+    Object.entries(parameterInputs).forEach(([name, input]) => {
+      input.controller_.valueController.view.element.parentElement.style.width =
+        "100px";
+    });
 
     // attaching bound divs to terminal racks
     // $node.racks specifies if a rack should be attached
@@ -96,6 +102,8 @@
 
   let grabTarget: HTMLElement;
 
+  const initialLocation = get($nodeStore.coords);
+
   const nodeHeaderSize = 12;
   $: styleVars = {
     nodeHeaderSize: nodeHeaderSize + "px",
@@ -104,6 +112,7 @@
 
 <div
   class="node no-select"
+  style="top: {initialLocation.y - 5}px; left: {initialLocation.x - 100}px"
   use:draggableAction={grabTarget}
   use:cssVars={styleVars}
 >
@@ -153,9 +162,6 @@
     position: absolute;
     z-index: 1;
     display: block;
-
-    top: 50%;
-    left: 50%;
   }
   .header {
     display: flex;

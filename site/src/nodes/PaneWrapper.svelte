@@ -41,6 +41,9 @@
         index: 0,
       })
       .on("change", updateType);
+
+    typeInput.controller_.valueController.view.element.parentElement.style.width =
+      "100px";
   }
 
   onMount(() => {

@@ -1,4 +1,4 @@
-import { derived } from "svelte/store";
+import { derived, writable } from "svelte/store";
 import type { Pane } from "tweakpane";
 import { ParameterType, connectionsStore } from "../connections/connections";
 import { NodeProperties, NodeState, updateNode } from "../nodes/nodes";
@@ -13,7 +13,7 @@ interface ColorProperties extends NodeProperties {
 export class ColorControl implements IngredientControl<ColorProperties> {
   type = "color";
 
-  default(id: string): NodeState {
+  default(id: string, coords: { x: number; y: number }): NodeState {
     const defaultProperties = {
       r: 120,
       g: 150,
@@ -27,7 +27,7 @@ export class ColorControl implements IngredientControl<ColorProperties> {
     return {
       nodeId: id,
       type: this.type,
-      style: "",
+      coords: writable(coords),
       properties: defaultProperties,
       racks: defaultRacks,
     };

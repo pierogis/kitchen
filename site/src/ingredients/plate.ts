@@ -2,7 +2,7 @@ import type { Pane } from "tweakpane";
 import { NodeState, RacksState, updateNode } from "../nodes/nodes";
 import { viewportStore } from "../viewport/viewport";
 import type { IngredientControl } from "./ingredients";
-import { get } from "svelte/store";
+import { get, writable } from "svelte/store";
 import { ParameterType } from "../connections/connections";
 
 interface PlateProperties {
@@ -12,7 +12,7 @@ interface PlateProperties {
 
 export class PlateControl implements IngredientControl<PlateProperties> {
   type = "plate";
-  default(id: string): NodeState {
+  default(id: string, coords: { x: number; y: number }): NodeState {
     let defaultProperties = get(viewportStore);
     let defaultRacks: RacksState = { in: {}, out: {} };
     for (let propertyName in defaultProperties) {
@@ -27,7 +27,7 @@ export class PlateControl implements IngredientControl<PlateProperties> {
     return {
       nodeId: id,
       type: this.type,
-      style: "",
+      coords: writable(coords),
       properties: defaultProperties,
       racks: defaultRacks,
     };

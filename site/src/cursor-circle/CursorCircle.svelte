@@ -14,17 +14,17 @@
   const touchDuration = 500;
 
   // this timer will fire a callback if you press long enough
-  var longPressTimer;
+  var longPressTimer: NodeJS.Timeout;
 
   let dispatch = createEventDispatcher();
 
   // follow the mouse
-  function onmousemove(event: MouseEvent) {
+  function handleMouseMove(event: MouseEvent) {
     event.preventDefault();
     coords = { x: event.clientX, y: event.clientY };
   }
 
-  function onmousedown(event: MouseEvent) {
+  function handleMouseDown(event: MouseEvent) {
     // click
     if (!longPressTimer && event.button == 0) {
       size.set(20);
@@ -37,7 +37,7 @@
     }
   }
 
-  function onmouseup() {
+  function handleMouseUp() {
     // nullify longpress timer from click
     size.set(0);
     if (longPressTimer) {
@@ -51,11 +51,9 @@
   }
 </script>
 
-<svg
-  on:mousemove={onmousemove}
-  on:mousedown={onmousedown}
-  on:mouseup={onmouseup}
->
+<svelte:window on:mouseup={handleMouseUp} />
+
+<svg on:mousemove={handleMouseMove} on:mousedown={handleMouseDown}>
   <circle
     cx={$cursorLocation.x}
     cy={$cursorLocation.y}

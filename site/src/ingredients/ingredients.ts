@@ -12,7 +12,13 @@ export type IngredientControlHandle = {
 
 export interface IngredientControl<P extends NodeProperties> {
   type: string;
-  default(id: string): NodeState;
+  default(
+    id: string,
+    coords: {
+      x: number;
+      y: number;
+    }
+  ): NodeState;
   attach(pane: Pane, node: NodeState): IngredientControlHandle;
 }
 

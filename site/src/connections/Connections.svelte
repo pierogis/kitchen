@@ -103,7 +103,7 @@
   }
 </script>
 
-{#each Object.entries($connectionsCoordsStore) as [connectionId, coords]}
+{#each Object.entries($connectionsCoordsStore) as [connectionId, coords] (connectionId)}
   <Cable inCoords={coords.in} outCoords={coords.out} />
 {/each}
 

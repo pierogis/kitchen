@@ -1,12 +1,11 @@
 <script lang="ts" context="module">
   import { v4 as uuidv4 } from "uuid";
 
-  import { addNode } from "./nodes/nodes";
   import { ColorControl } from "./ingredients/color";
 
-  let color1 = new ColorControl().default("1");
+  let color1 = new ColorControl().default("1", { x: 900, y: 200 });
   color1.racks.out = {};
-  let color2 = new ColorControl().default("2");
+  let color2 = new ColorControl().default("2", { x: 500, y: 200 });
   color2.racks.in = {};
 
   const initialState = {
@@ -16,11 +15,12 @@
 
   nodesStore.set(initialState);
 
-  const defaultNode = () => new ColorControl().default(uuidv4());
+  const createDefaultNode = (coords: { x: number; y: number }) =>
+    new ColorControl().default(uuidv4(), coords);
 </script>
 
 <script lang="ts">
-  import { nodesStore } from "./nodes/nodes";
+  import { nodesStore, addNode } from "./nodes/nodes";
 
   import Node from "./nodes/Node.svelte";
   import CursorCircle from "./cursor-circle/CursorCircle.svelte";
@@ -31,13 +31,19 @@
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
 
-{#each Object.entries($nodesStore) as [nodeId, node]}
+{#each Object.entries($nodesStore) as [nodeId, node] (node)}
   <Node draggable={true} {...node} />
 {/each}
 
 <Connections />
 
-<CursorCircle on:longpress={() => addNode(defaultNode())} />
+<CursorCircle
+  on:longpress={(event) => {
+    let coords = event.detail;
+    let node = createDefaultNode(coords);
+    addNode(node);
+  }}
+/>
 
 <style>
   :global(:root) {
