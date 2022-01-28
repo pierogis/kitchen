@@ -104,6 +104,11 @@
 
   const initialLocation = get($nodeStore.coords);
 
+  function centerOnInitialLocationAction(element: HTMLElement) {
+    const midpoint = element.getBoundingClientRect().width / 2;
+    element.style.left = initialLocation.x - midpoint + "px";
+  }
+
   const nodeHeaderSize = 12;
   $: styleVars = {
     nodeHeaderSize: nodeHeaderSize + "px",
@@ -112,7 +117,8 @@
 
 <div
   class="node no-select"
-  style="top: {initialLocation.y - 5}px; left: {initialLocation.x - 100}px"
+  style="top: {initialLocation.y - nodeHeaderSize / 2}px;"
+  use:centerOnInitialLocationAction
   use:draggableAction={grabTarget}
   use:cssVars={styleVars}
 >
