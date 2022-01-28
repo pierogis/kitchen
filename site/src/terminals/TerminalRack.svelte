@@ -1,7 +1,11 @@
+<script lang="ts" context="module">
+  const NOVEL_CONNECTION_ID = "novel";
+</script>
+
 <script lang="ts">
   import { v4 as uuidv4 } from "uuid";
   import { getContext } from "svelte";
-  import { derived, Readable, writable } from "svelte/store";
+  import { derived, Readable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
 
@@ -59,15 +63,15 @@
         );
       });
 
-      let centerStores: {
+      let centerStores = nodeCenters.reduce<{
         [connectionId: string]: NodeTerminalCentersState;
-      } = nodeCenters.reduce((prev, center) => {
+      }>((currentCenterStores, center) => {
         if (center.connectionId) {
-          prev[center.connectionId] = center;
+          currentCenterStores[center.connectionId] = center;
         } else {
-          prev["novel"] = center;
+          currentCenterStores[NOVEL_CONNECTION_ID] = center;
         }
-        return prev;
+        return currentCenterStores;
       }, {});
 
       // add a rect center store to update from the live connection
@@ -85,6 +89,9 @@
           parameterType: liveConnection.parameterType,
           coords: liveConnection.anchorCoordsStore,
         };
+        if (direction == TerminalDirection.in) {
+          delete centerStores[NOVEL_CONNECTION_ID];
+        }
       }
 
       return centerStores;
@@ -250,7 +257,7 @@
         cabled: boolean;
       }[]
     >((result, connectionId) => {
-      if (connectionId != "novel") {
+      if (connectionId != NOVEL_CONNECTION_ID) {
         const terminal = {
           actionDescriptions: [
             {
@@ -278,7 +285,7 @@
         actionDescriptions: [
           {
             action: terminalCenterUpdateAction,
-            params: { connectionId: "novel" },
+            params: { connectionId: NOVEL_CONNECTION_ID },
           },
           {
             action: handleNovelGrabAction,
