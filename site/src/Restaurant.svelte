@@ -2,15 +2,15 @@
   import { v4 as uuidv4 } from "uuid";
 
   import { ColorControl } from "./ingredients/color";
+  import { PierogiControl } from "./ingredients/pierogi";
+  import { PlateControl } from "./ingredients/plate";
 
-  let color1 = new ColorControl().default("1", { x: 900, y: 200 });
-  color1.racks.out = {};
-  let color2 = new ColorControl().default("2", { x: 500, y: 200 });
-  color2.racks.in = {};
+  let pierogi = new PierogiControl().default("1", { x: 500, y: 200 });
+  let plate = new PlateControl().default("2", { x: 900, y: 200 });
 
   const initialState = {
-    1: color1,
-    2: color2,
+    1: pierogi,
+    2: plate,
   };
 
   nodesStore.set(initialState);

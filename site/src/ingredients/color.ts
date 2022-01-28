@@ -1,6 +1,6 @@
-import { derived, writable } from "svelte/store";
+import { writable } from "svelte/store";
 import type { Pane } from "tweakpane";
-import { ParameterType, connectionsStore } from "../connections/connections";
+import { ParameterType } from "../connections/connections";
 import { NodeProperties, NodeState, updateNode } from "../nodes/nodes";
 import type { IngredientControl, IngredientControlHandle } from "./ingredients";
 
@@ -20,7 +20,7 @@ export class ColorControl implements IngredientControl<ColorProperties> {
       b: 190,
     };
     const defaultRacks = {
-      in: { color: { parameterType: ParameterType.color } },
+      in: {},
       out: { color: { parameterType: ParameterType.color } },
     };
 

@@ -19,9 +19,6 @@ export class PierogiControl implements IngredientControl<PierogiProperties> {
     let defaultProperties = { ...get(viewportStore), image: new Image() };
     let defaultRacks: RacksState = { in: {}, out: {} };
     for (let propertyName in defaultProperties) {
-      defaultRacks.in[propertyName] = {
-        parameterType: ParameterType.number,
-      };
       defaultRacks.out[propertyName] = {
         parameterType: ParameterType.number,
       };
