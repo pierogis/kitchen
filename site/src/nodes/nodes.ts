@@ -1,7 +1,7 @@
 import { derived, Readable, Writable, writable } from "svelte/store";
 import type { ParameterType } from "../connections/connections";
 
-export type NodeProperties = {
+export type NodeParameters = {
   [key: string]: any;
 };
 
@@ -14,20 +14,19 @@ export type RacksState = {
   out: { [parameterName: string]: RackState };
 };
 
-export interface NodeState {
+export interface NodeState<P extends NodeParameters> {
   nodeId: string;
   type: string;
   coords: Writable<{
     x: number;
     y: number;
   }>;
-  properties: NodeProperties;
+  parameters: Writable<P>;
   racks: RacksState;
 }
 
-export const nodesStore: Writable<{ [nodeId: string]: NodeState }> = writable(
-  {}
-);
+export const nodesStore: Writable<{ [nodeId: string]: NodeState<any> }> =
+  writable({});
 
 export const nodesRacksStore: Readable<{ [nodeId: string]: RacksState }> =
   derived(nodesStore, (nodes) => {
@@ -37,19 +36,19 @@ export const nodesRacksStore: Readable<{ [nodeId: string]: RacksState }> =
     }, {});
   });
 
-export function addNode(node: NodeState) {
+export function addNode(node: NodeState<any>) {
   nodesStore.update(($nodes) => {
     $nodes[node.nodeId] = node;
     return $nodes;
   });
 }
-export function updateNode(node: NodeState) {
+export function updateNode(node: NodeState<any>) {
   nodesStore.update(($nodes) => {
     $nodes[node.nodeId] = node;
     return $nodes;
   });
 }
-export function removeNode(node: NodeState) {
+export function removeNode(node: NodeState<any>) {
   nodesStore.update(($nodes) => {
     delete $nodes[node.nodeId];
     return $nodes;

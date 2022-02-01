@@ -1,25 +1,31 @@
-import { get, writable } from "svelte/store";
+import { Writable, writable } from "svelte/store";
 import type { Pane } from "tweakpane";
 import * as ImagePlugin from "tweakpane-image-plugin";
 import { ParameterType } from "../connections/connections";
 
-import { NodeState, RacksState, updateNode } from "../nodes/nodes";
-import { viewportStore } from "../viewport/viewport";
-import type { IngredientControl } from "./ingredients";
+import type { NodeParameters, NodeState, RacksState } from "../nodes/nodes";
+import { IngredientControl } from "./ingredients";
 
-interface PierogiProperties {
+interface PierogiParameters extends NodeParameters {
   image: HTMLImageElement;
   width: number;
   height: number;
 }
 
-export class PierogiControl implements IngredientControl<PierogiProperties> {
+export class PierogiControl extends IngredientControl<PierogiParameters> {
   type = "pierogi";
-  default(id: string, coords: { x: number; y: number }): NodeState {
-    let defaultProperties = { ...get(viewportStore), image: new Image() };
+  default(
+    id: string,
+    coords: { x: number; y: number }
+  ): NodeState<PierogiParameters> {
+    let defaultParameters = {
+      image: new Image(),
+      width: 0,
+      height: 0,
+    };
     let defaultRacks: RacksState = { in: {}, out: {} };
-    for (let propertyName in defaultProperties) {
-      defaultRacks.out[propertyName] = {
+    for (let parameterName in defaultParameters) {
+      defaultRacks.out[parameterName] = {
         parameterType: ParameterType.number,
       };
     }
@@ -28,45 +34,38 @@ export class PierogiControl implements IngredientControl<PierogiProperties> {
       nodeId: id,
       type: this.type,
       coords: writable(coords),
-      properties: defaultProperties,
+      parameters: writable(defaultParameters),
       racks: defaultRacks,
     };
   }
-  attach(pane: Pane, node: NodeState) {
+  attach(
+    pane: Pane,
+    params: PierogiParameters,
+    store: Writable<PierogiParameters>
+  ) {
     pane.registerPlugin(ImagePlugin);
-
-    const params = {
-      image: node.properties.image,
-      height: node.properties.height,
-      width: node.properties.width,
-    };
 
     let imageInput = pane
       .addInput(params, "image", {
-        extensions: ".jpg, .png, .gif",
+        extensions: ".jpg, .png, .gif, .mp4",
       })
       .on("change", (ev) => {
-        node.properties.image = ev.value;
-        updateNode(node);
+        store.set({
+          image: ev.value,
+          width: ev.value.width,
+          height: ev.value.height,
+        });
       });
 
-    let widthInput = pane
-      .addInput(params, "width", {
-        step: 1,
-      })
-      .on("change", (ev) => {
-        node.properties.width = ev.value;
-        updateNode(node);
-      });
+    let widthInput = pane.addMonitor(params, "width", {
+      disabled: true,
+      format: (h) => h.toString(),
+    });
 
-    let heightInput = pane
-      .addInput(params, "height", {
-        step: 1,
-      })
-      .on("change", (ev) => {
-        node.properties.height = ev.value;
-        updateNode(node);
-      });
+    let heightInput = pane.addMonitor(params, "height", {
+      disabled: true,
+      format: (h) => h.toString(),
+    });
 
     return {
       image: imageInput,

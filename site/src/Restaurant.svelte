@@ -8,15 +8,22 @@
   let pierogi = new PierogiControl().default("1", { x: 500, y: 200 });
   let plate = new PlateControl().default("2", { x: 900, y: 200 });
 
-  const initialState = {
+  const initialNodesState = {
     1: pierogi,
     2: plate,
   };
 
-  nodesStore.set(initialState);
+  nodesStore.set(initialNodesState);
 
   const createDefaultNode = (coords: { x: number; y: number }) =>
     new ColorControl().default(uuidv4(), coords);
+
+  const initialIngredientState = {
+    plate: new PlateControl(),
+    pierogi: new PierogiControl(),
+    color: new ColorControl(),
+  };
+  ingredientsStore.set(initialIngredientState);
 </script>
 
 <script lang="ts">
@@ -25,6 +32,7 @@
   import Node from "./nodes/Node.svelte";
   import CursorCircle from "./cursor-circle/CursorCircle.svelte";
   import Connections from "./connections/Connections.svelte";
+  import { ingredientsStore } from "./ingredients/ingredients";
 </script>
 
 <svelte:window on:scroll|preventDefault={() => {}} />

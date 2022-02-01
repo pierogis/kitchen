@@ -1,21 +1,24 @@
 import type { Pane } from "tweakpane";
-import { NodeState, RacksState, updateNode } from "../nodes/nodes";
+import type { NodeParameters, NodeState, RacksState } from "../nodes/nodes";
 import { viewportStore } from "../viewport/viewport";
-import type { IngredientControl } from "./ingredients";
-import { get, writable } from "svelte/store";
+import { IngredientControl } from "./ingredients";
+import { get, Writable, writable } from "svelte/store";
 import { ParameterType } from "../connections/connections";
 
-interface PlateProperties {
+interface PlateParameters extends NodeParameters {
   width: number;
   height: number;
 }
 
-export class PlateControl implements IngredientControl<PlateProperties> {
+export class PlateControl extends IngredientControl<PlateParameters> {
   type = "plate";
-  default(id: string, coords: { x: number; y: number }): NodeState {
-    let defaultProperties = get(viewportStore);
+  default(
+    id: string,
+    coords: { x: number; y: number }
+  ): NodeState<PlateParameters> {
+    let defaultParameters = get(viewportStore);
     let defaultRacks: RacksState = { in: {}, out: {} };
-    for (let propertyName in defaultProperties) {
+    for (let propertyName in defaultParameters) {
       defaultRacks.in[propertyName] = {
         parameterType: ParameterType.number,
       };
@@ -28,22 +31,24 @@ export class PlateControl implements IngredientControl<PlateProperties> {
       nodeId: id,
       type: this.type,
       coords: writable(coords),
-      properties: defaultProperties,
+      parameters: writable(defaultParameters),
       racks: defaultRacks,
     };
   }
-  attach(pane: Pane, node: NodeState) {
-    const params = {
-      width: node.properties.width,
-      height: node.properties.height,
-    };
+  attach(
+    pane: Pane,
+    params: PlateParameters,
+    store: Writable<PlateParameters>
+  ) {
     let widthInput = pane
       .addInput(params, "width", {
         step: 1,
       })
       .on("change", (ev) => {
-        node.properties.width = ev.value;
-        updateNode(node);
+        store.update((old) => {
+          old.width = ev.value;
+          return old;
+        });
       });
 
     let heightInput = pane
@@ -51,8 +56,10 @@ export class PlateControl implements IngredientControl<PlateProperties> {
         step: 1,
       })
       .on("change", (ev) => {
-        node.properties.height = ev.value;
-        updateNode(node);
+        store.update((old) => {
+          old.height = ev.value;
+          return old;
+        });
       });
 
     return {

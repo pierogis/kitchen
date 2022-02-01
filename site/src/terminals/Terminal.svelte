@@ -37,10 +37,12 @@
     border: 0px inset var(--cable-color-number);
     background-color: hsla(0, 0%, 40%, 1);
 
-    transition: border-radius 300ms, border 100ms, margin 100ms, width 300ms,
+    transition: border-radius 300ms, border 300ms, margin 300ms, width 300ms,
       left 300ms, right 300ms;
     z-index: 1;
     cursor: grab;
+
+    pointer-events: all;
   }
 
   .terminal:focus {

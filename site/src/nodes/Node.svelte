@@ -13,7 +13,13 @@
   } from "../ingredients/ingredients";
   import TerminalRack from "../terminals/TerminalRack.svelte";
   import { TerminalDirection } from "../terminals/terminals";
-  import { removeNode, nodesStore, NodeState, updateNode } from "./nodes";
+  import {
+    removeNode,
+    nodesStore,
+    NodeState,
+    updateNode,
+    NodeParameters,
+  } from "./nodes";
 
   import PaneWrapper from "./PaneWrapper.svelte";
   import { draggableAction } from "../common/actions/draggableAction";
@@ -25,7 +31,7 @@
   let dragging = false;
 
   // subscribe to just this node in the nodesStore
-  const nodeStore: Readable<NodeState> = derived(
+  const nodeStore: Readable<NodeState<NodeParameters>> = derived(
     nodesStore,
     ($nodes) => $nodes[nodeId]
   );
@@ -35,7 +41,7 @@
   const ingredient: Readable<IngredientControl<any>> = derived(
     [nodeStore, ingredientsStore],
     ([state, ingredients]: [
-      NodeState,
+      NodeState<any>,
       {
         [ingredientName: string]: IngredientControl<{}>;
       }
@@ -69,27 +75,33 @@
     updateNode(defaultNode);
   }
 
-  // use the selected ingredient to attach tweakpane
+  // use the selected ingredient to attach inputs to tweakpane
   function attach(pane: Pane): IngredientControlHandle {
-    let parameterInputs = $ingredient.attach(pane, $nodeStore);
+    const paramsStore = $nodeStore.parameters;
+    let params = get(paramsStore);
+    let parameterInputs = $ingredient.attach(pane, params, paramsStore);
 
-    Object.entries(parameterInputs).forEach(([name, input]) => {
+    $ingredient.subscribe(pane, paramsStore, params);
+
+    // need to know if this has an in connection
+    // each of these represents a input/label
+    Object.entries(parameterInputs).forEach(([parameterName, input]) => {
       input.controller_.valueController.view.element.parentElement.style.width =
         "100px";
-    });
 
-    // attaching bound divs to terminal racks
-    // $node.racks specifies if a rack should be attached
-    Object.keys($nodeStore.racks.in).forEach((parameterName) => {
-      parameterInputs[parameterName].controller_.view.element.prepend(
-        terminalRackContainers.in[parameterName]
-      );
-    });
+      // attaching bound divs to terminal racks
+      // $node.racks specifies if a rack should be attached
+      if (parameterName in $nodeStore.racks.in) {
+        input.controller_.view.element.prepend(
+          terminalRackContainers.in[parameterName]
+        );
+      }
 
-    Object.keys($nodeStore.racks.out).forEach((parameterName) => {
-      parameterInputs[parameterName].controller_.view.element.append(
-        terminalRackContainers.out[parameterName]
-      );
+      if (parameterName in $nodeStore.racks.out) {
+        input.controller_.view.element.append(
+          terminalRackContainers.out[parameterName]
+        );
+      }
     });
 
     return parameterInputs;

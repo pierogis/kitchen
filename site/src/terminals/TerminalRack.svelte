@@ -360,7 +360,7 @@
     justify-content: space-evenly;
 
     width: 10px;
-    transition: width 500ms;
+    transition: width 300ms;
   }
 
   .terminals-container.expanded {
