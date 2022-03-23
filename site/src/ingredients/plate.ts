@@ -33,6 +33,7 @@ export class PlateControl extends IngredientControl<PlateParameters> {
       coords: writable(coords),
       parameters: writable(defaultParameters),
       racks: defaultRacks,
+      dockedStatus: writable({ docked: false }),
     };
   }
   attach(

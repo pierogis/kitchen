@@ -1,4 +1,4 @@
-<script lang="typescript">
+<script lang="ts">
   import { createEventDispatcher, onMount, tick } from "svelte";
 
   import { InputBindingApi, Pane, TpChangeEvent } from "tweakpane";

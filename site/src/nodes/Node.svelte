@@ -1,6 +1,6 @@
-<script lang="typescript">
+<script lang="ts">
   import { setContext } from "svelte";
-  import { derived, get, Readable } from "svelte/store";
+  import { derived, get, Readable, Writable } from "svelte/store";
 
   import cssVars from "svelte-css-vars";
 
@@ -19,6 +19,8 @@
     NodeState,
     updateNode,
     NodeParameters,
+    droppedNodeCoordsStore,
+    DockedState,
   } from "./nodes";
 
   import PaneWrapper from "./PaneWrapper.svelte";
@@ -26,6 +28,7 @@
 
   export let draggable: boolean;
   export let nodeId: string;
+  export let dockedStatusStore: Writable<DockedState>;
 
   setContext("nodeId", nodeId);
   let dragging = false;
@@ -133,6 +136,12 @@
   use:centerOnInitialLocationAction
   use:draggableAction={grabTarget}
   use:cssVars={styleVars}
+  on:release={(event) => {
+    droppedNodeCoordsStore.set({
+      dockedStatusStore,
+      coords: event.detail,
+    });
+  }}
 >
   <div class="header">
     <div class="grab" bind:this={grabTarget} class:dragging>
@@ -188,9 +197,9 @@
   }
 
   .grab {
-    background-color: var(--tp-base-background-color);
+    background-color: var(--primary-color);
 
-    box-shadow: 0 2px 4px var(--tp-base-shadow-color);
+    box-shadow: 0 2px 4px var(--shadow-color);
 
     border-radius: 6px 0px 0px 6px;
 
@@ -206,7 +215,7 @@
   }
 
   .grab-dot {
-    background-color: var(--tp-button-background-color-hover);
+    background-color: var(--button-color-hover);
     border-radius: 50%;
     height: 4px;
     width: 4px;
@@ -215,7 +224,7 @@
 
   .close {
     background-color: var(--close-color);
-    box-shadow: 0 2px 4px var(--tp-base-shadow-color);
+    box-shadow: 0 2px 4px var(--primary-color-shadow);
 
     border-radius: 0px 6px 6px 0px;
 

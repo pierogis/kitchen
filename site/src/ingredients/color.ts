@@ -37,6 +37,7 @@ export class ColorControl extends IngredientControl<ColorParameters> {
       coords: writable(coords),
       parameters: writable(defaultParameters),
       racks: defaultRacks,
+      dockedStatus: writable({ docked: false }),
     };
   }
 

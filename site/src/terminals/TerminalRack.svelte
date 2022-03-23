@@ -341,7 +341,7 @@
     align-items: center;
 
     border-radius: 6px 6px 6px 6px;
-    background-color: var(--tp-base-background-color);
+    background-color: var(--primary-color);
     box-shadow: 0 2px 4px var(--tp-base-shadow-color);
 
     position: relative;

@@ -36,6 +36,7 @@ export class PierogiControl extends IngredientControl<PierogiParameters> {
       coords: writable(coords),
       parameters: writable(defaultParameters),
       racks: defaultRacks,
+      dockedStatus: writable({ docked: false }),
     };
   }
   attach(

@@ -33,6 +33,8 @@
   import CursorCircle from "./cursor-circle/CursorCircle.svelte";
   import Connections from "./connections/Connections.svelte";
   import { ingredientsStore } from "./ingredients/ingredients";
+  import Dock from "./docks/Dock.svelte";
+  import { TerminalDirection } from "./terminals/terminals";
 </script>
 
 <svelte:window on:scroll|preventDefault={() => {}} />
@@ -40,8 +42,13 @@
 <canvas height={window.innerHeight} width={window.innerWidth} />
 
 {#each Object.entries($nodesStore) as [nodeId, node] (node)}
+  <!-- {#if !node.dockedStatus.docked} -->
   <Node draggable={true} {...node} />
+  <!-- {/if} -->
 {/each}
+
+<Dock direction={TerminalDirection.in} />
+<Dock direction={TerminalDirection.out} />
 
 <Connections />
 
@@ -55,11 +62,19 @@
 
 <style>
   :global(:root) {
-    --tp-button-background-color: hsla(0, 0%, 70%, 1);
-    --tp-button-background-color-hover: hsla(0, 0%, 85%, 1);
-    --tp-base-background-color: hsla(160, 20%, 75%, 0.8);
-    --tp-label-foreground-color: hsla(230, 5%, 30%, 0.7);
-    --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
+    --primary-color: hsla(160, 20%, 75%, 0.8);
+    --shadow-color: hsla(0, 0%, 0%, 0.2);
+    --label-color: hsla(230, 5%, 30%, 0.7);
+
+    --button-color: hsla(0, 0%, 70%, 1);
+    --button-color-hover: hsla(0, 0%, 85%, 1);
+
+    --tp-base-background-color: var(--primary-color);
+    --tp-base-shadow-color: var(--shadow-color);
+    --tp-button-background-color: var(--button-color);
+    --tp-button-background-color-hover: var(--button-color-hover);
+    --tp-label-foreground-color: var(--label-color);
+
     --close-color: hsla(0, 80%, 70%, 0.8);
     --cable-color-number: rgba(120, 150, 190, 1);
   }

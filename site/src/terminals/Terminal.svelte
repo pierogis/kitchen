@@ -1,4 +1,4 @@
-<script lang="typescript">
+<script lang="ts">
   import cssVars from "svelte-css-vars";
 
   import { ActionDescription, useActions } from "../common/actions/useActions";
@@ -68,7 +68,7 @@
 
   .cabled {
     border: var(--border-width) inset var(--cable-color-number);
-    background-color: var(--tp-button-background-color-hover);
+    background-color: var(--button-color-hover);
     width: 2px;
 
     margin: -2px;

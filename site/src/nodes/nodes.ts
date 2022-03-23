@@ -1,5 +1,6 @@
 import { derived, Readable, Writable, writable } from "svelte/store";
 import type { ParameterType } from "../connections/connections";
+import type { TerminalDirection } from "../terminals/terminals";
 
 export type NodeParameters = {
   [key: string]: any;
@@ -14,6 +15,11 @@ export type RacksState = {
   out: { [parameterName: string]: RackState };
 };
 
+export interface DockedState {
+  docked: boolean;
+  direction?: TerminalDirection;
+}
+
 export interface NodeState<P extends NodeParameters> {
   nodeId: string;
   type: string;
@@ -23,6 +29,7 @@ export interface NodeState<P extends NodeParameters> {
   }>;
   parameters: Writable<P>;
   racks: RacksState;
+  dockedStatus: Writable<DockedState>;
 }
 
 export const nodesStore: Writable<{ [nodeId: string]: NodeState<any> }> =
@@ -48,9 +55,16 @@ export function updateNode(node: NodeState<any>) {
     return $nodes;
   });
 }
+
 export function removeNode(node: NodeState<any>) {
   nodesStore.update(($nodes) => {
     delete $nodes[node.nodeId];
     return $nodes;
   });
 }
+
+// each dock subscribes to this and does its own checking
+export const droppedNodeCoordsStore: Writable<{
+  dockedStatusStore: Writable<DockedState>;
+  coords: { x: number; y: number };
+}> = writable();
