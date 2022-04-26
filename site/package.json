@@ -1,13 +1,22 @@
 {
-	"author": "Kyle Moore <kyle@pierogis.live>",
-	"name": "pierogis-kitchen",
-	"version": "0.1.0",
+	"name": "@pierogis/kitchen",
+	"version": "0.0.1",
+	"description": "a place to test your recipes",
 	"repository": {
-		"type": "git",
-		"url": "https://github.com/pierogis/kitchen.git"
+	  "type": "git",
+	  "url": "git+https://github.com/pierogis/kitchen.git"
 	},
 	"license": "AGPL-3.0",
-	"type": "module",
+	"bugs": {
+	  "url": "https://github.com/pierogis/kitchen/issues"
+	},
+	"homepage": "https://kitchen.pierogis.live",
+	"keywords": [
+	  "svelte",
+	  "image",
+	  "animation",
+	  "website"
+	],
 	"scripts": {
 		"dev": "svelte-kit dev",
 		"build": "svelte-kit build",
@@ -48,5 +57,6 @@
 		"tweakpane-image-plugin": "github:ayamflow/tweakpane-image-plugin",
 		"tweakpane-plugin-search-list": "^0.0.10",
 		"uuid": "^8.3.2"
-	}
+	},
+	"type": "module"
 }
