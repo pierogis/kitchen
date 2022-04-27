@@ -1,5 +1,4 @@
 <script lang="ts">
-	import cssVars from 'svelte-css-vars';
 	import type { Readable } from 'svelte/store';
 
 	export let inCoords: Readable<{ x: number; y: number }>;
@@ -67,16 +66,12 @@
 	$: pathString = `M ${0} ${startY} C ${0} ${height / 2}, ${width} ${height / 2}, ${width} ${endY}`;
 
 	const pathStrokeWidth = 4;
-
-	$: styleVars = {
-		pathStrokeWidth: pathStrokeWidth + 'px'
-	};
 </script>
 
 {#if $inCoords.x && $inCoords.y && $outCoords.x && $outCoords.y}
 	<svg
 		bind:this={svg}
-		use:cssVars={styleVars}
+		style:--path-stroke-width="{pathStrokeWidth}px"
 		style="width: {width}px; height: {height}px; left: {left}px; top: {top}px;"
 		class:dragging
 	>
@@ -90,14 +85,14 @@
 	}
 	svg {
 		position: absolute;
-		padding: var(--pathStrokeWidth);
-		margin: calc(0px - var(--pathStrokeWidth));
+		padding: var(--path-stroke-width);
+		margin: calc(0px - var(--path-stroke-width));
 	}
 
 	path {
 		stroke: var(--cable-color-number);
 		opacity: 0.9;
-		stroke-width: var(--pathStrokeWidth);
+		stroke-width: var(--path-stroke-width);
 		fill: transparent;
 	}
 </style>

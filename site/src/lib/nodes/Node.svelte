@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import { derived, get, Readable, Writable } from 'svelte/store';
-
-	import cssVars from 'svelte-css-vars';
+	import { derived, get, type Readable, type Writable } from 'svelte/store';
 
 	import type { Pane } from 'tweakpane';
 
 	import {
 		IngredientControl,
-		IngredientControlHandle,
+		type IngredientControlHandle,
 		ingredientsStore
 	} from '../ingredients/ingredients';
 	import TerminalRack from '../terminals/TerminalRack.svelte';
@@ -16,11 +14,11 @@
 	import {
 		removeNode,
 		nodesStore,
-		NodeState,
+		type NodeState,
 		updateNode,
-		NodeParameters,
+		type NodeParameters,
 		droppedNodeCoordsStore,
-		DockedState
+		type DockedState
 	} from './nodes';
 
 	import PaneWrapper from './PaneWrapper.svelte';
@@ -120,9 +118,6 @@
 	}
 
 	const nodeHeaderSize = 12;
-	$: styleVars = {
-		nodeHeaderSize: nodeHeaderSize + 'px'
-	};
 </script>
 
 <div
@@ -130,7 +125,7 @@
 	style="top: {initialLocation.y - nodeHeaderSize / 2}px;"
 	use:centerOnInitialLocationAction
 	use:draggableAction={grabTarget}
-	use:cssVars={styleVars}
+	style:--node-header-size="{nodeHeaderSize}px"
 	on:release={(event) => {
 		droppedNodeCoordsStore.set({
 			dockedStatusStore,
@@ -187,7 +182,7 @@
 	}
 	.header {
 		display: flex;
-		height: var(--nodeHeaderSize);
+		height: var(--node-header-size);
 		margin-bottom: 4px;
 	}
 
@@ -223,7 +218,7 @@
 
 		border-radius: 0px 6px 6px 0px;
 
-		width: var(--nodeHeaderSize);
+		width: var(--node-header-size);
 		margin-left: 5px;
 	}
 

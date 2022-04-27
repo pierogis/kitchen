@@ -1,4 +1,4 @@
-import { Writable, writable } from 'svelte/store';
+import { type Writable, writable } from 'svelte/store';
 import type { Pane } from 'tweakpane';
 import * as ImagePlugin from 'tweakpane-image-plugin';
 import { ParameterType } from '../connections/connections';

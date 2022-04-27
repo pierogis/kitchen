@@ -1,7 +1,5 @@
 <script lang="ts">
-	import cssVars from 'svelte-css-vars';
-
-	import { ActionDescription, useActions } from '../common/actions/useActions';
+	import { type ActionDescription, useActions } from '../common/actions/useActions';
 
 	import type { TerminalDirection } from './terminals';
 
@@ -12,10 +10,6 @@
 	export let live = false;
 
 	export let actionDescriptions: ActionDescription<any>[];
-
-	$: styleVars = {
-		terminalHeight: terminalHeight + 'px'
-	};
 </script>
 
 <div
@@ -24,7 +18,7 @@
 	class:expanded
 	class:cabled
 	class:live
-	use:cssVars={styleVars}
+	style:--terminal-height="{terminalHeight}px"
 />
 
 <style>
@@ -32,7 +26,7 @@
 		--border-width: 2px;
 		position: relative;
 		width: 0px;
-		height: var(--terminalHeight);
+		height: var(--terminal-height);
 
 		border: 0px inset var(--cable-color-number);
 		background-color: hsla(0, 0%, 40%, 1);
@@ -89,7 +83,7 @@
 
 	.expanded,
 	.terminal.expanded:focus {
-		width: var(--terminalHeight);
+		width: var(--terminal-height);
 	}
 
 	.expanded.in,
@@ -107,7 +101,7 @@
 	.live {
 		position: absolute;
 		transition: all 0s;
-		margin: calc(-1 * (var(--terminalHeight) / 2 + var(--border-width)));
+		margin: calc(-1 * (var(--terminal-height) / 2 + var(--border-width)));
 		z-index: 2;
 
 		cursor: grabbing;

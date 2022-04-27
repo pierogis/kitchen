@@ -5,12 +5,7 @@ export interface ViewportState {
 	height: number;
 }
 
-const initialState = {
-	width: window.innerWidth,
-	height: window.innerHeight
-};
-
-export const viewportStore: Writable<ViewportState> = writable(initialState);
+export const viewportStore: Writable<ViewportState> = writable();
 
 export function changeViewport(state: ViewportState) {
 	viewportStore.update(() => {
