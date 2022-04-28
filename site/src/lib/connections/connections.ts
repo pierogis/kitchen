@@ -5,7 +5,9 @@ import { Writable, writable } from 'svelte/store';
 // the different types of data linking
 export enum ParameterType {
 	number,
-	color
+	color,
+	text,
+	image
 }
 
 export interface ConnectionState {
