@@ -24,7 +24,7 @@
 	// replace with new type's
 	async function updateType(event: TpChangeEvent<string>) {
 		dispatch('updateType', event.value);
-		for (let [parameterName, parameter] of Object.entries(parameters)) {
+		for (let [flavorName, parameter] of Object.entries(parameters)) {
 			parameter.dispose();
 		}
 		await tick();

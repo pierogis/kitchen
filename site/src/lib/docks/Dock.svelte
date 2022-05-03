@@ -1,31 +1,17 @@
 <script lang="ts">
 	import { checkNearAction } from '../common/actions/checkNear';
-	import { checkPointWithinBox } from '../common/utils';
-	import { droppedNodeCoordsStore, nodesStore } from '../nodes/nodes';
-	import { TerminalDirection } from '../terminals/terminals';
+	import { Direction } from '$lib/common/types';
 
-	export let direction: TerminalDirection;
+	export let direction: Direction;
 	let expanded = false;
-
-	function dropInAction(element: HTMLElement) {
-		const rect = element.getBoundingClientRect();
-
-		droppedNodeCoordsStore.subscribe(({ dockedStatusStore, coords }) => {
-			const within = checkPointWithinBox(coords, rect);
-			if (within) {
-				dockedStatusStore.set({ docked: true, direction });
-			}
-		});
-	}
 </script>
 
 <div
 	class="dock"
 	class:expanded
-	class:in={direction == TerminalDirection.in}
-	class:out={direction == TerminalDirection.out}
+	class:in={direction == Direction.in}
+	class:out={direction == Direction.out}
 	use:checkNearAction={10}
-	use:dropInAction
 	on:near={(event) => {
 		expanded = event.detail;
 	}}

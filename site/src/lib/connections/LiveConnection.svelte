@@ -60,7 +60,7 @@
 				action: dragTerminalAction
 			}
 		]}
-		direction={$liveConnectionStore.dragTerminalDirection}
+		direction={$liveConnectionStore.dragDirection}
 		expanded={true}
 		cabled={true}
 		live={true}

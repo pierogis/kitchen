@@ -9,8 +9,7 @@
 
 	import {
 		allNodesTerminalCentersStore,
-		type NodeTerminalCentersState,
-		TerminalDirection,
+		type TerminalCentersState,
 		terminalHeight
 	} from './terminals';
 	import {
@@ -21,44 +20,43 @@
 	import type { ActionDescription } from '../common/actions/useActions';
 	import { checkNearAction } from '../common/actions/checkNear';
 	import { calculateCenter } from '../common/utils';
-	import { ParameterType, connectionsStore, removeConnection } from '../connections/connections';
-	import Terminal from './Terminal.svelte';
+	import { connectionsStore, removeConnection } from '../connections/connections';
+	import { Direction } from '$lib/common/types';
 
-	export let direction: TerminalDirection;
+	import Terminal from './Terminal.svelte';
+	import type { FlavorType } from '$lib/flavors';
+
+	export let direction: Direction;
 	export let container: HTMLElement;
 
 	let near: boolean = false;
 
-	export let parameterName: string;
-	export let parameterType: ParameterType;
+	export let ingredientId: string;
+	export let flavorName: string;
+	export let flavorType: FlavorType;
 
 	const nearTerminalRackDistance = 12;
 	const rackHeight = 20;
 
 	const paneOffset = 6;
 
-	const nodeId: string = getContext('nodeId');
-
 	// get store containing coord stores to use to broadcast bounding rect
 	// look for matching node, parameter name, direction
 	const nodeTerminalRectCenterStores: Readable<{
-		[connectionId: string]: NodeTerminalCentersState;
+		[connectionId: string]: TerminalCentersState;
 	}> = derived(
 		[allNodesTerminalCentersStore, liveConnectionStore],
-		([allNodeTerminalCenters, liveConnection]: [
-			NodeTerminalCentersState[],
-			LiveConnectionState
-		]) => {
+		([allNodeTerminalCenters, liveConnection]: [TerminalCentersState[], LiveConnectionState]) => {
 			let nodeCenters = allNodeTerminalCenters.filter((center) => {
 				return (
-					center.nodeId == nodeId &&
+					center.ingredientId == ingredientId &&
 					center.direction == direction &&
-					center.parameterName == parameterName
+					center.flavorName == flavorName
 				);
 			});
 
 			let centerStores = nodeCenters.reduce<{
-				[connectionId: string]: NodeTerminalCentersState;
+				[connectionId: string]: TerminalCentersState;
 			}>((currentCenterStores, center) => {
 				if (center.connectionId) {
 					currentCenterStores[center.connectionId] = center;
@@ -71,19 +69,19 @@
 			// add a rect center store to update from the live connection
 			if (
 				liveConnection &&
-				liveConnection.anchorNodeId == nodeId &&
-				liveConnection.anchorTerminalDirection == direction &&
-				liveConnection.anchorParameterName == parameterName
+				liveConnection.anchorNodeId == ingredientId &&
+				liveConnection.anchorDirection == direction &&
+				liveConnection.anchorParameterName == flavorName
 			) {
 				centerStores[liveConnection.connectionId] = {
-					nodeId: nodeId,
+					ingredientId: ingredientId,
 					direction: direction,
-					parameterName: parameterName,
+					flavorName: flavorName,
 					connectionId: liveConnection.connectionId,
-					parameterType: liveConnection.parameterType,
+					flavorType: liveConnection.flavorType,
 					coords: liveConnection.anchorCoordsStore
 				};
-				if (direction == TerminalDirection.in) {
+				if (direction == Direction.in) {
 					delete centerStores[NOVEL_CONNECTION_ID];
 				}
 			}
@@ -136,15 +134,14 @@
 
 		const handleNovelGrab = (event: MouseEvent) => {
 			if (event.button == 0) {
-				const dragDirection =
-					direction == TerminalDirection.in ? TerminalDirection.out : TerminalDirection.in;
+				const dragDirection = direction == Direction.in ? Direction.out : Direction.in;
 				anchorLiveConnection(
 					params.connectionId,
-					nodeId,
-					parameterName,
+					ingredientId,
+					flavorName,
 					direction,
 					dragDirection,
-					parameterType,
+					flavorType,
 					{
 						x: event.x,
 						y: event.y
@@ -184,12 +181,11 @@
 
 				// anchorDirection is the opposite of the direction that engaged
 				// this callback
-				const anchorDirection =
-					direction == TerminalDirection.in ? TerminalDirection.out : TerminalDirection.in;
+				const anchorDirection = direction == Direction.in ? Direction.out : Direction.in;
 
-				const parameterType = connection.parameterType;
+				const flavorType = connection.flavorType;
 
-				const { nodeId: anchorNodeId, parameterName: anchorParameterName } =
+				const { ingredientId: anchorNodeId, flavorName: anchorParameterName } =
 					connection[anchorDirection];
 				removeConnection(params.connectionId);
 
@@ -199,7 +195,7 @@
 					anchorParameterName,
 					anchorDirection,
 					direction,
-					parameterType,
+					flavorType,
 					location
 				);
 

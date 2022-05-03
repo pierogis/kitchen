@@ -1,25 +1,18 @@
-import { Writable, writable } from 'svelte/store';
+import type { FlavorType } from '$lib/flavors';
+import { type Writable, writable } from 'svelte/store';
 
 // context key for stashing all nodes updates callbacks
 
-// the different types of data linking
-export enum ParameterType {
-	number,
-	color,
-	text,
-	image
-}
-
 export interface ConnectionState {
 	connectionId: string;
-	parameterType: ParameterType;
+	flavorType: FlavorType;
 	in: {
-		nodeId: string;
-		parameterName: string;
+		ingredientId: string;
+		flavorName: string;
 	};
 	out: {
-		nodeId: string;
-		parameterName: string;
+		ingredientId: string;
+		flavorName: string;
 	};
 }
 export const connectionsStore: Writable<{

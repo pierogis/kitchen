@@ -1,18 +1,35 @@
-import type { Writable } from 'svelte/store';
+import { get, type Writable } from 'svelte/store';
 
 import type { Pane } from 'tweakpane';
-import * as imagePlugin from 'tweakpane-image-plugin';
+import * as ImagePlugin from 'tweakpane-image-plugin';
 
-export function attachImage(
-	pane: Pane,
-	store: Writable<{ image: any; height: number; width: number }>
-) {
-	let params: { image: any; height: number; width: number };
+import type { Flavor, FlavorType } from '.';
+
+export interface ImageParams {
+	image: HTMLImageElement;
+	height: number;
+	width: number;
+}
+
+export interface ImageFlavor extends Flavor {
+	type: FlavorType.image;
+	initial: ImageParams;
+}
+
+export function attachImage(pane: Pane, store: Writable<ImageParams>) {
+	let params: ImageParams = get(store);
+
+	let fired = false;
 
 	store.subscribe((newParams) => {
-		params = newParams;
+		if (fired) {
+			params = newParams;
+		}
+		fired = true;
 	});
-	pane.registerPlugin(imagePlugin);
+
+	pane.registerPlugin(ImagePlugin);
+	console.log(params);
 	let imageInput = pane
 		.addInput(params, 'image', {
 			extensions: '.jpg, .png, .gif, .mp4'

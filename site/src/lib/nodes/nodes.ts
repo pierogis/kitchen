@@ -1,27 +1,27 @@
-import { derived, Readable, Writable, writable } from 'svelte/store';
-import type { ParameterType } from '../connections/connections';
-import type { TerminalDirection } from '../terminals/terminals';
+import { derived, type Readable, type Writable, writable } from 'svelte/store';
+import type { Direction } from '$lib/common/types';
+import type { FlavorType } from '$lib/flavors';
 
 export type NodeParameters = {
 	[key: string]: any;
 };
 
 export type RackState = {
-	parameterType: ParameterType;
+	flavorType: FlavorType;
 };
 
 export type RacksState = {
-	in: { [parameterName: string]: RackState };
-	out: { [parameterName: string]: RackState };
+	in: { [flavorName: string]: RackState };
+	out: { [flavorName: string]: RackState };
 };
 
 export interface DockedState {
 	docked: boolean;
-	direction?: TerminalDirection;
+	direction?: Direction;
 }
 
 export interface NodeState<P extends NodeParameters> {
-	nodeId: string;
+	ingredientId: string;
 	type: string;
 	coords: Writable<{
 		x: number;
@@ -32,13 +32,13 @@ export interface NodeState<P extends NodeParameters> {
 	dockedStatus: Writable<DockedState>;
 }
 
-export const nodesStore: Writable<{ [nodeId: string]: NodeState<any> }> = writable({});
+export const nodesStore: Writable<{ [ingredientId: string]: NodeState<any> }> = writable({});
 
-export const nodesRacksStore: Readable<{ [nodeId: string]: RacksState }> = derived(
+export const nodesRacksStore: Readable<{ [ingredientId: string]: RacksState }> = derived(
 	nodesStore,
 	(nodes) => {
-		return Object.entries(nodes).reduce((nodesRacks, [nodeId, node]) => {
-			nodesRacks[nodeId] = node.racks;
+		return Object.entries(nodes).reduce((nodesRacks, [ingredientId, node]) => {
+			nodesRacks[ingredientId] = node.racks;
 			return nodesRacks;
 		}, {});
 	}
@@ -46,20 +46,20 @@ export const nodesRacksStore: Readable<{ [nodeId: string]: RacksState }> = deriv
 
 export function addNode(node: NodeState<any>) {
 	nodesStore.update(($nodes) => {
-		$nodes[node.nodeId] = node;
+		$nodes[node.ingredientId] = node;
 		return $nodes;
 	});
 }
 export function updateNode(node: NodeState<any>) {
 	nodesStore.update(($nodes) => {
-		$nodes[node.nodeId] = node;
+		$nodes[node.ingredientId] = node;
 		return $nodes;
 	});
 }
 
 export function removeNode(node: NodeState<any>) {
 	nodesStore.update(($nodes) => {
-		delete $nodes[node.nodeId];
+		delete $nodes[node.ingredientId];
 		return $nodes;
 	});
 }

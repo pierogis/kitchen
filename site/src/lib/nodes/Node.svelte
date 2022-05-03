@@ -10,7 +10,7 @@
 		ingredientsStore
 	} from '../ingredients/ingredients';
 	import TerminalRack from '../terminals/TerminalRack.svelte';
-	import { TerminalDirection } from '../terminals/terminals';
+	import { Direction } from '../terminals/terminals';
 	import {
 		removeNode,
 		nodesStore,
@@ -25,16 +25,16 @@
 	import { draggableAction } from '../common/actions/draggableAction';
 
 	export let draggable: boolean;
-	export let nodeId: string;
+	export let ingredientId: string;
 	export let dockedStatusStore: Writable<DockedState>;
 
-	setContext('nodeId', nodeId);
+	setContext('ingredientId', ingredientId);
 	let dragging = false;
 
 	// subscribe to just this node in the nodesStore
 	const nodeStore: Readable<NodeState<NodeParameters>> = derived(
 		nodesStore,
-		($nodes) => $nodes[nodeId]
+		($nodes) => $nodes[ingredientId]
 	);
 
 	// use these IngredientControl classes to do non svelte display stuff
@@ -62,14 +62,14 @@
 
 	// these will bind to the terminal racks inside
 	let terminalRackContainers: {
-		in: { [parameterName: string]: HTMLElement };
-		out: { [parameterName: string]: HTMLElement };
+		in: { [flavorName: string]: HTMLElement };
+		out: { [flavorName: string]: HTMLElement };
 	} = { in: {}, out: {} };
 
 	// if the node type changes update the store
 	function updateType(event: CustomEvent<string>) {
 		let defaultNode = $ingredientsStore[event.detail].default(
-			$nodeStore.nodeId,
+			$nodeStore.ingredientId,
 			get($nodeStore.coords)
 		);
 
@@ -86,17 +86,17 @@
 
 		// need to know if this has an in connection
 		// each of these represents a input/label
-		Object.entries(parameterInputs).forEach(([parameterName, input]) => {
+		Object.entries(parameterInputs).forEach(([flavorName, input]) => {
 			input.controller_.valueController.view.element.parentElement.style.width = '100px';
 
 			// attaching bound divs to terminal racks
 			// $node.racks specifies if a rack should be attached
-			if (parameterName in $nodeStore.racks.in) {
-				input.controller_.view.element.prepend(terminalRackContainers.in[parameterName]);
+			if (flavorName in $nodeStore.racks.in) {
+				input.controller_.view.element.prepend(terminalRackContainers.in[flavorName]);
 			}
 
-			if (parameterName in $nodeStore.racks.out) {
-				input.controller_.view.element.append(terminalRackContainers.out[parameterName]);
+			if (flavorName in $nodeStore.racks.out) {
+				input.controller_.view.element.append(terminalRackContainers.out[flavorName]);
 			}
 		});
 
@@ -150,21 +150,21 @@
 	/>
 </div>
 
-{#each Object.entries($nodeStore.racks.in) as [parameterName, rackState] (parameterName)}
+{#each Object.entries($nodeStore.racks.in) as [flavorName, rackState] (flavorName)}
 	<TerminalRack
-		bind:container={terminalRackContainers.in[parameterName]}
-		{parameterName}
-		parameterType={rackState.parameterType}
-		direction={TerminalDirection.in}
+		bind:container={terminalRackContainers.in[flavorName]}
+		{flavorName}
+		flavorType={rackState.flavorType}
+		direction={Direction.in}
 	/>
 {/each}
 
-{#each Object.entries($nodeStore.racks.out) as [parameterName, rackState] (parameterName)}
+{#each Object.entries($nodeStore.racks.out) as [flavorName, rackState] (flavorName)}
 	<TerminalRack
-		bind:container={terminalRackContainers.out[parameterName]}
-		{parameterName}
-		parameterType={rackState.parameterType}
-		direction={TerminalDirection.out}
+		bind:container={terminalRackContainers.out[flavorName]}
+		{flavorName}
+		flavorType={rackState.flavorType}
+		direction={Direction.out}
 	/>
 {/each}
 

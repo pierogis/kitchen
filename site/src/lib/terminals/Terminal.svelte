@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { type ActionDescription, useActions } from '../common/actions/useActions';
 
-	import type { TerminalDirection } from './terminals';
+	import type { Direction } from './terminals';
 
-	export let direction: TerminalDirection;
+	export let direction: Direction;
 	export let expanded: boolean;
 	export let terminalHeight: number;
 	export let cabled: boolean;

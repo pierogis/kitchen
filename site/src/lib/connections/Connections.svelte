@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { derived, Unsubscriber, Readable, Writable } from 'svelte/store';
+	import { derived, type Unsubscriber, type Readable, type Writable } from 'svelte/store';
 
 	import { nodesStore } from '../nodes/nodes';
 	import { allNodesTerminalCentersStore } from '../terminals/terminals';
@@ -54,11 +54,11 @@
 
 		// loop each connection
 		Object.entries($connectionsStore).forEach(([connectionId, connection]) => {
-			let inNodeId = connection.in.nodeId;
-			let outNodeId = connection.out.nodeId;
+			let inNodeId = connection.in.ingredientId;
+			let outNodeId = connection.out.ingredientId;
 
-			let inParameterName = connection.in.parameterName;
-			let outParameterName = connection.out.parameterName;
+			let inParameterName = connection.in.flavorName;
+			let outParameterName = connection.out.flavorName;
 
 			// make a derived store with the state of the in node
 			let inNode = derived(nodesStore, (nodes) => {

@@ -1,35 +1,34 @@
-import { derived, writable, Writable } from 'svelte/store';
+import { derived, writable, type Writable } from 'svelte/store';
 
-import { ParameterType, connectionsStore } from '../connections/connections';
-import { nodesStore } from '../nodes/nodes';
+import { connectionsStore } from '$lib/connections/connections';
+import { nodesStore } from '$lib/nodes/nodes';
+
+import { Direction } from '$lib/common/types';
+import type { FlavorType } from '$lib/flavors';
 
 export const terminalHeight = 10;
 
-export enum TerminalDirection {
-	in = 'in',
-	out = 'out'
-}
-export type NodeTerminalCentersState = {
-	nodeId: string;
-	direction: TerminalDirection;
-	parameterName: string;
+export type TerminalCentersState = {
+	ingredientId: string;
+	direction: Direction;
+	flavorName: string;
 	connectionId: string | null;
-	parameterType: ParameterType;
+	flavorType: FlavorType;
 	coords: Writable<{ x: number; y: number }>;
 };
 
 export const allNodesTerminalCentersStore = derived(
 	[nodesStore, connectionsStore],
 	([nodes, connections]) => {
-		let connectionCenters: NodeTerminalCentersState[] = [];
+		let connectionCenters: TerminalCentersState[] = [];
 
 		Object.entries(connections).forEach(([connectionId, connection]) => {
-			// the context is keyed by nodeId as a string
+			// the context is keyed by ingredientId as a string
 			// using an object key requires matching the reference
 			// maybe pass down through props
-			let inNodeId = connection.in.nodeId;
+			let inNodeId = connection.in.ingredientId;
 			// do the same for out
-			let outNodeId = connection.out.nodeId;
+			let outNodeId = connection.out.ingredientId;
 
 			// add to the callbacks set for the given connection's "in" parameter name
 			// this corresponds to the in (left) terminal on parameters
@@ -38,53 +37,53 @@ export const allNodesTerminalCentersStore = derived(
 			// they providing updates on their bounding rect
 			// use the out callback
 			connectionCenters.push({
-				nodeId: inNodeId,
-				direction: TerminalDirection.in,
-				parameterName: connection.in.parameterName,
+				ingredientId: inNodeId,
+				direction: Direction.in,
+				flavorName: connection.in.flavorName,
 				connectionId: connectionId,
-				parameterType: connection.parameterType,
+				flavorType: connection.flavorType,
 				coords: writable({ x: undefined, y: undefined })
 			});
 			connectionCenters.push({
-				nodeId: outNodeId,
-				direction: TerminalDirection.out,
-				parameterName: connection.out.parameterName,
+				ingredientId: outNodeId,
+				direction: Direction.out,
+				flavorName: connection.out.flavorName,
 				connectionId: connectionId,
-				parameterType: connection.parameterType,
+				flavorType: connection.flavorType,
 				coords: writable({ x: undefined, y: undefined })
 			});
 		});
 
-		let novelCenters: NodeTerminalCentersState[] = [];
-		Object.entries(nodes).forEach(([nodeId, node]) => {
-			Object.entries(node.racks.in).forEach(([parameterName, inRack]) => {
+		let novelCenters: TerminalCentersState[] = [];
+		Object.entries(nodes).forEach(([ingredientId, node]) => {
+			Object.entries(node.racks.in).forEach(([flavorName, inRack]) => {
 				if (
 					!connectionCenters.find((center) => {
 						return (
-							center.direction == TerminalDirection.in &&
-							center.parameterName == parameterName &&
-							center.nodeId == nodeId
+							center.direction == Direction.in &&
+							center.flavorName == flavorName &&
+							center.ingredientId == ingredientId
 						);
 					})
 				) {
 					const novelCenter = {
-						nodeId: nodeId,
-						direction: TerminalDirection.in,
-						parameterName: parameterName,
+						ingredientId: ingredientId,
+						direction: Direction.in,
+						flavorName: flavorName,
 						connectionId: null,
-						parameterType: inRack.parameterType,
+						flavorType: inRack.flavorType,
 						coords: writable({ x: undefined, y: undefined })
 					};
 					novelCenters.push(novelCenter);
 				}
 			});
-			Object.entries(node.racks.out).forEach(([parameterName, outRack]) => {
+			Object.entries(node.racks.out).forEach(([flavorName, outRack]) => {
 				const novelCenter = {
-					nodeId: nodeId,
-					direction: TerminalDirection.out,
-					parameterName: parameterName,
+					ingredientId: ingredientId,
+					direction: Direction.out,
+					flavorName: flavorName,
 					connectionId: null,
-					parameterType: outRack.parameterType,
+					flavorType: outRack.flavorType,
 					coords: writable({ x: undefined, y: undefined })
 				};
 				novelCenters.push(novelCenter);

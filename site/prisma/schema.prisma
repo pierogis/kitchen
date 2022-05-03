@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FlavorType {
+  number
+  color
+  text
+  image
+}
+
+model Flavor {
+  id           Int        @id @default(autoincrement())
+  ingredientId Int
+  type         FlavorType
+  name         String     @db.VarChar(255)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+}
+
+model Ingredient {
+  id       Int      @id @default(autoincrement())
+  recipeId Int
+  recipe   Recipe   @relation(fields: [recipeId], references: [id])
+  flavors  Flavor[]
+}
+
+model Recipe {
+  id          Int          @id @default(autoincrement())
+  ingredients Ingredient[]
+}
