@@ -24,7 +24,8 @@
 		];
 
 		const recipe: Recipe = {
-			ingredients: {}
+			ingredients: [],
+			flavors
 		};
 
 		return {

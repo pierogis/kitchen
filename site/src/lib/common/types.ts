@@ -1,29 +1,9 @@
 import type { Flavor } from '$lib/flavors';
+import type { Ingredient } from '$lib/ingredients';
 
-export enum Direction {
-	in,
-	out
-}
-
-export interface Ingredient {
-	name: string;
-	shader?: {
-		// should match "in" flavor name with type==FlavorType.image
-		image: string;
-		// should match "in" flavor name with type==FlavorType.text
-		code: string;
-		// should match "out" flavor name with type==FlavorType.image
-		out: string;
-	};
-	flavors: Flavor[];
-	coords: {
-		x: number;
-		y: number;
-	};
-}
+export { Direction } from '@prisma/client';
 
 export interface Recipe {
-	ingredients: {
-		[id: string]: Ingredient;
-	};
+	ingredients: Ingredient[];
+	flavors: Flavor[];
 }
