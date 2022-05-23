@@ -12,7 +12,7 @@ export interface ImageParams {
 }
 
 export interface ImageFlavor extends Flavor {
-	type: FlavorType.image;
+	type: FlavorType.Image;
 	initial: ImageParams;
 }
 

@@ -1,31 +1,36 @@
 <script lang="ts" context="module">
-	import { FlavorType, type Flavor } from '$lib/flavors';
-	import { Direction, type Recipe } from '$lib/common/types';
+	import { FlavorType } from '$lib/flavors';
+	import { Direction, type FullRecipe } from '$lib/common/types';
 
 	/** @type {import('./index').Load} */
 	export async function load({ params, fetch, session, stuff }) {
-		const flavors: Flavor[] = [
-			{
-				name: 'image',
-				type: FlavorType.image,
-				directions: [Direction.out],
-				initial: {
-					image: new HTMLImageElement(),
-					width: 0,
-					height: 0
-				}
-			},
-			{
-				name: 'text',
-				type: FlavorType.text,
-				directions: [Direction.out],
-				initial: { text: '' }
-			}
-		];
+		const recipe: FullRecipe = {
+			id: null,
+			mainIngredientId: null,
+			mainIngredient: {
+				id: null,
+				flavors: [
+					{
+						id: null,
+						ingredientId: null,
+						name: 'image',
+						type: FlavorType.Image,
+						directions: [Direction.Out],
+						parameters: {}
+					}
 
-		const recipe: Recipe = {
-			ingredients: [],
-			flavors
+					// {
+					// 	name: 'audio',
+					// 	type: FlavorType.Audio,
+					// 	directions: [Direction.In, Direction.Out],
+					// 	initial: { text: '' }
+					// }
+				],
+				subIngredients: [],
+				connections: [],
+				x: null,
+				y: null
+			}
 		};
 
 		return {
@@ -45,9 +50,9 @@
 
 	viewportStore.set({ width: innerWidth, height: innerHeight });
 
-	export let recipe: Recipe;
+	export let recipe: FullRecipe;
 </script>
 
-<Dish {flavors} {ingredients} />
+<Dish flavors={recipe.mainIngredient.flavors} ingredients={recipe.mainIngredient.subIngredients} />
 
 <svelte:window bind:innerWidth bind:innerHeight />

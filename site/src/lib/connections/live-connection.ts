@@ -2,14 +2,14 @@ import { derived, get, writable, type Writable } from 'svelte/store';
 import { checkPointWithinBox } from '../common/utils';
 import { allNodesTerminalCentersStore, terminalHeight } from '../terminals/terminals';
 import { Direction } from '$lib/common/types';
-import { addConnection, type ConnectionState, updateConnection } from './connections';
+import { addConnection, type ConnectionState, updateConnection } from '.';
 import type { FlavorType } from '$lib/flavors';
 
 export type LiveConnectionState = {
 	// only react if this a compatible terminal
-	connectionId: string;
+	connectionId: number;
 	flavorType: FlavorType;
-	anchorNodeId: string;
+	anchorNodeId: number;
 	anchorParameterName: string;
 	anchorDirection: Direction;
 	dragDirection: Direction;
@@ -17,9 +17,9 @@ export type LiveConnectionState = {
 	dragCoordsStore: Writable<{ x: number; y: number }>;
 	// call this when releasing the live terminal, if this live cable is compatible
 	attach: (
-		targetNodeId: string,
+		targetNodeId: number,
 		targetParameterName: string,
-		existingConnectionId?: string
+		existingConnectionId?: number
 	) => void;
 } | null;
 
@@ -28,8 +28,8 @@ export type LiveConnectionState = {
 export const liveConnectionStore: Writable<LiveConnectionState> = writable(null);
 
 export function anchorLiveConnection(
-	connectionId: string,
-	anchorNodeId: string,
+	connectionId: number,
+	anchorNodeId: number,
 	anchorParameterName: string,
 	anchorDirection: Direction,
 	dragDirection: Direction,
@@ -37,13 +37,13 @@ export function anchorLiveConnection(
 	location: { x: number; y: number }
 ) {
 	let attach: (
-		targetNodeId: string,
+		targetNodeId: number,
 		targetParameterName: string,
-		existingConnectionId?: string
+		existingConnectionId?: number
 	) => void;
 	// when a terminal gets a mouseup, add a new connection depending on the in/out
-	if (anchorDirection == Direction.in) {
-		attach = (targetNodeId: string, targetParameterName: string, existingConnectionId?: string) => {
+	if (anchorDirection == Direction.In) {
+		attach = (targetNodeId: number, targetParameterName: string, existingConnectionId?: number) => {
 			// if this terminal is already connected, just update the connection's state to the new
 			// node id, parameter name,
 			let connectionState: ConnectionState = {
@@ -70,7 +70,7 @@ export function anchorLiveConnection(
 			liveConnectionStore.set(null);
 		};
 	} else {
-		attach = (targetNodeId: string, targetParameterName: string, existingConnectionId?: string) => {
+		attach = (targetNodeId: number, targetParameterName: string, existingConnectionId?: number) => {
 			let connectionState: ConnectionState = {
 				connectionId: connectionId,
 				flavorType: flavorType,

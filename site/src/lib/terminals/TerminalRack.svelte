@@ -4,7 +4,6 @@
 
 <script lang="ts">
 	import { v4 as uuidv4 } from 'uuid';
-	import { getContext } from 'svelte';
 	import { derived, type Readable } from 'svelte/store';
 
 	import {
@@ -20,7 +19,7 @@
 	import type { ActionDescription } from '../common/actions/useActions';
 	import { checkNearAction } from '../common/actions/checkNear';
 	import { calculateCenter } from '../common/utils';
-	import { connectionsStore, removeConnection } from '../connections/connections';
+	import { connectionsStore, removeConnection } from '../connections';
 	import { Direction } from '$lib/common/types';
 
 	import Terminal from './Terminal.svelte';
@@ -31,7 +30,7 @@
 
 	let near: boolean = false;
 
-	export let ingredientId: string;
+	export let ingredientId: number;
 	export let flavorName: string;
 	export let flavorType: FlavorType;
 
@@ -81,7 +80,7 @@
 					flavorType: liveConnection.flavorType,
 					coords: liveConnection.anchorCoordsStore
 				};
-				if (direction == Direction.in) {
+				if (direction == Direction.In) {
 					delete centerStores[NOVEL_CONNECTION_ID];
 				}
 			}
@@ -125,7 +124,7 @@
 
 	// grabbing novel terminal should start relaying the coords of the terminal
 	// and add event listeners for release
-	function handleNovelGrabAction(element: HTMLElement, params: { connectionId: string }) {
+	function handleNovelGrabAction(element: HTMLElement, params: { connectionId: number }) {
 		const handleMouseUp = (event: MouseEvent) => {
 			usingNovelTerminal = false;
 			window.removeEventListener('mouseup', handleMouseUp);
@@ -134,7 +133,7 @@
 
 		const handleNovelGrab = (event: MouseEvent) => {
 			if (event.button == 0) {
-				const dragDirection = direction == Direction.in ? Direction.out : Direction.in;
+				const dragDirection = direction == Direction.In ? Direction.Out : Direction.In;
 				anchorLiveConnection(
 					params.connectionId,
 					ingredientId,
@@ -156,7 +155,7 @@
 		element.addEventListener('mousedown', handleNovelGrab);
 
 		return {
-			update(newParams: { connectionId: string }) {
+			update(newParams: { connectionId: number }) {
 				params = newParams;
 			},
 			destroy() {
@@ -165,7 +164,7 @@
 		};
 	}
 
-	function handleDisconnectGrabAction(element: HTMLElement, params: { connectionId: string }) {
+	function handleDisconnectGrabAction(element: HTMLElement, params: { connectionId: number }) {
 		let handleMouseUp = () => {
 			element.style.cursor = '';
 			window.removeEventListener('mouseup', handleMouseUp);
@@ -181,7 +180,7 @@
 
 				// anchorDirection is the opposite of the direction that engaged
 				// this callback
-				const anchorDirection = direction == Direction.in ? Direction.out : Direction.in;
+				const anchorDirection = direction == Direction.In ? Direction.Out : Direction.In;
 
 				const flavorType = connection.flavorType;
 
@@ -207,7 +206,7 @@
 		element.addEventListener('mousedown', handleDisconnectGrab);
 
 		return {
-			update(newParams: { connectionId: string }) {
+			update(newParams: { connectionId: number }) {
 				params = newParams;
 			},
 			destroy() {

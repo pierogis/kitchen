@@ -8,7 +8,7 @@
 
 	import TerminalRack from '$lib/terminals/TerminalRack.svelte';
 
-	export let ingredientId: string;
+	export let ingredientId: number;
 	export let flavors: Flavor[];
 	export let coords: { x: number; y: number };
 
@@ -33,8 +33,7 @@
 		const pane = new Pane({ container: element });
 
 		flavors.forEach((flavor) => {
-			const attach = flavorAttaches[flavor.type];
-			attach(pane, writable(flavor.initial));
+			flavorAttaches[flavor.type](pane, writable(flavor.parameters));
 		});
 	}
 

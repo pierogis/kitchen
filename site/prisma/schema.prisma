@@ -8,15 +8,15 @@ datasource db {
 }
 
 enum FlavorType {
-  number
-  color
-  text
-  image
+  Number
+  Color
+  Text
+  Image
 }
 
 enum Direction {
-  in
-  out
+  In
+  Out
 }
 
 model Flavor {
@@ -24,7 +24,7 @@ model Flavor {
   ingredientId   Int
   type           FlavorType
   name           String       @db.VarChar(255)
-  value          Int
+  parameters     Json
   ingredient     Ingredient   @relation(fields: [ingredientId], references: [id])
   directions     Direction[]
   inConnections  Connection[] @relation("Flavor_inConnections")
@@ -32,36 +32,31 @@ model Flavor {
 }
 
 model Ingredient {
-  id                Int             @id @default(autoincrement())
-  recipeId          Int
-  recipe            Recipe          @relation(fields: [recipeId], references: [id])
-  flavors           Flavor[]
-  subIngredients    SubIngredient[] @relation("Ingredient_subIngredients")
-  parentIngredients SubIngredient[] @relation("Ingredient_parentIngredients")
-  connections       Connection[]
-}
-
-model SubIngredient {
-  parentIngredientId Int
-  subIngredientId    Int
-  parentIngredient   Ingredient @relation("Ingredient_parentIngredients", fields: [parentIngredientId], references: [id])
-  subIngredient      Ingredient @relation("Ingredient_subIngredients", fields: [subIngredientId], references: [id])
-
-  @@id([parentIngredientId, subIngredientId])
+  id                 Int          @id @default(autoincrement())
+  name               String       @db.VarChar(255)
+  recipe             Recipe?
+  flavors            Flavor[]
+  connections        Connection[]
+  x                  Int
+  y                  Int
+  parentIngredientId Int?
+  parentIngredient   Ingredient?  @relation("Ingredient_subIngredients", fields: [parentIngredientId], references: [id])
+  subIngredients     Ingredient[] @relation("Ingredient_subIngredients")
 }
 
 model Connection {
-  parentIngredientId       Int
-  parentIngredient         Ingredient @relation(fields: [parentIngredientId], references: [id])
-  inSubIngredientFlavorId  Int
-  inSubIngredientFlavor    Flavor     @relation("Flavor_inConnections", fields: [inSubIngredientFlavorId], references: [id])
-  outSubIngredientFlavorId Int
-  outSubIngredientFlavor   Flavor     @relation("Flavor_outConnections", fields: [outSubIngredientFlavorId], references: [id])
+  parentIngredientId Int
+  parentIngredient   Ingredient @relation(fields: [parentIngredientId], references: [id])
+  inFlavorId         Int
+  inFlavor           Flavor     @relation("Flavor_inConnections", fields: [inFlavorId], references: [id])
+  outFlavorId        Int
+  outFlavor          Flavor     @relation("Flavor_outConnections", fields: [outFlavorId], references: [id])
 
-  @@id([parentIngredientId, inSubIngredientFlavorId, outSubIngredientFlavorId])
+  @@id([parentIngredientId, inFlavorId, outFlavorId])
 }
 
 model Recipe {
-  id          Int          @id @default(autoincrement())
-  ingredients Ingredient[]
+  id               Int        @id @default(autoincrement())
+  mainIngredientId Int        @unique
+  mainIngredient   Ingredient @relation(fields: [mainIngredientId], references: [id])
 }

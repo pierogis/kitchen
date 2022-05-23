@@ -1341,7 +1341,7 @@ const allNodesTerminalCentersStore = derived(
 			// use the out callback
 			connectionCenters.push({
 				nodeId: inNodeId,
-				direction: TerminalDirection.in,
+				direction: TerminalDirection.In,
 				parameterName: connection.in.parameterName,
 				connectionId: connectionId,
 				parameterType: connection.parameterType,
@@ -1349,7 +1349,7 @@ const allNodesTerminalCentersStore = derived(
 			});
 			connectionCenters.push({
 				nodeId: outNodeId,
-				direction: TerminalDirection.out,
+				direction: TerminalDirection.Out,
 				parameterName: connection.out.parameterName,
 				connectionId: connectionId,
 				parameterType: connection.parameterType,
@@ -1362,7 +1362,7 @@ const allNodesTerminalCentersStore = derived(
 				if (
 					!connectionCenters.find((center) => {
 						return (
-							center.direction == TerminalDirection.in &&
+							center.direction == TerminalDirection.In &&
 							center.parameterName == parameterName &&
 							center.nodeId == nodeId
 						);
@@ -1370,7 +1370,7 @@ const allNodesTerminalCentersStore = derived(
 				) {
 					const novelCenter = {
 						nodeId: nodeId,
-						direction: TerminalDirection.in,
+						direction: TerminalDirection.In,
 						parameterName: parameterName,
 						connectionId: null,
 						parameterType: inRack.parameterType,
@@ -1382,7 +1382,7 @@ const allNodesTerminalCentersStore = derived(
 			Object.entries(node.racks.out).forEach(([parameterName, outRack]) => {
 				const novelCenter = {
 					nodeId: nodeId,
-					direction: TerminalDirection.out,
+					direction: TerminalDirection.Out,
 					parameterName: parameterName,
 					connectionId: null,
 					parameterType: outRack.parameterType,
@@ -1423,7 +1423,7 @@ function anchorLiveConnection(
 ) {
 	let attach;
 	// when a terminal gets a mouseup, add a new connection depending on the in/out
-	if (anchorDirection == TerminalDirection.in) {
+	if (anchorDirection == TerminalDirection.In) {
 		attach = (targetNodeId, targetParameterName, existingConnectionId) => {
 			// if this terminal is already connected, just update the connection's state to the new
 			// node id, parameter name,
@@ -1978,7 +1978,7 @@ function instance$8($$self, $$props, $$invalidate) {
 					coords: liveConnection.anchorCoordsStore
 				};
 
-				if (direction == TerminalDirection.in) {
+				if (direction == TerminalDirection.In) {
 					delete centerStores[NOVEL_CONNECTION_ID];
 				}
 			}
@@ -2037,7 +2037,7 @@ function instance$8($$self, $$props, $$invalidate) {
 		const handleNovelGrab = (event) => {
 			if (event.button == 0) {
 				const dragDirection =
-					direction == TerminalDirection.in ? TerminalDirection.out : TerminalDirection.in;
+					direction == TerminalDirection.In ? TerminalDirection.Out : TerminalDirection.In;
 
 				anchorLiveConnection(
 					params.connectionId,
@@ -2080,7 +2080,7 @@ function instance$8($$self, $$props, $$invalidate) {
 				// anchorDirection is the opposite of the direction that engaged
 				// this callback
 				const anchorDirection =
-					direction == TerminalDirection.in ? TerminalDirection.out : TerminalDirection.in;
+					direction == TerminalDirection.In ? TerminalDirection.Out : TerminalDirection.In;
 
 				const parameterType = connection.parameterType;
 				const { nodeId: anchorNodeId, parameterName: anchorParameterName } =
@@ -9701,7 +9701,7 @@ function create_each_block_1(key_1, ctx) {
 	let terminalrack_props = {
 		parameterName: /*parameterName*/ ctx[22],
 		parameterType: /*rackState*/ ctx[23].parameterType,
-		direction: TerminalDirection.in
+		direction: TerminalDirection.In
 	};
 
 	if (/*terminalRackContainers*/ ctx[1].in[/*parameterName*/ ctx[22]] !== void 0) {
@@ -9770,7 +9770,7 @@ function create_each_block$2(key_1, ctx) {
 	let terminalrack_props = {
 		parameterName: /*parameterName*/ ctx[22],
 		parameterType: /*rackState*/ ctx[23].parameterType,
-		direction: TerminalDirection.out
+		direction: TerminalDirection.Out
 	};
 
 	if (/*terminalRackContainers*/ ctx[1].out[/*parameterName*/ ctx[22]] !== void 0) {
@@ -11223,8 +11223,8 @@ function create_fragment$1(ctx) {
 			if (default_slot) default_slot.c();
 			attr(div, 'class', 'dock svelte-1wcc820');
 			toggle_class(div, 'expanded', /*expanded*/ ctx[1]);
-			toggle_class(div, 'in', /*direction*/ ctx[0] == TerminalDirection.in);
-			toggle_class(div, 'out', /*direction*/ ctx[0] == TerminalDirection.out);
+			toggle_class(div, 'in', /*direction*/ ctx[0] == TerminalDirection.In);
+			toggle_class(div, 'out', /*direction*/ ctx[0] == TerminalDirection.Out);
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -11266,11 +11266,11 @@ function create_fragment$1(ctx) {
 			}
 
 			if (dirty & /*direction, TerminalDirection*/ 1) {
-				toggle_class(div, 'in', /*direction*/ ctx[0] == TerminalDirection.in);
+				toggle_class(div, 'in', /*direction*/ ctx[0] == TerminalDirection.In);
 			}
 
 			if (dirty & /*direction, TerminalDirection*/ 1) {
-				toggle_class(div, 'out', /*direction*/ ctx[0] == TerminalDirection.out);
+				toggle_class(div, 'out', /*direction*/ ctx[0] == TerminalDirection.Out);
 			}
 		},
 		i(local) {
@@ -11420,11 +11420,11 @@ function create_fragment(ctx) {
 	}
 
 	dock0 = new Dock({
-		props: { direction: TerminalDirection.in }
+		props: { direction: TerminalDirection.In }
 	});
 
 	dock1 = new Dock({
-		props: { direction: TerminalDirection.out }
+		props: { direction: TerminalDirection.Out }
 	});
 
 	connections = new Connections({});

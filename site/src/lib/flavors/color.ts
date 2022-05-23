@@ -8,7 +8,7 @@ export interface ColorParams {
 }
 
 export interface ColorFlavor extends Flavor {
-	type: FlavorType.color;
+	type: FlavorType.Color;
 	initial: ColorParams;
 }
 

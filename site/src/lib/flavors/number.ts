@@ -1,14 +1,14 @@
 import { get, type Writable } from 'svelte/store';
 import type { Pane } from 'tweakpane';
 
-import type { Flavor, FlavorType } from '.';
+import { type Flavor, FlavorType } from '.';
 
 export interface NumberParams {
 	number: number;
 }
 
 export interface NumberFlavor extends Flavor {
-	type: FlavorType.number;
+	type: FlavorType.Number;
 	initial: NumberParams;
 }
 

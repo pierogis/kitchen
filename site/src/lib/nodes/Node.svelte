@@ -155,7 +155,7 @@
 		bind:container={terminalRackContainers.in[flavorName]}
 		{flavorName}
 		flavorType={rackState.flavorType}
-		direction={Direction.in}
+		direction={Direction.In}
 	/>
 {/each}
 
@@ -164,7 +164,7 @@
 		bind:container={terminalRackContainers.out[flavorName]}
 		{flavorName}
 		flavorType={rackState.flavorType}
-		direction={Direction.out}
+		direction={Direction.Out}
 	/>
 {/each}
 

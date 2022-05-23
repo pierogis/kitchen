@@ -1,44 +1,30 @@
 <script lang="ts">
 	import type { Writable } from 'svelte/store';
 
-	import { Direction, type Ingredient } from '$lib/common/types';
+	import { Direction } from '$lib/common/types';
+	import type { FullIngredient } from '$lib/ingredients';
 
-	import { FlavorType, type Flavor } from '$lib/flavors';
+	import type { Flavor } from '$lib/flavors';
 
 	import CursorCircle from '$lib/cursor-circle/CursorCircle.svelte';
 	import Connections from '$lib/connections/Connections.svelte';
 	import Dock from '$lib/docks/Dock.svelte';
 
 	import IngredientNode from '$lib/components/Ingredient.svelte';
+	import { getContext } from 'svelte';
 
 	export let flavors: Flavor[];
-	export let ingredients: Writable<Ingredient[]>;
+	export let ingredients: FullIngredient[];
 
 	function createDefaultNode(coords: { x: number; y: number }) {
-		const defaultIngredient: Ingredient = {
-			flavors: [
-				{
-					name: 'image',
-					type: FlavorType.image,
-					directions: [Direction.out],
-					initial: {
-						image: new HTMLImageElement(),
-						width: 0,
-						height: 0
-					}
-				},
-				{
-					name: 'text',
-					type: FlavorType.text,
-					directions: [Direction.out],
-					initial: { text: '' }
-				}
-			],
+		const defaultIngredient: FullIngredient = {
+			id: null,
 			name: 'default',
+			flavors: [],
 			coords
 		};
 
-		$ingredients = [...$ingredients, defaultIngredient];
+		ingredients = [...ingredients, defaultIngredient];
 	}
 </script>
 
@@ -46,7 +32,7 @@
 
 <canvas height={window.innerHeight} width={window.innerWidth} />
 
-{#each $ingredients as ingredient}
+{#each ingredients as ingredient}
 	<IngredientNode
 		ingredientId={ingredient.id}
 		flavors={ingredient.flavors}
@@ -54,8 +40,8 @@
 	/>
 {/each}
 
-<Dock direction={Direction.in} />
-<Dock direction={Direction.out} />
+<Dock direction={Direction.In} />
+<Dock direction={Direction.Out} />
 
 <Connections />
 

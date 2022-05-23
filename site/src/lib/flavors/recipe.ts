@@ -8,14 +8,14 @@ const defaultRecipe: Recipe = {
 			flavors: [
 				{
 					name: 'image',
-					type: FlavorType.image,
-					directions: [Direction.in, Direction.out],
+					type: FlavorType.Image,
+					directions: [Direction.In, Direction.Out],
 					initial: new HTMLImageElement()
 				},
 				{
 					name: 'angle',
-					type: FlavorType.number,
-					directions: [Direction.in],
+					type: FlavorType.Number,
+					directions: [Direction.In],
 					initial: 0,
 					options: {
 						min: 0,
@@ -24,8 +24,8 @@ const defaultRecipe: Recipe = {
 				},
 				{
 					name: 'lower',
-					type: FlavorType.number,
-					directions: [Direction.in],
+					type: FlavorType.Number,
+					directions: [Direction.In],
 					initial: 40,
 					options: {
 						min: 0,
@@ -34,8 +34,8 @@ const defaultRecipe: Recipe = {
 				},
 				{
 					name: 'upper',
-					type: FlavorType.number,
-					directions: [Direction.in],
+					type: FlavorType.Number,
+					directions: [Direction.In],
 					initial: 180,
 					options: {
 						min: 0,

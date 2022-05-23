@@ -1,6 +1,6 @@
 import { derived, writable, type Writable } from 'svelte/store';
 
-import { connectionsStore } from '$lib/connections/connections';
+import { connectionsStore } from '$lib/connections';
 import { nodesStore } from '$lib/nodes/nodes';
 
 import { Direction } from '$lib/common/types';
@@ -9,10 +9,10 @@ import type { FlavorType } from '$lib/flavors';
 export const terminalHeight = 10;
 
 export type TerminalCentersState = {
-	ingredientId: string;
+	ingredientId: number;
 	direction: Direction;
 	flavorName: string;
-	connectionId: string | null;
+	connectionId: number | null;
 	flavorType: FlavorType;
 	coords: Writable<{ x: number; y: number }>;
 };
@@ -38,17 +38,17 @@ export const allNodesTerminalCentersStore = derived(
 			// use the out callback
 			connectionCenters.push({
 				ingredientId: inNodeId,
-				direction: Direction.in,
+				direction: Direction.In,
 				flavorName: connection.in.flavorName,
-				connectionId: connectionId,
+				connectionId: Number(connectionId),
 				flavorType: connection.flavorType,
 				coords: writable({ x: undefined, y: undefined })
 			});
 			connectionCenters.push({
 				ingredientId: outNodeId,
-				direction: Direction.out,
+				direction: Direction.Out,
 				flavorName: connection.out.flavorName,
-				connectionId: connectionId,
+				connectionId: Number(connectionId),
 				flavorType: connection.flavorType,
 				coords: writable({ x: undefined, y: undefined })
 			});
@@ -60,15 +60,15 @@ export const allNodesTerminalCentersStore = derived(
 				if (
 					!connectionCenters.find((center) => {
 						return (
-							center.direction == Direction.in &&
+							center.direction == Direction.In &&
 							center.flavorName == flavorName &&
-							center.ingredientId == ingredientId
+							center.ingredientId == Number(ingredientId)
 						);
 					})
 				) {
 					const novelCenter = {
-						ingredientId: ingredientId,
-						direction: Direction.in,
+						ingredientId: Number(ingredientId),
+						direction: Direction.In,
 						flavorName: flavorName,
 						connectionId: null,
 						flavorType: inRack.flavorType,
@@ -79,8 +79,8 @@ export const allNodesTerminalCentersStore = derived(
 			});
 			Object.entries(node.racks.out).forEach(([flavorName, outRack]) => {
 				const novelCenter = {
-					ingredientId: ingredientId,
-					direction: Direction.out,
+					ingredientId: Number(ingredientId),
+					direction: Direction.Out,
 					flavorName: flavorName,
 					connectionId: null,
 					flavorType: outRack.flavorType,

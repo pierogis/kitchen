@@ -9,8 +9,8 @@
 <div
 	class="dock"
 	class:expanded
-	class:in={direction == Direction.in}
-	class:out={direction == Direction.out}
+	class:in={direction == Direction.In}
+	class:out={direction == Direction.Out}
 	use:checkNearAction={10}
 	on:near={(event) => {
 		expanded = event.detail;

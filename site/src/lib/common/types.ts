@@ -1,9 +1,8 @@
-import type { Flavor } from '$lib/flavors';
-import type { Ingredient } from '$lib/ingredients';
+import type { Recipe } from '@prisma/client';
+import type { FullIngredient } from '$lib/ingredients';
 
-export { Direction } from '@prisma/client';
+export { Direction, type Recipe } from '@prisma/client';
 
-export interface Recipe {
-	ingredients: Ingredient[];
-	flavors: Flavor[];
-}
+export type FullRecipe = Recipe & {
+	mainIngredient: FullIngredient;
+};

@@ -8,7 +8,7 @@ export interface TextParams {
 }
 
 export interface TextFlavor extends Flavor {
-	type: FlavorType.text;
+	type: FlavorType.Text;
 	initial: TextParams;
 }
 

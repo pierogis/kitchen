@@ -1,22 +1,23 @@
+import type { Connection } from '@prisma/client';
+export type { Connection } from '@prisma/client';
+
 import type { FlavorType } from '$lib/flavors';
 import { type Writable, writable } from 'svelte/store';
 
-// context key for stashing all nodes updates callbacks
-
 export interface ConnectionState {
-	connectionId: string;
+	connectionId: number;
 	flavorType: FlavorType;
 	in: {
-		ingredientId: string;
+		ingredientId: number;
 		flavorName: string;
 	};
 	out: {
-		ingredientId: string;
+		ingredientId: number;
 		flavorName: string;
 	};
 }
 export const connectionsStore: Writable<{
-	[connectionId: string]: ConnectionState;
+	[connectionId: number]: ConnectionState;
 }> = writable({});
 
 export function addConnection(connection: ConnectionState) {
@@ -33,7 +34,7 @@ export function updateConnection(connection: ConnectionState) {
 	});
 }
 
-export function removeConnection(connectionId: string): void {
+export function removeConnection(connectionId: number): void {
 	connectionsStore.update((connections) => {
 		delete connections[connectionId];
 		return connections;

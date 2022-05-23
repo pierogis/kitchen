@@ -7,7 +7,7 @@ export interface AudioParams {
 }
 
 export interface AudioFlavor extends Flavor {
-	type: FlavorType.audio;
+	type: FlavorType.Audio;
 	initial: AudioParams;
 }
 

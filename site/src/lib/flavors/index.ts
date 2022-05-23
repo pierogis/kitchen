@@ -1,4 +1,4 @@
-import type { FlavorType } from '@prisma/client';
+import type { FlavorType, Prisma } from '@prisma/client';
 export { FlavorType, type Flavor } from '@prisma/client';
 
 import type { Writable } from 'svelte/store';
@@ -10,7 +10,7 @@ import { attachNumber, type NumberParams } from './number';
 import { attachImage, type ImageParams } from './image';
 
 export const flavorAttaches: {
-	[type in FlavorType]: (pane: Pane, store: Writable<any>) => any;
+	[type in FlavorType]: (pane: Pane, store: Writable<Prisma.JsonValue>) => any;
 } = {
 	number: attachNumber,
 	color: attachColor,
