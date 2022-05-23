@@ -1,5 +1,5 @@
 export function draggableAction(element: HTMLElement, handle?) {
-	var pos1 = 0,
+	let pos1 = 0,
 		pos2 = 0,
 		pos3 = 0,
 		pos4 = 0;
@@ -36,8 +36,8 @@ export function draggableAction(element: HTMLElement, handle?) {
 		pos3 = event.clientX;
 		pos4 = event.clientY;
 		// set the element's new position
-		let top = element.offsetTop - pos2;
-		let left = element.offsetLeft - pos1;
+		const top = element.offsetTop - pos2;
+		const left = element.offsetLeft - pos1;
 		element.style.top = top + 'px';
 		element.style.left = left + 'px';
 	}

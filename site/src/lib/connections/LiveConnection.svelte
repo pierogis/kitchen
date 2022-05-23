@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { calculateCenter } from '../common/utils';
 	import { dropCableStore, liveConnectionStore } from './live-connection';
-	import { terminalHeight } from '../terminals/terminals';
+	import { terminalHeight } from '$lib/terminals';
 
-	import Cable from './Cable.svelte';
-	import Terminal from '../terminals/Terminal.svelte';
+	import Cable from '$lib/components/Cable.svelte';
+	import Terminal from '$lib/terminals/Terminal.svelte';
 
 	// access to a store of the coords for when a cable is being dragged
 	$: dragCoordsStore = $liveConnectionStore && $liveConnectionStore.dragCoordsStore;

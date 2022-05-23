@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { writable, type Writable } from 'svelte/store';
+	import { writable } from 'svelte/store';
 	import { Pane } from 'tweakpane';
 
-	import { flavorAttaches, type Flavor } from '$lib/flavors';
+	import { attachControls, type Flavor } from '$lib/flavors';
 	import { draggableAction } from '../common/actions/draggableAction';
-	import { Direction } from '$lib/common/types';
 
 	import TerminalRack from '$lib/terminals/TerminalRack.svelte';
 
@@ -18,9 +17,6 @@
 		out: { [flavorName: string]: HTMLElement };
 	} = { in: {}, out: {} };
 
-	// delete node on close button
-	function handleRemove(event: MouseEvent) {}
-
 	let grabTarget: HTMLElement;
 	let dragging = false;
 
@@ -29,12 +25,34 @@
 		element.style.left = coords.x - midpoint + 'px';
 	}
 
-	function attachAction(element: HTMLElement) {
-		const pane = new Pane({ container: element });
+	let pane: Pane;
+
+	// delete node on close button
+	function handleRemove(event: MouseEvent) {
+		pane.dispose();
+	}
+
+	function attachAction(element: HTMLElement, flavors: Flavor[]) {
+		pane = new Pane({ container: element });
+
+		let removeCallback: () => void;
 
 		flavors.forEach((flavor) => {
-			flavorAttaches[flavor.type](pane, writable(flavor.parameters));
+			removeCallback = attachControls(pane, flavor.type, writable(flavor.parameters));
 		});
+
+		return {
+			update(newFlavors: Flavor[]) {
+				removeCallback();
+
+				newFlavors.forEach((flavor) => {
+					removeCallback = attachControls(pane, flavor.type, writable(flavor.parameters));
+				});
+			},
+			destroy() {
+				pane.dispose();
+			}
+		};
 	}
 
 	const nodeHeaderSize = 12;
@@ -55,7 +73,7 @@
 
 		<div class="remove" on:click={handleRemove} />
 	</div>
-	<div use:attachAction />
+	<div use:attachAction={flavors} />
 </div>
 
 {#each flavors as flavor}

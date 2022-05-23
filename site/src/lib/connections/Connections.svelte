@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { derived, type Unsubscriber, type Readable, type Writable } from 'svelte/store';
 
-	import { nodesStore } from '../nodes/nodes';
-	import { allNodesTerminalCentersStore } from '../terminals/terminals';
-	import { connectionsStore, removeConnection } from './connections';
+	import { nodesStore } from '$lib/nodes';
+	import { allNodesTerminalCentersStore } from '$lib/terminals';
+	import { connectionsStore, removeConnection } from '$lib/connections';
 
-	import Cable from './Cable.svelte';
-	import LiveConnection from './LiveConnection.svelte';
+	import Cable from '$lib/components/Cable.svelte';
+	import LiveConnection from '$lib/connections/LiveConnection.svelte';
 
 	// store to contain 2 (x, y) coords keyed by connectionId
 	let connectionsCoordsStore: Readable<{

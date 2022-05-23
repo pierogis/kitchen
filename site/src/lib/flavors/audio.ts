@@ -1,14 +1,8 @@
 import { get, type Writable } from 'svelte/store';
 import type { Pane } from 'tweakpane';
-import type { Flavor, FlavorType } from '.';
 
 export interface AudioParams {
 	audio: HTMLImageElement;
-}
-
-export interface AudioFlavor extends Flavor {
-	type: FlavorType.Audio;
-	initial: AudioParams;
 }
 
 export function attachAudio(pane: Pane, store: Writable<AudioParams>) {
@@ -23,7 +17,7 @@ export function attachAudio(pane: Pane, store: Writable<AudioParams>) {
 		fired = true;
 	});
 
-	let textInput = pane.addInput(params, 'audio').on('change', (ev) => {
+	const textInput = pane.addInput(params, 'audio').on('change', (ev) => {
 		store.set({
 			audio: ev.value
 		});

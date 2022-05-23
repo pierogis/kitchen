@@ -1,8 +1,8 @@
 import { derived, get, writable, type Writable } from 'svelte/store';
-import { checkPointWithinBox } from '../common/utils';
-import { allNodesTerminalCentersStore, terminalHeight } from '../terminals/terminals';
+import { allNodesTerminalCentersStore, terminalHeight } from '$lib/terminals';
+import { checkPointWithinBox } from '$lib/common/utils';
 import { Direction } from '$lib/common/types';
-import { addConnection, type ConnectionState, updateConnection } from '.';
+import { addConnection, type ConnectionState, updateConnection } from '$lib/connections';
 import type { FlavorType } from '$lib/flavors';
 
 export type LiveConnectionState = {
@@ -46,7 +46,7 @@ export function anchorLiveConnection(
 		attach = (targetNodeId: number, targetParameterName: string, existingConnectionId?: number) => {
 			// if this terminal is already connected, just update the connection's state to the new
 			// node id, parameter name,
-			let connectionState: ConnectionState = {
+			const connectionState: ConnectionState = {
 				connectionId: connectionId,
 				flavorType: flavorType,
 				in: {
@@ -71,7 +71,7 @@ export function anchorLiveConnection(
 		};
 	} else {
 		attach = (targetNodeId: number, targetParameterName: string, existingConnectionId?: number) => {
-			let connectionState: ConnectionState = {
+			const connectionState: ConnectionState = {
 				connectionId: connectionId,
 				flavorType: flavorType,
 				in: {

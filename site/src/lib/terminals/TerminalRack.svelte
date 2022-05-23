@@ -10,25 +10,25 @@
 		allNodesTerminalCentersStore,
 		type TerminalCentersState,
 		terminalHeight
-	} from './terminals';
+	} from '$lib/terminals';
 	import {
 		anchorLiveConnection,
 		type LiveConnectionState,
 		liveConnectionStore
-	} from '../connections/live-connection';
-	import type { ActionDescription } from '../common/actions/useActions';
-	import { checkNearAction } from '../common/actions/checkNear';
-	import { calculateCenter } from '../common/utils';
-	import { connectionsStore, removeConnection } from '../connections';
+	} from '$lib/connections/live-connection';
+	import type { ActionDescription } from '$lib/common/actions/useActions';
+	import { checkNearAction } from '$lib/common/actions/checkNear';
+	import { calculateCenter } from '$lib/common/utils';
+	import { connectionsStore, removeConnection } from '$lib/connections';
 	import { Direction } from '$lib/common/types';
 
-	import Terminal from './Terminal.svelte';
-	import type { FlavorType } from '$lib/flavors';
+	import Terminal from '$lib/terminals/Terminal.svelte';
+	import type { FlavorType } from '@prisma/client';
 
 	export let direction: Direction;
 	export let container: HTMLElement;
 
-	let near: boolean = false;
+	let near = false;
 
 	export let ingredientId: number;
 	export let flavorName: string;

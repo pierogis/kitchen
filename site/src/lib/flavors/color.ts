@@ -1,15 +1,8 @@
 import { get, type Writable } from 'svelte/store';
 import type { Pane } from 'tweakpane';
 
-import type { Flavor, FlavorType } from '.';
-
 export interface ColorParams {
 	color: { r: number; g: number; b: number };
-}
-
-export interface ColorFlavor extends Flavor {
-	type: FlavorType.Color;
-	initial: ColorParams;
 }
 
 export function attachColor(pane: Pane, store: Writable<ColorParams>) {
@@ -24,7 +17,7 @@ export function attachColor(pane: Pane, store: Writable<ColorParams>) {
 		fired = true;
 	});
 
-	let colorInput = pane.addInput(params, 'color').on('change', (ev) => {
+	const colorInput = pane.addInput(params, 'color').on('change', (ev) => {
 		store.set({
 			color: {
 				r: ev.value.r,

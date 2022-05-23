@@ -1,7 +1,7 @@
 import { derived, writable, type Writable } from 'svelte/store';
 
 import { connectionsStore } from '$lib/connections';
-import { nodesStore } from '$lib/nodes/nodes';
+import { nodesStore } from '$lib/nodes';
 
 import { Direction } from '$lib/common/types';
 import type { FlavorType } from '$lib/flavors';
@@ -20,15 +20,15 @@ export type TerminalCentersState = {
 export const allNodesTerminalCentersStore = derived(
 	[nodesStore, connectionsStore],
 	([nodes, connections]) => {
-		let connectionCenters: TerminalCentersState[] = [];
+		const connectionCenters: TerminalCentersState[] = [];
 
 		Object.entries(connections).forEach(([connectionId, connection]) => {
 			// the context is keyed by ingredientId as a string
 			// using an object key requires matching the reference
 			// maybe pass down through props
-			let inNodeId = connection.in.ingredientId;
+			const inNodeId = connection.in.ingredientId;
 			// do the same for out
-			let outNodeId = connection.out.ingredientId;
+			const outNodeId = connection.out.ingredientId;
 
 			// add to the callbacks set for the given connection's "in" parameter name
 			// this corresponds to the in (left) terminal on parameters
@@ -54,7 +54,7 @@ export const allNodesTerminalCentersStore = derived(
 			});
 		});
 
-		let novelCenters: TerminalCentersState[] = [];
+		const novelCenters: TerminalCentersState[] = [];
 		Object.entries(nodes).forEach(([ingredientId, node]) => {
 			Object.entries(node.racks.in).forEach(([flavorName, inRack]) => {
 				if (

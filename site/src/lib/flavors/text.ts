@@ -1,15 +1,8 @@
 import { get, type Writable } from 'svelte/store';
 import type { Pane } from 'tweakpane';
 
-import type { Flavor, FlavorType } from '.';
-
 export interface TextParams {
 	text: string;
-}
-
-export interface TextFlavor extends Flavor {
-	type: FlavorType.Text;
-	initial: TextParams;
 }
 
 export function attachText(pane: Pane, store: Writable<TextParams>) {
@@ -24,7 +17,7 @@ export function attachText(pane: Pane, store: Writable<TextParams>) {
 		fired = true;
 	});
 
-	let textInput = pane.addInput(params, 'text').on('change', (ev) => {
+	const textInput = pane.addInput(params, 'text').on('change', (ev) => {
 		store.set({
 			text: ev.value
 		});

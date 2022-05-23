@@ -3,21 +3,21 @@ import { checkPointWithinBox } from '../utils';
 export function checkNearAction(element: HTMLElement, nearDistance: number) {
 	let near = false;
 
-	let checkNear = (event: MouseEvent) => {
-		let rect = element.getBoundingClientRect();
+	function checkNear(event: MouseEvent) {
+		const rect = element.getBoundingClientRect();
 
 		// expanding the rect
-		let left = rect.left - nearDistance;
-		let top = rect.top - nearDistance;
-		let right = rect.right + nearDistance;
-		let bottom = rect.bottom + nearDistance;
+		const left = rect.left - nearDistance;
+		const top = rect.top - nearDistance;
+		const right = rect.right + nearDistance;
+		const bottom = rect.bottom + nearDistance;
 
 		near = checkPointWithinBox(
 			{ x: event.pageX, y: event.pageY },
 			{ top: top, bottom: bottom, left: left, right: right }
 		);
 		element.dispatchEvent(new CustomEvent('near', { detail: near }));
-	};
+	}
 
 	window.addEventListener('mousemove', checkNear);
 

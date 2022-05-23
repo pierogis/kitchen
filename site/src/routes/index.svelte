@@ -1,14 +1,15 @@
 <script lang="ts" context="module">
-	import { FlavorType } from '$lib/flavors';
+	import { FlavorType } from '@prisma/client';
 	import { Direction, type FullRecipe } from '$lib/common/types';
 
 	/** @type {import('./index').Load} */
-	export async function load({ params, fetch, session, stuff }) {
+	export async function load() {
 		const recipe: FullRecipe = {
 			id: null,
 			mainIngredientId: null,
 			mainIngredient: {
 				id: null,
+				name: 'main',
 				flavors: [
 					{
 						id: null,
@@ -26,6 +27,7 @@
 					// 	initial: { text: '' }
 					// }
 				],
+				parentIngredientId: null,
 				subIngredients: [],
 				connections: [],
 				x: null,
@@ -53,6 +55,11 @@
 	export let recipe: FullRecipe;
 </script>
 
-<Dish flavors={recipe.mainIngredient.flavors} ingredients={recipe.mainIngredient.subIngredients} />
+<Dish
+	ingredientId={recipe.mainIngredientId}
+	flavors={recipe.mainIngredient.flavors}
+	ingredients={recipe.mainIngredient.subIngredients}
+	connections={recipe.mainIngredient.connections}
+/>
 
 <svelte:window bind:innerWidth bind:innerHeight />

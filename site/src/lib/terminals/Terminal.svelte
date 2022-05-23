@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { type ActionDescription, useActions } from '../common/actions/useActions';
+	import { type ActionDescription, useActions } from '$lib/common/actions/useActions';
 
-	import type { Direction } from './terminals';
+	import type { Direction } from '$lib/common/types';
 
 	export let direction: Direction;
 	export let expanded: boolean;

@@ -1,42 +1,50 @@
 <script lang="ts">
-	import type { Writable } from 'svelte/store';
-
 	import { Direction } from '$lib/common/types';
 	import type { FullIngredient } from '$lib/ingredients';
-
 	import type { Flavor } from '$lib/flavors';
+	import type { Connection } from '$lib/connections';
 
 	import CursorCircle from '$lib/cursor-circle/CursorCircle.svelte';
 	import Connections from '$lib/connections/Connections.svelte';
+	import IngredientNode from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/docks/Dock.svelte';
 
-	import IngredientNode from '$lib/components/Ingredient.svelte';
-	import { getContext } from 'svelte';
-
+	export let ingredientId: number;
 	export let flavors: Flavor[];
 	export let ingredients: FullIngredient[];
+	export let connections: Connection[];
 
 	function createDefaultNode(coords: { x: number; y: number }) {
 		const defaultIngredient: FullIngredient = {
 			id: null,
 			name: 'default',
 			flavors: [],
-			coords
+			subIngredients: [],
+			connections: [],
+			parentIngredientId: ingredientId,
+			x: coords.x,
+			y: coords.y
 		};
 
 		ingredients = [...ingredients, defaultIngredient];
 	}
+
+	let canvasWidth: number, canvasHeight: number;
 </script>
 
-<svelte:window on:scroll|preventDefault={() => {}} />
+<svelte:window
+	bind:innerHeight={canvasHeight}
+	bind:innerWidth={canvasWidth}
+	on:scroll|preventDefault={() => {}}
+/>
 
-<canvas height={window.innerHeight} width={window.innerWidth} />
+<canvas height={canvasHeight} width={canvasWidth} />
 
 {#each ingredients as ingredient}
 	<IngredientNode
 		ingredientId={ingredient.id}
 		flavors={ingredient.flavors}
-		coords={ingredient.coords}
+		coords={{ x: ingredient.x, y: ingredient.y }}
 	/>
 {/each}
 

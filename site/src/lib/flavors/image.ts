@@ -3,17 +3,10 @@ import { get, type Writable } from 'svelte/store';
 import type { Pane } from 'tweakpane';
 import * as ImagePlugin from 'tweakpane-image-plugin';
 
-import type { Flavor, FlavorType } from '.';
-
 export interface ImageParams {
 	image: HTMLImageElement;
 	height: number;
 	width: number;
-}
-
-export interface ImageFlavor extends Flavor {
-	type: FlavorType.Image;
-	initial: ImageParams;
 }
 
 export function attachImage(pane: Pane, store: Writable<ImageParams>) {
@@ -30,7 +23,7 @@ export function attachImage(pane: Pane, store: Writable<ImageParams>) {
 
 	pane.registerPlugin(ImagePlugin);
 	console.log(params);
-	let imageInput = pane
+	const imageInput = pane
 		.addInput(params, 'image', {
 			extensions: '.jpg, .png, .gif, .mp4'
 		})
@@ -42,12 +35,12 @@ export function attachImage(pane: Pane, store: Writable<ImageParams>) {
 			});
 		});
 
-	let widthInput = pane.addMonitor(params, 'width', {
+	const widthInput = pane.addMonitor(params, 'width', {
 		disabled: true,
 		format: (h) => h.toString()
 	});
 
-	let heightInput = pane.addMonitor(params, 'height', {
+	const heightInput = pane.addMonitor(params, 'height', {
 		disabled: true,
 		format: (h) => h.toString()
 	});

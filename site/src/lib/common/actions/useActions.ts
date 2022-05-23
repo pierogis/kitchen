@@ -53,7 +53,7 @@ export function useActions(node: HTMLElement | SVGElement, actions: ActionDescri
 			// update all of the handles
 			if (newActions) {
 				newActions.forEach((action, i) => {
-					let handle = actionHandles[i];
+					const handle = actionHandles[i];
 					if (handle && handle.update) {
 						if (action.params) {
 							handle.update(action.params);
