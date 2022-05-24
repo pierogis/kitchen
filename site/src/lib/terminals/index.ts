@@ -4,7 +4,7 @@ import { connectionsStore } from '$lib/connections';
 import { nodesStore } from '$lib/nodes';
 
 import { Direction } from '$lib/common/types';
-import type { FlavorType } from '$lib/flavors';
+import type { FlavorType } from '@prisma/client';
 
 export const terminalHeight = 10;
 

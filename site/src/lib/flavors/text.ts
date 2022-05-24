@@ -1,11 +1,11 @@
 import { get, type Writable } from 'svelte/store';
-import type { Pane } from 'tweakpane';
+import type { FolderApi, TpChangeEvent } from 'tweakpane';
 
 export interface TextParams {
 	text: string;
 }
 
-export function attachText(pane: Pane, store: Writable<TextParams>) {
+export function attachText(folder: FolderApi, store: Writable<TextParams>) {
 	let params: TextParams = get(store);
 
 	let fired = false;
@@ -17,7 +17,7 @@ export function attachText(pane: Pane, store: Writable<TextParams>) {
 		fired = true;
 	});
 
-	const textInput = pane.addInput(params, 'text').on('change', (ev) => {
+	const textInput = folder.addInput(params, 'text').on('change', (ev) => {
 		store.set({
 			text: ev.value
 		});
@@ -26,4 +26,10 @@ export function attachText(pane: Pane, store: Writable<TextParams>) {
 	return {
 		text: textInput
 	};
+}
+
+export function textOnChange(paramsStore: Writable<TextParams>, ev: TpChangeEvent<string>) {
+	paramsStore.set({
+		text: ev.value
+	});
 }

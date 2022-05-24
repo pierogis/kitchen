@@ -3,7 +3,7 @@ import { allNodesTerminalCentersStore, terminalHeight } from '$lib/terminals';
 import { checkPointWithinBox } from '$lib/common/utils';
 import { Direction } from '$lib/common/types';
 import { addConnection, type ConnectionState, updateConnection } from '$lib/connections';
-import type { FlavorType } from '$lib/flavors';
+import type { FlavorType } from '@prisma/client';
 
 export type LiveConnectionState = {
 	// only react if this a compatible terminal

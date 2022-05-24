@@ -24,6 +24,7 @@
 
 	import Terminal from '$lib/terminals/Terminal.svelte';
 	import type { FlavorType } from '@prisma/client';
+	import { onMount } from 'svelte';
 
 	export let direction: Direction;
 	export let container: HTMLElement;
@@ -281,11 +282,25 @@
 		? 4
 		: ((rackHeight - terminalHeight) / 2) * (terminals.length + 1) +
 		  terminalHeight * terminals.length;
+
+	export let parentElement: HTMLElement;
+
+	onMount(() => {
+		if (direction == Direction.In) {
+			parentElement.prepend(container);
+		}
+
+		if (direction == Direction.Out) {
+			parentElement.append(container);
+		}
+	});
 </script>
 
 <div
 	bind:this={container}
-	class="terminal-rack {direction}"
+	class="terminal-rack"
+	class:out={direction == Direction.Out}
+	class:in={direction == Direction.In}
 	style:--rack-width={rackWidth + 'px'}
 	style:--rack-height={rackHeight + 'px'}
 	style:--pane-offset={paneOffset + 'px'}

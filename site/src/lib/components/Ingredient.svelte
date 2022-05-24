@@ -1,11 +1,21 @@
 <script lang="ts">
-	import { writable } from 'svelte/store';
-	import { Pane } from 'tweakpane';
+	import { type Writable, writable } from 'svelte/store';
+	import { FlavorType, type Direction } from '@prisma/client';
 
-	import { attachControls, type Flavor } from '$lib/flavors';
-	import { draggableAction } from '../common/actions/draggableAction';
+	import type { Flavor } from '$lib/flavors';
+	import { draggableAction } from '$lib/common/actions/draggableAction';
 
 	import TerminalRack from '$lib/terminals/TerminalRack.svelte';
+
+	import Pane from '$lib/components/tweakpane/Pane.svelte';
+	import Folder from '$lib/components/tweakpane/Folder.svelte';
+
+	import Input from './tweakpane/Input.svelte';
+	import Monitor from './tweakpane/Monitor.svelte';
+	import { colorOnChange } from '$lib/flavors/color';
+	import { imageOnChange } from '$lib/flavors/image';
+	import { numberOnChange } from '$lib/flavors/number';
+	import { textOnChange } from '$lib/flavors/text';
 
 	export let ingredientId: number;
 	export let flavors: Flavor[];
@@ -13,9 +23,8 @@
 
 	// these will bind to the terminal racks inside
 	let terminalRackContainers: {
-		in: { [flavorName: string]: HTMLElement };
-		out: { [flavorName: string]: HTMLElement };
-	} = { in: {}, out: {} };
+		[direction in Direction]: { [flavorName: string]: HTMLElement };
+	} = { In: {}, Out: {} };
 
 	let grabTarget: HTMLElement;
 	let dragging = false;
@@ -25,45 +34,17 @@
 		element.style.left = coords.x - midpoint + 'px';
 	}
 
-	let pane: Pane;
-
 	// delete node on close button
-	function handleRemove(event: MouseEvent) {
-		pane.dispose();
-	}
-
-	function attachAction(element: HTMLElement, flavors: Flavor[]) {
-		pane = new Pane({ container: element });
-
-		let removeCallback: () => void;
-
-		flavors.forEach((flavor) => {
-			removeCallback = attachControls(pane, flavor.type, writable(flavor.parameters));
-		});
-
-		return {
-			update(newFlavors: Flavor[]) {
-				removeCallback();
-
-				newFlavors.forEach((flavor) => {
-					removeCallback = attachControls(pane, flavor.type, writable(flavor.parameters));
-				});
-			},
-			destroy() {
-				pane.dispose();
-			}
-		};
-	}
+	function handleRemove(event: MouseEvent) {}
 
 	const nodeHeaderSize = 12;
 </script>
 
 <div
 	class="node no-select"
-	style="top: {coords.y - nodeHeaderSize / 2}px;"
+	style="top: {coords.y - nodeHeaderSize / 2}px; --node-header-size: {nodeHeaderSize}px"
 	use:centerOnInitialLocationAction
 	use:draggableAction={grabTarget}
-	style:--node-header-size="{nodeHeaderSize}px"
 >
 	<div class="header">
 		<div class="grab" bind:this={grabTarget} class:dragging>
@@ -73,20 +54,137 @@
 
 		<div class="remove" on:click={handleRemove} />
 	</div>
-	<div use:attachAction={flavors} />
+	<Pane let:pane>
+		{#if pane}
+			{#each flavors as flavor}
+				<Folder let:folder {pane} title={flavor.name}>
+					{#if flavor.type == FlavorType.Color}
+						<Input
+							{folder}
+							paramsStore={writable(flavor.parameters)}
+							key="color"
+							onChange={colorOnChange}
+							let:inputElement
+						>
+							{#each flavor.directions as direction}
+								<TerminalRack
+									parentElement={inputElement}
+									bind:container={terminalRackContainers[direction][flavor.name]}
+									{ingredientId}
+									flavorName={flavor.name}
+									flavorType={flavor.type}
+									{direction}
+								/>
+							{/each}
+						</Input>
+					{:else if flavor.type == FlavorType.Image}
+						<Input
+							{folder}
+							paramsStore={writable(flavor.parameters)}
+							key="image"
+							onChange={imageOnChange}
+							options={{
+								extensions: '.jpg, .png, .gif, .mp4'
+							}}
+							let:inputElement
+						>
+							{#each flavor.directions as direction}
+								<TerminalRack
+									parentElement={inputElement}
+									bind:container={terminalRackContainers[direction][flavor.name]}
+									{ingredientId}
+									flavorName={flavor.name}
+									flavorType={flavor.type}
+									{direction}
+								/>
+							{/each}
+						</Input>
+						<Monitor
+							{folder}
+							paramsStore={writable(flavor.parameters)}
+							key="height"
+							options={{
+								disabled: true,
+								format: (h) => h.toString()
+							}}
+							let:monitorElement
+						>
+							{#each flavor.directions as direction}
+								<TerminalRack
+									parentElement={monitorElement}
+									bind:container={terminalRackContainers[direction][flavor.name]}
+									{ingredientId}
+									flavorName={flavor.name}
+									flavorType={flavor.type}
+									{direction}
+								/>
+							{/each}
+						</Monitor>
+						<Monitor
+							{folder}
+							paramsStore={writable(flavor.parameters)}
+							key="width"
+							options={{
+								disabled: true,
+								format: (h) => h.toString()
+							}}
+							let:monitorElement
+						>
+							{#each flavor.directions as direction}
+								<TerminalRack
+									parentElement={monitorElement}
+									bind:container={terminalRackContainers[direction][flavor.name]}
+									{ingredientId}
+									flavorName={flavor.name}
+									flavorType={flavor.type}
+									{direction}
+								/>
+							{/each}
+						</Monitor>
+					{:else if flavor.type == FlavorType.Number}
+						<Input
+							{folder}
+							paramsStore={writable(flavor.parameters)}
+							key="number"
+							onChange={numberOnChange}
+							let:inputElement
+						>
+							{#each flavor.directions as direction}
+								<TerminalRack
+									parentElement={inputElement}
+									bind:container={terminalRackContainers[direction][flavor.name]}
+									{ingredientId}
+									flavorName={flavor.name}
+									flavorType={flavor.type}
+									{direction}
+								/>
+							{/each}
+						</Input>
+					{:else if flavor.type == FlavorType.Text}
+						<Input
+							{folder}
+							paramsStore={writable(flavor.parameters)}
+							key="text"
+							onChange={textOnChange}
+							let:inputElement
+						>
+							{#each flavor.directions as direction}
+								<TerminalRack
+									parentElement={inputElement}
+									bind:container={terminalRackContainers[direction][flavor.name]}
+									{ingredientId}
+									flavorName={flavor.name}
+									flavorType={flavor.type}
+									{direction}
+								/>
+							{/each}
+						</Input>
+					{/if}
+				</Folder>
+			{/each}
+		{/if}
+	</Pane>
 </div>
-
-{#each flavors as flavor}
-	{#each flavor.directions as direction}
-		<TerminalRack
-			bind:container={terminalRackContainers.in[flavor.name]}
-			{ingredientId}
-			flavorName={flavor.name}
-			flavorType={flavor.type}
-			{direction}
-		/>
-	{/each}
-{/each}
 
 <style>
 	.no-select {

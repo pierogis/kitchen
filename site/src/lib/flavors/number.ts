@@ -1,11 +1,11 @@
 import { get, type Writable } from 'svelte/store';
-import type { Pane } from 'tweakpane';
+import type { FolderApi, TpChangeEvent } from 'tweakpane';
 
 export interface NumberParams {
 	number: number;
 }
 
-export function attachNumber(pane: Pane, store: Writable<NumberParams>) {
+export function attachNumber(folder: FolderApi, store: Writable<NumberParams>) {
 	let params: NumberParams = get(store);
 
 	let fired = false;
@@ -17,7 +17,7 @@ export function attachNumber(pane: Pane, store: Writable<NumberParams>) {
 		fired = true;
 	});
 
-	const numberInput = pane.addInput(params, 'number').on('change', (ev) => {
+	const numberInput = folder.addInput(params, 'number').on('change', (ev) => {
 		store.set({
 			number: ev.value
 		});
@@ -26,4 +26,10 @@ export function attachNumber(pane: Pane, store: Writable<NumberParams>) {
 	return {
 		number: numberInput
 	};
+}
+
+export function numberOnChange(paramsStore: Writable<NumberParams>, ev: TpChangeEvent<number>) {
+	paramsStore.set({
+		number: ev.value
+	});
 }

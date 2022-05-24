@@ -1,11 +1,11 @@
 import { get, type Writable } from 'svelte/store';
-import type { Pane } from 'tweakpane';
+import type { FolderApi } from 'tweakpane';
 
 export interface AudioParams {
 	audio: HTMLImageElement;
 }
 
-export function attachAudio(pane: Pane, store: Writable<AudioParams>) {
+export function attachAudio(folder: FolderApi, store: Writable<AudioParams>) {
 	let params: AudioParams = get(store);
 
 	let fired = false;
@@ -17,7 +17,7 @@ export function attachAudio(pane: Pane, store: Writable<AudioParams>) {
 		fired = true;
 	});
 
-	const textInput = pane.addInput(params, 'audio').on('change', (ev) => {
+	const textInput = folder.addInput(params, 'audio').on('change', (ev) => {
 		store.set({
 			audio: ev.value
 		});

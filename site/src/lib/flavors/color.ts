@@ -1,11 +1,11 @@
 import { get, type Writable } from 'svelte/store';
-import type { Pane } from 'tweakpane';
+import type { FolderApi, TpChangeEvent } from 'tweakpane';
 
 export interface ColorParams {
 	color: { r: number; g: number; b: number };
 }
 
-export function attachColor(pane: Pane, store: Writable<ColorParams>) {
+export function attachColor(folder: FolderApi, store: Writable<ColorParams>) {
 	let params: ColorParams = get(store);
 
 	let fired = false;
@@ -17,7 +17,7 @@ export function attachColor(pane: Pane, store: Writable<ColorParams>) {
 		fired = true;
 	});
 
-	const colorInput = pane.addInput(params, 'color').on('change', (ev) => {
+	const colorInput = folder.addInput(params, 'color').on('change', (ev) => {
 		store.set({
 			color: {
 				r: ev.value.r,
@@ -30,4 +30,21 @@ export function attachColor(pane: Pane, store: Writable<ColorParams>) {
 	return {
 		color: colorInput
 	};
+}
+
+export function colorOnChange(
+	paramsStore: Writable<ColorParams>,
+	ev: TpChangeEvent<{
+		r: number;
+		g: number;
+		b: number;
+	}>
+) {
+	paramsStore.set({
+		color: {
+			r: ev.value.r,
+			g: ev.value.g,
+			b: ev.value.b
+		}
+	});
 }

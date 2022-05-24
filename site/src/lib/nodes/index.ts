@@ -1,6 +1,6 @@
 import { derived, type Readable, type Writable, writable } from 'svelte/store';
 import type { Direction } from '$lib/common/types';
-import type { FlavorType } from '$lib/flavors';
+import type { FlavorType } from '@prisma/client';
 
 export type NodeParameters = {
 	[key: string]: any;
