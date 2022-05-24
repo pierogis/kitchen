@@ -27,7 +27,9 @@
 		.addInput(params, key, options)
 		.on('change', (ev) => onChange(paramsStore, ev));
 
-	const inputElement = bladeApi.controller_.view.element.parentElement;
+	const inputElement = bladeApi.controller_.valueController.view.element.parentElement;
+	inputElement.style.width = '4rem';
+	inputElement.style.display = 'flex';
 
 	onDestroy(() => {
 		folder.remove(bladeApi);

@@ -25,6 +25,7 @@ model Flavor {
   type           FlavorType
   name           String       @db.VarChar(255)
   parameters     Json
+  options        Json?
   ingredient     Ingredient   @relation(fields: [ingredientId], references: [id])
   directions     Direction[]
   inConnections  Connection[] @relation("Flavor_inConnections")

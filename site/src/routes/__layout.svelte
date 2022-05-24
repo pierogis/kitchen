@@ -9,13 +9,9 @@
 		--label-color: hsla(230, 5%, 30%, 0.7);
 
 		--button-color: hsla(0, 0%, 70%, 1);
+		--button-color-active: hsla(0, 0%, 100%, 1);
+		--button-color-focus: hsla(0, 0%, 95%, 1);
 		--button-color-hover: hsla(0, 0%, 85%, 1);
-
-		--tp-base-background-color: var(--primary-color);
-		--tp-base-shadow-color: var(--shadow-color);
-		--tp-button-background-color: var(--button-color);
-		--tp-button-background-color-hover: var(--button-color-hover);
-		--tp-label-foreground-color: var(--label-color);
 
 		--remove-color: hsla(0, 80%, 70%, 0.8);
 		--cable-color-number: rgba(120, 150, 190, 1);

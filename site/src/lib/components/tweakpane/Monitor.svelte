@@ -24,7 +24,9 @@
 
 	let bladeApi = folder.addMonitor(params, key, options);
 
-	const monitorElement = bladeApi.controller_.view.element.parentElement;
+	const monitorElement = bladeApi.controller_.valueController.view.element.parentElement;
+	monitorElement.style.width = '100px';
+	monitorElement.style.display = 'flex';
 
 	onDestroy(() => {
 		folder.remove(bladeApi);

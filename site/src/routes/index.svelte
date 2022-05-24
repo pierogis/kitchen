@@ -17,7 +17,8 @@
 						name: 'image',
 						type: FlavorType.Image,
 						directions: [Direction.Out],
-						parameters: {}
+						parameters: {},
+						options: {}
 					}
 
 					// {

@@ -27,7 +27,7 @@
 	import { onMount } from 'svelte';
 
 	export let direction: Direction;
-	export let container: HTMLElement;
+	export let container: HTMLElement = null;
 
 	let near = false;
 

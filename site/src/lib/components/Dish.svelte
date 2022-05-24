@@ -6,7 +6,7 @@
 
 	import CursorCircle from '$lib/cursor-circle/CursorCircle.svelte';
 	import Connections from '$lib/connections/Connections.svelte';
-	import IngredientNode from '$lib/components/Ingredient.svelte';
+	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/docks/Dock.svelte';
 	import { FlavorType } from '@prisma/client';
 
@@ -26,7 +26,8 @@
 					type: FlavorType.Text,
 					name: 'text',
 					parameters: { text: '' },
-					directions: [Direction.Out]
+					options: null,
+					directions: [Direction.In, Direction.Out]
 				}
 			],
 			subIngredients: [],
@@ -51,7 +52,7 @@
 <canvas height={canvasHeight} width={canvasWidth} />
 
 {#each ingredients as ingredient}
-	<IngredientNode
+	<IngredientComponent
 		ingredientId={ingredient.id}
 		flavors={ingredient.flavors}
 		coords={{ x: ingredient.x, y: ingredient.y }}
