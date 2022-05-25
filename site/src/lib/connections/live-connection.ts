@@ -2,8 +2,9 @@ import { derived, get, writable, type Writable } from 'svelte/store';
 import { allNodesTerminalCentersStore, terminalHeight } from '$lib/terminals';
 import { checkPointWithinBox } from '$lib/common/utils';
 import { Direction } from '$lib/common/types';
-import { addConnection, type ConnectionState, updateConnection } from '$lib/connections';
+import { addConnection, updateConnection } from '$lib/connections';
 import type { FlavorType } from '@prisma/client';
+import type { Connection } from '.';
 
 export type LiveConnectionState = {
 	// only react if this a compatible terminal
@@ -46,14 +47,14 @@ export function anchorLiveConnection(
 		attach = (targetNodeId: number, targetParameterName: string, existingConnectionId?: number) => {
 			// if this terminal is already connected, just update the connection's state to the new
 			// node id, parameter name,
-			const connectionState: ConnectionState = {
+			const connectionState: Connection = {
 				connectionId: connectionId,
 				flavorType: flavorType,
-				in: {
+				In: {
 					ingredientId: anchorNodeId,
 					flavorName: anchorParameterName
 				},
-				out: {
+				Out: {
 					ingredientId: targetNodeId,
 					flavorName: targetParameterName
 				}
@@ -71,14 +72,14 @@ export function anchorLiveConnection(
 		};
 	} else {
 		attach = (targetNodeId: number, targetParameterName: string, existingConnectionId?: number) => {
-			const connectionState: ConnectionState = {
+			const connectionState: Connection = {
 				connectionId: connectionId,
 				flavorType: flavorType,
-				in: {
+				In: {
 					ingredientId: targetNodeId,
 					flavorName: targetParameterName
 				},
-				out: {
+				Out: {
 					ingredientId: anchorNodeId,
 					flavorName: anchorParameterName
 				}

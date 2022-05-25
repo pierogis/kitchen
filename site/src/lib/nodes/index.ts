@@ -1,6 +1,7 @@
 import { derived, type Readable, type Writable, writable } from 'svelte/store';
 import type { Direction } from '$lib/common/types';
 import type { FlavorType } from '@prisma/client';
+import type { FullIngredient } from '$lib/ingredients';
 
 export type NodeParameters = {
 	[key: string]: any;
@@ -11,8 +12,8 @@ export type RackState = {
 };
 
 export type RacksState = {
-	in: { [flavorName: string]: RackState };
-	out: { [flavorName: string]: RackState };
+	In: { [flavorName: string]: RackState };
+	Out: { [flavorName: string]: RackState };
 };
 
 export interface DockedState {
@@ -20,47 +21,35 @@ export interface DockedState {
 	direction?: Direction;
 }
 
-export interface NodeState<P extends NodeParameters> {
-	ingredientId: string;
-	type: string;
-	coords: Writable<{
-		x: number;
-		y: number;
-	}>;
-	parameters: Writable<P>;
-	racks: RacksState;
-	dockedStatus: Writable<DockedState>;
-}
+export const ingredientsStore: Writable<{ [ingredientId: number]: FullIngredient }> = writable({});
 
-export const nodesStore: Writable<{ [ingredientId: string]: NodeState<any> }> = writable({});
-
-export const nodesRacksStore: Readable<{ [ingredientId: string]: RacksState }> = derived(
-	nodesStore,
-	(nodes) => {
-		return Object.entries(nodes).reduce((nodesRacks, [ingredientId, node]) => {
-			nodesRacks[ingredientId] = node.racks;
-			return nodesRacks;
+export const ingredientsRacksStore: Readable<{ [ingredientId: number]: RacksState }> = derived(
+	ingredientsStore,
+	(ingredients) => {
+		return Object.entries(ingredients).reduce((ingredientsRacks, [ingredientId, ingredient]) => {
+			ingredientsRacks[Number(ingredientId)] = ingredient.flavors;
+			return ingredientsRacks;
 		}, {});
 	}
 );
 
-export function addNode(node: NodeState<any>) {
-	nodesStore.update(($nodes) => {
-		$nodes[node.ingredientId] = node;
-		return $nodes;
+export function addNode(ingredient: FullIngredient) {
+	ingredientsStore.update(($ingredients) => {
+		$ingredients[ingredient.id] = ingredient;
+		return $ingredients;
 	});
 }
-export function updateNode(node: NodeState<any>) {
-	nodesStore.update(($nodes) => {
-		$nodes[node.ingredientId] = node;
-		return $nodes;
+export function updateNode(ingredient: FullIngredient) {
+	ingredientsStore.update(($ingredients) => {
+		$ingredients[ingredient.id] = ingredient;
+		return $ingredients;
 	});
 }
 
-export function removeNode(node: NodeState<any>) {
-	nodesStore.update(($nodes) => {
-		delete $nodes[node.ingredientId];
-		return $nodes;
+export function removeNode(ingredient: FullIngredient) {
+	ingredientsStore.update(($ingredients) => {
+		delete $ingredients[ingredient.id];
+		return $ingredients;
 	});
 }
 

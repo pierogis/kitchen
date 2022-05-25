@@ -1,52 +1,23 @@
 <script lang="ts" context="module">
-	import { FlavorType } from '@prisma/client';
-	import { Direction, type FullRecipe } from '$lib/common/types';
+	import type { FullRecipe } from '$lib/common/types';
+	import { defaultRecipe } from './_recipe';
 
 	/** @type {import('./index').Load} */
 	export async function load() {
-		const recipe: FullRecipe = {
-			id: null,
-			mainIngredientId: null,
-			mainIngredient: {
-				id: null,
-				name: 'main',
-				flavors: [
-					{
-						id: null,
-						ingredientId: null,
-						name: 'image',
-						type: FlavorType.Image,
-						directions: [Direction.Out],
-						parameters: {},
-						options: {}
-					}
-
-					// {
-					// 	name: 'audio',
-					// 	type: FlavorType.Audio,
-					// 	directions: [Direction.In, Direction.Out],
-					// 	initial: { text: '' }
-					// }
-				],
-				parentIngredientId: null,
-				subIngredients: [],
-				connections: [],
-				x: null,
-				y: null
-			}
-		};
-
 		return {
 			props: {
-				recipe
+				recipe: defaultRecipe
 			}
 		};
 	}
 </script>
 
 <script lang="ts">
+	import { writable } from 'svelte/store';
+
 	import Dish from '$lib/components/Dish.svelte';
 	import { viewportStore } from '$lib/viewport/viewport';
+	import { ingredientsStore } from '$lib/nodes';
 
 	let innerWidth = 0,
 		innerHeight = 0;
@@ -59,7 +30,7 @@
 <Dish
 	ingredientId={recipe.mainIngredientId}
 	flavors={recipe.mainIngredient.flavors}
-	ingredients={recipe.mainIngredient.subIngredients}
+	ingredients={writable(recipe.mainIngredient.subIngredients)}
 	connections={recipe.mainIngredient.connections}
 />
 

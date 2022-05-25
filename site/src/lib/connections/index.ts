@@ -4,32 +4,20 @@ export type { Connection } from '@prisma/client';
 import type { FlavorType } from '$lib/flavors';
 import { type Writable, writable } from 'svelte/store';
 
-export interface ConnectionState {
-	connectionId: number;
-	flavorType: FlavorType;
-	in: {
-		ingredientId: number;
-		flavorName: string;
-	};
-	out: {
-		ingredientId: number;
-		flavorName: string;
-	};
-}
 export const connectionsStore: Writable<{
-	[connectionId: number]: ConnectionState;
+	[connectionId: number]: Connection;
 }> = writable({});
 
-export function addConnection(connection: ConnectionState) {
+export function addConnection(connection: Connection) {
 	connectionsStore.update((connections) => {
-		connections[connection.connectionId] = connection;
+		connections[connection.id] = connection;
 		return connections;
 	});
 }
 
-export function updateConnection(connection: ConnectionState) {
+export function updateConnection(connection: Connection) {
 	connectionsStore.update((connections) => {
-		connections[connection.connectionId] = connection;
+		connections[connection.id] = connection;
 		return connections;
 	});
 }

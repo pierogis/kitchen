@@ -1,7 +1,7 @@
 import { Direction, type FullRecipe } from '$lib/common/types';
 import { FlavorType } from '$lib/flavors';
 
-const defaultRecipe: FullRecipe = {
+export const defaultRecipe: FullRecipe = {
 	id: 0,
 	mainIngredientId: 0,
 	mainIngredient: {

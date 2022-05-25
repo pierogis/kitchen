@@ -5,14 +5,14 @@
 	import type { Connection } from '$lib/connections';
 
 	import CursorCircle from '$lib/cursor-circle/CursorCircle.svelte';
-	import Connections from '$lib/connections/Connections.svelte';
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/docks/Dock.svelte';
 	import { FlavorType } from '@prisma/client';
+	import type { Writable } from 'svelte/store';
 
 	export let ingredientId: number;
 	export let flavors: Flavor[];
-	export let ingredients: FullIngredient[];
+	export let ingredients: Writable<FullIngredient[]>;
 	export let connections: Connection[];
 
 	function createDefaultNode(coords: { x: number; y: number }) {
@@ -27,7 +27,7 @@
 					name: 'text',
 					parameters: { text: '' },
 					options: null,
-					directions: [Direction.In, Direction.Out]
+					directions: [Direction.Out]
 				}
 			],
 			subIngredients: [],
@@ -37,7 +37,7 @@
 			y: coords.y
 		};
 
-		ingredients = [...ingredients, defaultIngredient];
+		$ingredients = [...$ingredients, defaultIngredient];
 	}
 
 	let canvasWidth: number, canvasHeight: number;
@@ -51,7 +51,7 @@
 
 <canvas height={canvasHeight} width={canvasWidth} />
 
-{#each ingredients as ingredient}
+{#each $ingredients as ingredient}
 	<IngredientComponent
 		ingredientId={ingredient.id}
 		flavors={ingredient.flavors}
@@ -61,8 +61,6 @@
 
 <Dock direction={Direction.In} />
 <Dock direction={Direction.Out} />
-
-<Connections />
 
 <CursorCircle
 	on:longpress={(event) => {

@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-	const NOVEL_CONNECTION_ID = 'novel';
+	const NOVEL_CONNECTION_ID = -1;
 </script>
 
 <script lang="ts">
@@ -43,7 +43,7 @@
 	// get store containing coord stores to use to broadcast bounding rect
 	// look for matching node, parameter name, direction
 	const nodeTerminalRectCenterStores: Readable<{
-		[connectionId: string]: TerminalCentersState;
+		[connectionId: number]: TerminalCentersState;
 	}> = derived(
 		[allNodesTerminalCentersStore, liveConnectionStore],
 		([allNodeTerminalCenters, liveConnection]: [TerminalCentersState[], LiveConnectionState]) => {
@@ -56,7 +56,7 @@
 			});
 
 			let centerStores = nodeCenters.reduce<{
-				[connectionId: string]: TerminalCentersState;
+				[connectionId: number]: TerminalCentersState;
 			}>((currentCenterStores, center) => {
 				if (center.connectionId) {
 					currentCenterStores[center.connectionId] = center;
@@ -216,9 +216,9 @@
 		};
 	}
 
-	$: connectionIds = $nodeTerminalRectCenterStores
-		? Object.keys($nodeTerminalRectCenterStores)
-		: [];
+	$: connectionIds = (
+		$nodeTerminalRectCenterStores ? Object.keys($nodeTerminalRectCenterStores) : []
+	).map(Number);
 
 	$: expanded = near || usingNovelTerminal;
 

@@ -1,7 +1,7 @@
 import { derived, writable, type Writable } from 'svelte/store';
 
 import { connectionsStore } from '$lib/connections';
-import { nodesStore } from '$lib/nodes';
+import { ingredientsStore } from '$lib/nodes';
 
 import { Direction } from '$lib/common/types';
 import type { FlavorType } from '@prisma/client';
@@ -18,7 +18,7 @@ export type TerminalCentersState = {
 };
 
 export const allNodesTerminalCentersStore = derived(
-	[nodesStore, connectionsStore],
+	[ingredientsStore, connectionsStore],
 	([nodes, connections]) => {
 		const connectionCenters: TerminalCentersState[] = [];
 
@@ -26,9 +26,9 @@ export const allNodesTerminalCentersStore = derived(
 			// the context is keyed by ingredientId as a string
 			// using an object key requires matching the reference
 			// maybe pass down through props
-			const inNodeId = connection.in.ingredientId;
+			const inNodeId = connection.In.ingredientId;
 			// do the same for out
-			const outNodeId = connection.out.ingredientId;
+			const outNodeId = connection.Out.ingredientId;
 
 			// add to the callbacks set for the given connection's "in" parameter name
 			// this corresponds to the in (left) terminal on parameters
@@ -39,7 +39,7 @@ export const allNodesTerminalCentersStore = derived(
 			connectionCenters.push({
 				ingredientId: inNodeId,
 				direction: Direction.In,
-				flavorName: connection.in.flavorName,
+				flavorName: connection.In.flavorName,
 				connectionId: Number(connectionId),
 				flavorType: connection.flavorType,
 				coords: writable({ x: undefined, y: undefined })
@@ -47,7 +47,7 @@ export const allNodesTerminalCentersStore = derived(
 			connectionCenters.push({
 				ingredientId: outNodeId,
 				direction: Direction.Out,
-				flavorName: connection.out.flavorName,
+				flavorName: connection.Out.flavorName,
 				connectionId: Number(connectionId),
 				flavorType: connection.flavorType,
 				coords: writable({ x: undefined, y: undefined })
@@ -56,7 +56,7 @@ export const allNodesTerminalCentersStore = derived(
 
 		const novelCenters: TerminalCentersState[] = [];
 		Object.entries(nodes).forEach(([ingredientId, node]) => {
-			Object.entries(node.racks.in).forEach(([flavorName, inRack]) => {
+			Object.entries(node.racks.In).forEach(([flavorName, inRack]) => {
 				if (
 					!connectionCenters.find((center) => {
 						return (
@@ -77,7 +77,7 @@ export const allNodesTerminalCentersStore = derived(
 					novelCenters.push(novelCenter);
 				}
 			});
-			Object.entries(node.racks.out).forEach(([flavorName, outRack]) => {
+			Object.entries(node.racks.Out).forEach(([flavorName, outRack]) => {
 				const novelCenter = {
 					ingredientId: Number(ingredientId),
 					direction: Direction.Out,
