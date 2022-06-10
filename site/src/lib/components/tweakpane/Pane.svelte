@@ -2,10 +2,11 @@
 	import { registerPlugins } from '$lib/flavors';
 	import { Pane } from 'tweakpane';
 
+	export let title: string;
 	let pane: Pane;
 
 	function attachPaneAction(element: HTMLElement) {
-		pane = new Pane({ container: element });
+		pane = new Pane({ container: element, title });
 
 		registerPlugins(pane);
 

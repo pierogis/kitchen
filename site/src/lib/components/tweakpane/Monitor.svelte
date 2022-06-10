@@ -9,7 +9,7 @@
 
 	export let paramsStore: Writable<any>;
 	export let key: string;
-	export let options: MonitorParams = null;
+	export let options: MonitorParams | undefined = undefined;
 
 	let params = get(paramsStore);
 
@@ -25,8 +25,10 @@
 	let bladeApi = folder.addMonitor(params, key, options);
 
 	const monitorElement = bladeApi.controller_.valueController.view.element.parentElement;
-	monitorElement.style.width = '100px';
-	monitorElement.style.display = 'flex';
+	if (monitorElement) {
+		monitorElement.style.width = '4rem';
+		monitorElement.style.display = 'flex';
+	}
 
 	onDestroy(() => {
 		folder.remove(bladeApi);

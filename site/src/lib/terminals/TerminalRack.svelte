@@ -3,37 +3,35 @@
 </script>
 
 <script lang="ts">
-	import { v4 as uuidv4 } from 'uuid';
-	import { derived, type Readable } from 'svelte/store';
+	import type { Readable } from 'svelte/store';
 
-	import {
-		allNodesTerminalCentersStore,
-		type TerminalCentersState,
-		terminalHeight
-	} from '$lib/terminals';
+	import { terminalHeight } from '$lib/terminals';
 	import {
 		anchorLiveConnection,
 		type LiveConnectionState,
-		liveConnectionStore
+		liveConnection
 	} from '$lib/connections/live-connection';
 	import type { ActionDescription } from '$lib/common/actions/useActions';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 	import { calculateCenter } from '$lib/common/utils';
-	import { connectionsStore, removeConnection } from '$lib/connections';
+	import { connections, removeConnection } from '$lib/connections';
 	import { Direction } from '$lib/common/types';
 
 	import Terminal from '$lib/terminals/Terminal.svelte';
 	import type { FlavorType } from '@prisma/client';
 	import { onMount } from 'svelte';
+	import type { Cable } from '$lib/connections/cable';
 
 	export let direction: Direction;
-	export let container: HTMLElement = null;
+	export let container: HTMLElement | null = null;
 
 	let near = false;
 
 	export let ingredientId: number;
+	export let flavorId: number;
 	export let flavorName: string;
 	export let flavorType: FlavorType;
+	export let cables: Readable<(Cable | null)[]>;
 
 	const nearTerminalRackDistance = 12;
 	const rackHeight = 20;
@@ -42,85 +40,50 @@
 
 	// get store containing coord stores to use to broadcast bounding rect
 	// look for matching node, parameter name, direction
-	const nodeTerminalRectCenterStores: Readable<{
-		[connectionId: number]: TerminalCentersState;
-	}> = derived(
-		[allNodesTerminalCentersStore, liveConnectionStore],
-		([allNodeTerminalCenters, liveConnection]: [TerminalCentersState[], LiveConnectionState]) => {
-			let nodeCenters = allNodeTerminalCenters.filter((center) => {
-				return (
-					center.ingredientId == ingredientId &&
-					center.direction == direction &&
-					center.flavorName == flavorName
-				);
-			});
+	// const ingredientTerminalRectCenters: Readable<{
+	// 	[connectionId: number]: TerminalCenter;
+	// }> = derived(
+	// 	[terminalCenters, liveConnection],
+	// 	([currentTerminalCenters, currentLiveConnection]: [TerminalCenter[], LiveConnectionState]) => {
+	// 		let nodeCenters = currentTerminalCenters.filter(
+	// 			(center) => center.direction == direction && center.flavorId == flavorId
+	// 		);
 
-			let centerStores = nodeCenters.reduce<{
-				[connectionId: number]: TerminalCentersState;
-			}>((currentCenterStores, center) => {
-				if (center.connectionId) {
-					currentCenterStores[center.connectionId] = center;
-				} else {
-					currentCenterStores[NOVEL_CONNECTION_ID] = center;
-				}
-				return currentCenterStores;
-			}, {});
+	// 		let centerStores = nodeCenters.reduce<{
+	// 			[connectionId: number]: TerminalCenter;
+	// 		}>((currentCenterStores, center) => {
+	// 			if (center.connectionId) {
+	// 				currentCenterStores[center.connectionId] = center;
+	// 			} else {
+	// 				currentCenterStores[NOVEL_CONNECTION_ID] = center;
+	// 			}
+	// 			return currentCenterStores;
+	// 		}, {});
 
-			// add a rect center store to update from the live connection
-			if (
-				liveConnection &&
-				liveConnection.anchorNodeId == ingredientId &&
-				liveConnection.anchorDirection == direction &&
-				liveConnection.anchorParameterName == flavorName
-			) {
-				centerStores[liveConnection.connectionId] = {
-					ingredientId: ingredientId,
-					direction: direction,
-					flavorName: flavorName,
-					connectionId: liveConnection.connectionId,
-					flavorType: liveConnection.flavorType,
-					coords: liveConnection.anchorCoordsStore
-				};
-				if (direction == Direction.In) {
-					delete centerStores[NOVEL_CONNECTION_ID];
-				}
-			}
+	// 		// add a rect center store to update from the live connection
+	// 		if (
+	// 			currentLiveConnection &&
+	// 			currentLiveConnection.anchorFlavorId == ingredientId &&
+	// 			currentLiveConnection.anchorDirection == direction
+	// 		) {
+	// 			centerStores[currentLiveConnection.connectionId] = {
+	// 				ingredientId: ingredientId,
+	// 				direction: direction,
+	// 				flavorName: flavorName,
+	// 				connectionId: currentLiveConnection.connectionId,
+	// 				flavorType: currentLiveConnection.flavorType,
+	// 				coords: currentLiveConnection.anchorCoordsStore
+	// 			};
+	// 			if (direction == Direction.In) {
+	// 				delete centerStores[NOVEL_CONNECTION_ID];
+	// 			}
+	// 		}
 
-			return centerStores;
-		},
-		{}
-	);
+	// 		return centerStores;
+	// 	},
+	// 	{}
+	// );
 
-	function terminalCenterUpdateAction(element: HTMLElement, params: { connectionId: string }) {
-		let updateRect = () => {
-			// don't bother if there are none to call
-			if (
-				$nodeTerminalRectCenterStores &&
-				Object.entries($nodeTerminalRectCenterStores).length > 0
-			) {
-				// calculate the rect and dispatch to the callback
-				let rect: DOMRect = element.getBoundingClientRect();
-				// accounts for scroll
-				rect.x += window.pageXOffset;
-				rect.y += window.pageYOffset;
-				let center = calculateCenter(rect);
-				$nodeTerminalRectCenterStores[params.connectionId].coords.set({
-					x: center.x,
-					y: center.y
-				});
-			}
-		};
-
-		let rectUpdateInterval = setInterval(updateRect, 10);
-		return {
-			update(newParams: { connectionId: string }) {
-				params = newParams;
-			},
-			destroy() {
-				clearInterval(rectUpdateInterval);
-			}
-		};
-	}
 	let usingNovelTerminal = false;
 
 	// grabbing novel terminal should start relaying the coords of the terminal
@@ -138,10 +101,9 @@
 				anchorLiveConnection(
 					params.connectionId,
 					ingredientId,
-					flavorName,
+					flavorId,
 					direction,
 					dragDirection,
-					flavorType,
 					{
 						x: event.x,
 						y: event.y
@@ -177,25 +139,25 @@
 					x: event.x,
 					y: event.y
 				};
-				const connection = $connectionsStore[params.connectionId];
+				const connection = $connections[params.connectionId];
 
 				// anchorDirection is the opposite of the direction that engaged
 				// this callback
 				const anchorDirection = direction == Direction.In ? Direction.Out : Direction.In;
 
-				const flavorType = connection.flavorType;
+				// const flavorType = connection;
 
-				const { ingredientId: anchorNodeId, flavorName: anchorParameterName } =
-					connection[anchorDirection];
+				const anchorFlavorId =
+					anchorDirection == Direction.In ? connection.inFlavorId : connection.outFlavorId;
+
 				removeConnection(params.connectionId);
 
 				anchorLiveConnection(
 					params.connectionId,
-					anchorNodeId,
-					anchorParameterName,
+					ingredientId,
+					anchorFlavorId,
 					anchorDirection,
 					direction,
-					flavorType,
 					location
 				);
 
@@ -216,82 +178,87 @@
 		};
 	}
 
-	$: connectionIds = (
-		$nodeTerminalRectCenterStores ? Object.keys($nodeTerminalRectCenterStores) : []
-	).map(Number);
+	// $: connectionIds = (
+	// 	$ingredientTerminalRectCenters ? Object.keys($ingredientTerminalRectCenters) : []
+	// ).map(Number);
 
 	$: expanded = near || usingNovelTerminal;
 
-	let terminals: {
-		actionDescriptions: ActionDescription<any>[];
-		cabled: boolean;
-	}[];
-	$: {
-		let showNovelTerminal;
-		terminals = [...connectionIds].reduce<
-			{
-				actionDescriptions: ActionDescription<any>[];
-				cabled: boolean;
-			}[]
-		>((result, connectionId) => {
-			if (connectionId != NOVEL_CONNECTION_ID) {
-				const terminal = {
-					actionDescriptions: [
-						{
-							action: terminalCenterUpdateAction,
-							params: { connectionId: connectionId }
-						},
-						{
-							action: handleDisconnectGrabAction,
-							params: { connectionId: connectionId }
-						}
-					],
-					cabled: true
-				};
+	// let terminals: {
+	// 	actionDescriptions: ActionDescription<any>[];
+	// 	cabled: boolean;
+	// }[];
+	// $: {
+	// 	let showNovelTerminal;
+	// 	terminals = [...connectionIds].reduce<
+	// 		{
+	// 			actionDescriptions: ActionDescription<any>[];
+	// 			cabled: boolean;
+	// 		}[]
+	// 	>((result, connectionId) => {
+	// 		if (connectionId != NOVEL_CONNECTION_ID) {
+	// 			const terminal = {
+	// 				actionDescriptions: [
+	// 					{
+	// 						action: terminalCenterUpdateAction,
+	// 						params: { connectionId: connectionId }
+	// 					},
+	// 					{
+	// 						action: handleDisconnectGrabAction,
+	// 						params: { connectionId: connectionId }
+	// 					}
+	// 				],
+	// 				cabled: true
+	// 			};
 
-				result.push(terminal);
-			} else {
-				showNovelTerminal = true;
-			}
+	// 			result.push(terminal);
+	// 		} else {
+	// 			showNovelTerminal = true;
+	// 		}
 
-			return result;
-		}, []);
+	// 		return result;
+	// 	}, []);
 
-		if (showNovelTerminal) {
-			const novelTerminal = {
-				actionDescriptions: [
-					{
-						action: terminalCenterUpdateAction,
-						params: { connectionId: NOVEL_CONNECTION_ID }
-					},
-					{
-						action: handleNovelGrabAction,
-						params: { connectionId: uuidv4() }
-					}
-				],
-				cabled: false
-			};
+	// 	if (showNovelTerminal) {
+	// 		const novelTerminal = {
+	// 			actionDescriptions: [
+	// 				{
+	// 					action: terminalCenterUpdateAction,
+	// 					params: { connectionId: NOVEL_CONNECTION_ID }
+	// 				},
+	// 				{
+	// 					action: handleNovelGrabAction,
+	// 					params: { connectionId: uuidv4() }
+	// 				}
+	// 			],
+	// 			cabled: false
+	// 		};
 
-			terminals.push(novelTerminal);
-		}
-	}
+	// 		terminals.push(novelTerminal);
+	// 	}
+	// }
+
+	export let showNovelTerminal: boolean;
+
+	let terminals = $cables.length + (showNovelTerminal ? 1 : 0);
 
 	// if expanded, take a width dependent on the number of terminals
 	// 1 more terminal than there are connections
 	$: rackWidth = !expanded
 		? 4
-		: ((rackHeight - terminalHeight) / 2) * (terminals.length + 1) +
-		  terminalHeight * terminals.length;
+		: ((rackHeight - terminalHeight) / 2) * (terminals + 1) + terminalHeight * terminals;
 
-	export let parentElement: HTMLElement;
+	export let parentElement: HTMLElement | null;
 
 	onMount(() => {
-		if (direction == Direction.In) {
-			parentElement.prepend(container);
-		}
+		if (container !== null && parentElement !== null) {
+			if (direction == Direction.In) {
+				parentElement.prepend(container);
+			}
 
-		if (direction == Direction.Out) {
-			parentElement.append(container);
+			if (direction == Direction.Out) {
+				parentElement.append(container);
+			}
 		}
 	});
 </script>
@@ -316,15 +283,24 @@
 		style:--rack-height={rackHeight + 'px'}
 		style:--pane-offset={paneOffset + 'px'}
 	>
-		{#each Object.entries(terminals) as [connectionId, terminal] (connectionId)}
+		{#each $cables as cable}
 			<Terminal
-				actionDescriptions={terminal.actionDescriptions}
-				cabled={terminal.cabled}
+				coords={direction == Direction.In ? cable.inCoords : cable.outCoords}
+				cabled={true}
 				{direction}
 				{expanded}
 				{terminalHeight}
 			/>
 		{/each}
+		{#if showNovelTerminal}
+			<Terminal
+				coords={direction == Direction.In ? cable.inCoords : cable.outCoords}
+				cabled={false}
+				{direction}
+				{expanded}
+				{terminalHeight}
+			/>
+		{/if}
 	</div>
 </div>
 

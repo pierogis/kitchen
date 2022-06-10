@@ -54,6 +54,7 @@
 {#each $ingredients as ingredient}
 	<IngredientComponent
 		ingredientId={ingredient.id}
+		name={ingredient.name}
 		flavors={ingredient.flavors}
 		coords={{ x: ingredient.x, y: ingredient.y }}
 	/>

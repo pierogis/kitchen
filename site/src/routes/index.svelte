@@ -13,11 +13,17 @@
 </script>
 
 <script lang="ts">
-	import { writable } from 'svelte/store';
-
-	import Dish from '$lib/components/Dish.svelte';
 	import { viewportStore } from '$lib/viewport/viewport';
-	import { ingredientsStore } from '$lib/nodes';
+	import Pan from '$lib/components/Pan.svelte';
+	import type { Ingredient } from '$lib/ingredients';
+	import {
+		flattenRecipe,
+		ingredients,
+		flavors,
+		connections,
+		parameters,
+		shaders
+	} from '$lib/stores';
 
 	let innerWidth = 0,
 		innerHeight = 0;
@@ -25,13 +31,38 @@
 	viewportStore.set({ width: innerWidth, height: innerHeight });
 
 	export let recipe: FullRecipe;
+
+	flattenRecipe(recipe);
+
+	const connections = recipe.mainIngredient.connections.reduce((previous, current) => {
+		previous.set(current.id, current);
+		return previous;
+	}, new Map());
+	const programs = new Map();
+	const shaders = new Map();
+	const parameters = recipe.mainIngredient.flavors.reduce((previous, current) => {
+		previous.set(current.id, current);
+		return previous;
+	}, new Map());
 </script>
 
-<Dish
+<svelte:window bind:innerWidth bind:innerHeight />
+
+<!-- <Recipe
 	ingredientId={recipe.mainIngredientId}
 	flavors={recipe.mainIngredient.flavors}
 	ingredients={writable(recipe.mainIngredient.subIngredients)}
 	connections={recipe.mainIngredient.connections}
-/>
+/> -->
 
-<svelte:window bind:innerWidth bind:innerHeight />
+<Pan
+	width={innerWidth}
+	height={innerHeight}
+	mainIngredientId={recipe.mainIngredientId}
+	ingredients={$ingredients}
+	flavors={$flavors}
+	connections={$connections}
+	programs={$programs}
+	shaders={$shaders}
+	parameters={$parameters}
+/>

@@ -1,109 +1,90 @@
 import { derived, get, writable, type Writable } from 'svelte/store';
-import { allNodesTerminalCentersStore, terminalHeight } from '$lib/terminals';
+import { terminalCenters, terminalHeight } from '$lib/terminals';
 import { checkPointWithinBox } from '$lib/common/utils';
 import { Direction } from '$lib/common/types';
-import { addConnection, updateConnection } from '$lib/connections';
-import type { FlavorType } from '@prisma/client';
+import { addConnection, connections, updateConnection } from '$lib/connections';
+import type { Flavor, FlavorType } from '$lib/flavors';
 import type { Connection } from '.';
 
 export type LiveConnectionState = {
 	// only react if this a compatible terminal
 	connectionId: number;
+	parentIngredientId: number;
 	flavorType: FlavorType;
-	anchorNodeId: number;
-	anchorParameterName: string;
+	anchorFlavorId: number;
 	anchorDirection: Direction;
 	dragDirection: Direction;
-	anchorCoordsStore: Writable<{ x: number; y: number }>;
-	dragCoordsStore: Writable<{ x: number; y: number }>;
+	anchorCoordsStore: Writable<{ x: number | undefined; y: number | undefined }>;
+	dragCoordsStore: Writable<{ x: number | undefined; y: number | undefined }>;
 	// call this when releasing the live terminal, if this live cable is compatible
-	attach: (
-		targetNodeId: number,
-		targetParameterName: string,
-		existingConnectionId?: number
-	) => void;
+	attach: (targetFlavorId: number, existingConnectionId?: number) => void;
 } | null;
 
 // object describing the live cable for target terminals
 // including callback should a new connection happen in ui
-export const liveConnectionStore: Writable<LiveConnectionState> = writable(null);
+export const liveConnection: Writable<LiveConnectionState> = writable(null);
 
 export function anchorLiveConnection(
 	connectionId: number,
-	anchorNodeId: number,
-	anchorParameterName: string,
+	parentIngredientId: number,
+	anchorFlavorId: number,
 	anchorDirection: Direction,
 	dragDirection: Direction,
-	flavorType: FlavorType,
-	location: { x: number; y: number }
+	location: { x: number | undefined; y: number | undefined }
 ) {
-	let attach: (
-		targetNodeId: number,
-		targetParameterName: string,
-		existingConnectionId?: number
-	) => void;
+	let anchorFlavor: Flavor = flavors[anchorFlavorId];
+
+	let attach: (targetFlavorId: number, existingConnectionId?: number) => void;
 	// when a terminal gets a mouseup, add a new connection depending on the in/out
 	if (anchorDirection == Direction.In) {
-		attach = (targetNodeId: number, targetParameterName: string, existingConnectionId?: number) => {
+		attach = (targetFlavorId: number, existingConnectionId?: number) => {
 			// if this terminal is already connected, just update the connection's state to the new
 			// node id, parameter name,
 			const connectionState: Connection = {
-				connectionId: connectionId,
-				flavorType: flavorType,
-				In: {
-					ingredientId: anchorNodeId,
-					flavorName: anchorParameterName
-				},
-				Out: {
-					ingredientId: targetNodeId,
-					flavorName: targetParameterName
-				}
+				id: connectionId,
+				parentIngredientId,
+				inFlavorId: anchorFlavorId,
+				outFlavorId: targetFlavorId
 			};
 
 			if (existingConnectionId) {
-				connectionState.connectionId = existingConnectionId;
+				connectionState.id = existingConnectionId;
 				updateConnection(connectionState);
 			} else {
 				addConnection(connectionState);
 			}
 
 			// need to delete live connection here
-			liveConnectionStore.set(null);
+			liveConnection.set(null);
 		};
 	} else {
-		attach = (targetNodeId: number, targetParameterName: string, existingConnectionId?: number) => {
+		attach = (targetFlavorId: number, existingConnectionId?: number) => {
 			const connectionState: Connection = {
-				connectionId: connectionId,
-				flavorType: flavorType,
-				In: {
-					ingredientId: targetNodeId,
-					flavorName: targetParameterName
-				},
-				Out: {
-					ingredientId: anchorNodeId,
-					flavorName: anchorParameterName
-				}
+				id: connectionId,
+				parentIngredientId,
+				inFlavorId: targetFlavorId,
+				outFlavorId: anchorFlavorId
 			};
 
 			if (existingConnectionId) {
-				connectionState.connectionId = existingConnectionId;
+				connectionState.id = existingConnectionId;
 
 				updateConnection(connectionState);
 			} else {
 				addConnection(connectionState);
 			}
 
-			liveConnectionStore.set(null);
+			liveConnection.set(null);
 		};
 	}
 
-	liveConnectionStore.set({
-		connectionId: connectionId,
-		anchorNodeId: anchorNodeId,
-		anchorParameterName: anchorParameterName,
-		flavorType: flavorType,
-		anchorDirection: anchorDirection,
-		dragDirection: dragDirection,
+	liveConnection.set({
+		connectionId,
+		parentIngredientId,
+		anchorFlavorId,
+		flavorType: anchorFlavor.type,
+		anchorDirection,
+		dragDirection,
 		dragCoordsStore: writable(location),
 		anchorCoordsStore: writable({ x: undefined, y: undefined }),
 		attach: attach
@@ -111,21 +92,17 @@ export function anchorLiveConnection(
 }
 
 export const dropCableStore = derived(
-	[liveConnectionStore, allNodesTerminalCentersStore],
-	([liveConnection, allNodesTerminalCenters]) => {
+	[liveConnection, terminalCenters],
+	([currentLiveConnection, currentTerminalCenters]) => {
 		// this subscription fires before the element is deleted
 		return (coords: { x: number; y: number }) => {
-			if (liveConnection) {
-				const targetTerminals = allNodesTerminalCenters.filter((nodeTerminalCenter) => {
-					return (
-						liveConnection.flavorType == nodeTerminalCenter.flavorType &&
-						liveConnection.dragDirection == nodeTerminalCenter.direction &&
-						!(
-							liveConnection.anchorNodeId == nodeTerminalCenter.ingredientId &&
-							liveConnection.anchorParameterName == nodeTerminalCenter.flavorName
-						)
-					);
-				});
+			if (currentLiveConnection) {
+				const targetTerminals = currentTerminalCenters.filter(
+					(ingredientTerminalCenter) =>
+						currentLiveConnection.flavorType == ingredientTerminalCenter.flavorType &&
+						currentLiveConnection.dragDirection == ingredientTerminalCenter.direction &&
+						!(currentLiveConnection.anchorFlavorId == ingredientTerminalCenter.flavorId)
+				);
 
 				const nearTerminalDistance = 4;
 				// expanding the rect
@@ -145,13 +122,9 @@ export const dropCableStore = derived(
 
 				// use the callback from the liveConnection store
 				if (targetTerminal) {
-					liveConnection.attach(
-						targetTerminal.ingredientId,
-						targetTerminal.flavorName,
-						targetTerminal.connectionId
-					);
+					currentLiveConnection.attach(targetTerminal.flavorId, targetTerminal.connectionId);
 				} else {
-					liveConnectionStore.set(null);
+					liveConnection.set(null);
 				}
 			}
 		};

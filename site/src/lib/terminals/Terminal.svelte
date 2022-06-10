@@ -1,19 +1,45 @@
 <script lang="ts">
+	import type { Writable } from 'svelte/store';
+
 	import { type ActionDescription, useActions } from '$lib/common/actions/useActions';
 
 	import type { Direction } from '$lib/common/types';
+	import { calculateCenter } from '$lib/common/utils';
 
+	export let coords: Writable<{ x: number; y: number }>;
 	export let direction: Direction;
 	export let expanded: boolean;
 	export let terminalHeight: number;
 	export let cabled: boolean;
 	export let live = false;
 
-	export let actionDescriptions: ActionDescription<any>[];
+	// export let actionDescriptions: ActionDescription<any>[];
+	function updateCoordsAction(element: HTMLElement) {
+		let updateRect = () => {
+			// calculate the rect and dispatch to the callback
+			let rect: DOMRect = element.getBoundingClientRect();
+			// accounts for scroll
+			rect.x += window.pageXOffset;
+			rect.y += window.pageYOffset;
+			let center = calculateCenter(rect);
+			coords.set({
+				x: center.x,
+				y: center.y
+			});
+		};
+
+		let rectUpdateInterval = setInterval(updateRect, 10);
+
+		return {
+			destroy() {
+				clearInterval(rectUpdateInterval);
+			}
+		};
+	}
 </script>
 
 <div
-	use:useActions={actionDescriptions}
+	use:updateCoordsAction
 	class="terminal {direction}"
 	class:expanded
 	class:cabled

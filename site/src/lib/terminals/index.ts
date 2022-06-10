@@ -1,34 +1,31 @@
 import { derived, writable, type Writable } from 'svelte/store';
 
-import { connectionsStore } from '$lib/connections';
-import { ingredientsStore } from '$lib/nodes';
+import { connections } from '$lib/connections';
+import { ingredients } from '$lib/stores';
 
 import { Direction } from '$lib/common/types';
-import type { FlavorType } from '@prisma/client';
 
 export const terminalHeight = 10;
 
-export type TerminalCentersState = {
-	ingredientId: number;
+export type TerminalCenter = {
+	flavorId: number;
 	direction: Direction;
-	flavorName: string;
-	connectionId: number | null;
-	flavorType: FlavorType;
-	coords: Writable<{ x: number; y: number }>;
+	connectionId: number | undefined;
+	coords: Writable<{ x: number | undefined; y: number | undefined }>;
 };
 
-export const allNodesTerminalCentersStore = derived(
-	[ingredientsStore, connectionsStore],
-	([nodes, connections]) => {
-		const connectionCenters: TerminalCentersState[] = [];
+export const terminalCenters = derived(
+	[ingredients, connections],
+	([currentIngredients, currentConnections]) => {
+		const connectionCenters: TerminalCenter[] = [];
 
-		Object.entries(connections).forEach(([connectionId, connection]) => {
+		Object.entries(currentConnections).forEach(([connectionId, connection]) => {
 			// the context is keyed by ingredientId as a string
 			// using an object key requires matching the reference
 			// maybe pass down through props
-			const inNodeId = connection.In.ingredientId;
+			const inFlavorId = connection.inFlavorId;
 			// do the same for out
-			const outNodeId = connection.Out.ingredientId;
+			const outFlavorId = connection.outFlavorId;
 
 			// add to the callbacks set for the given connection's "in" parameter name
 			// this corresponds to the in (left) terminal on parameters
@@ -37,41 +34,31 @@ export const allNodesTerminalCentersStore = derived(
 			// they providing updates on their bounding rect
 			// use the out callback
 			connectionCenters.push({
-				ingredientId: inNodeId,
+				flavorId: inFlavorId,
 				direction: Direction.In,
-				flavorName: connection.In.flavorName,
 				connectionId: Number(connectionId),
-				flavorType: connection.flavorType,
 				coords: writable({ x: undefined, y: undefined })
 			});
 			connectionCenters.push({
-				ingredientId: outNodeId,
+				flavorId: outFlavorId,
 				direction: Direction.Out,
-				flavorName: connection.Out.flavorName,
 				connectionId: Number(connectionId),
-				flavorType: connection.flavorType,
 				coords: writable({ x: undefined, y: undefined })
 			});
 		});
 
-		const novelCenters: TerminalCentersState[] = [];
-		Object.entries(nodes).forEach(([ingredientId, node]) => {
-			Object.entries(node.racks.In).forEach(([flavorName, inRack]) => {
+		const novelCenters: TerminalCenter[] = [];
+		Object.entries(currentIngredients).forEach(([ingredientId, ingredient]) => {
+			ingredient.flavors.forEach((flavor) => {
 				if (
 					!connectionCenters.find((center) => {
-						return (
-							center.direction == Direction.In &&
-							center.flavorName == flavorName &&
-							center.ingredientId == Number(ingredientId)
-						);
+						return center.direction == Direction.In && center.flavorId == flavor.id;
 					})
 				) {
-					const novelCenter = {
-						ingredientId: Number(ingredientId),
+					const novelCenter: TerminalCenter = {
 						direction: Direction.In,
-						flavorName: flavorName,
-						connectionId: null,
-						flavorType: inRack.flavorType,
+						flavorId: flavor.id,
+						connectionId: undefined,
 						coords: writable({ x: undefined, y: undefined })
 					};
 					novelCenters.push(novelCenter);
@@ -79,11 +66,9 @@ export const allNodesTerminalCentersStore = derived(
 			});
 			Object.entries(node.racks.Out).forEach(([flavorName, outRack]) => {
 				const novelCenter = {
-					ingredientId: Number(ingredientId),
 					direction: Direction.Out,
-					flavorName: flavorName,
 					connectionId: null,
-					flavorType: outRack.flavorType,
+					flavorId: flavor.id,
 					coords: writable({ x: undefined, y: undefined })
 				};
 				novelCenters.push(novelCenter);

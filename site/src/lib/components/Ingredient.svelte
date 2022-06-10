@@ -3,12 +3,12 @@
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 
 	import Pane from '$lib/components/tweakpane/Pane.svelte';
-	import Folder from '$lib/components/tweakpane/Folder.svelte';
 
 	import FlavorComponent from './Flavor.svelte';
 	import type { Direction } from '$lib/common/types';
 
 	export let ingredientId: number;
+	export let name: string;
 	export let flavors: Flavor[];
 	export let coords: { x: number; y: number };
 
@@ -45,12 +45,10 @@
 
 		<div class="remove" on:click={handleRemove} />
 	</div>
-	<Pane let:pane>
+	<Pane let:pane title={name}>
 		{#if pane}
 			{#each flavors as flavor}
-				<Folder let:folder {pane} title={flavor.name}>
-					<FlavorComponent {terminalRackContainers} {flavor} {folder} {ingredientId} />
-				</Folder>
+				<FlavorComponent {terminalRackContainers} {flavor} folder={pane} {ingredientId} />
 			{/each}
 		{/if}
 	</Pane>

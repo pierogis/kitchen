@@ -10,7 +10,7 @@
 	export let paramsStore: Writable<any>;
 	export let key: string;
 	export let onChange: (paramsStore: Writable<any>, ev: TpChangeEvent<any>) => void;
-	export let options: InputParams = null;
+	export let options: InputParams | undefined = undefined;
 
 	let params = get(paramsStore);
 
@@ -28,8 +28,10 @@
 		.on('change', (ev) => onChange(paramsStore, ev));
 
 	const inputElement = bladeApi.controller_.valueController.view.element.parentElement;
-	inputElement.style.width = '4rem';
-	inputElement.style.display = 'flex';
+	if (inputElement) {
+		inputElement.style.width = '4rem';
+		inputElement.style.display = 'flex';
+	}
 
 	onDestroy(() => {
 		folder.remove(bladeApi);

@@ -24,12 +24,13 @@ model Flavor {
   ingredientId   Int
   type           FlavorType
   name           String       @db.VarChar(255)
-  parameters     Json
   options        Json?
   ingredient     Ingredient   @relation(fields: [ingredientId], references: [id])
   directions     Direction[]
-  inConnections  Connection[] @relation("Flavor_inConnections")
+  inConnection   Connection?  @relation("Flavor_inConnection")
   outConnections Connection[] @relation("Flavor_outConnections")
+  shader         Shader?      @relation("Shader_imageFlavor")
+  parameter      Parameter?   @relation()
 }
 
 model Ingredient {
@@ -43,21 +44,47 @@ model Ingredient {
   parentIngredientId Int?
   parentIngredient   Ingredient?  @relation("Ingredient_subIngredients", fields: [parentIngredientId], references: [id])
   subIngredients     Ingredient[] @relation("Ingredient_subIngredients")
+  shader             Shader?      @relation()
 }
 
 model Connection {
+  id                 Int        @id @default(autoincrement())
   parentIngredientId Int
   parentIngredient   Ingredient @relation(fields: [parentIngredientId], references: [id])
-  inFlavorId         Int
-  inFlavor           Flavor     @relation("Flavor_inConnections", fields: [inFlavorId], references: [id])
+  inFlavorId         Int        @unique
+  inFlavor           Flavor     @relation("Flavor_inConnection", fields: [inFlavorId], references: [id])
   outFlavorId        Int
   outFlavor          Flavor     @relation("Flavor_outConnections", fields: [outFlavorId], references: [id])
 
-  @@id([parentIngredientId, inFlavorId, outFlavorId])
+  @@unique([parentIngredientId, inFlavorId, outFlavorId])
 }
 
 model Recipe {
-  id               Int        @id @default(autoincrement())
-  mainIngredientId Int        @unique
-  mainIngredient   Ingredient @relation(fields: [mainIngredientId], references: [id])
+  id               Int         @id @default(autoincrement())
+  mainIngredientId Int         @unique
+  mainIngredient   Ingredient  @relation(fields: [mainIngredientId], references: [id])
+  parameters       Parameter[]
+  shaders          Shader[]
+}
+
+model Parameter {
+  value    Json
+  recipeId Int
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  flavorId Int    @unique
+  flavor   Flavor @relation(fields: [flavorId], references: [id])
+
+  @@id([recipeId, flavorId])
+}
+
+model Shader {
+  id             Int        @id @default(autoincrement())
+  recipeId       Int        @unique
+  recipe         Recipe     @relation(fields: [recipeId], references: [id])
+  ingredientId   Int        @unique
+  ingredient     Ingredient @relation(fields: [ingredientId], references: [id])
+  imageFlavorId  Int        @unique
+  imageFlavor    Flavor     @relation("Shader_imageFlavor", fields: [imageFlavorId], references: [id])
+  vertexSource   String     @db.VarChar(16383)
+  fragmentSource String     @db.VarChar(16383)
 }
