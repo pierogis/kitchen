@@ -1,5 +1,12 @@
-import { Direction, type Parameter, type Shader } from '$lib/common/types';
-import { type Connection, type Ingredient, FlavorType, type Flavor } from '$lib/common/types';
+import {
+	type Connection,
+	type Ingredient,
+	FlavorType,
+	type Flavor,
+	Direction,
+	type Parameter,
+	type Shader
+} from '$lib/common/types';
 
 export function createTexture(gl: WebGLRenderingContext): WebGLTexture {
 	// create a texture to sequentially draw on

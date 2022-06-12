@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { derived, type Readable } from 'svelte/store';
-	import { Direction } from '$lib/common/types';
 	import {
+		Direction,
 		type CallFor,
 		type Ingredient,
 		type Location,

@@ -13,7 +13,7 @@
 
 	let svg: SVGElement;
 
-	let left, top;
+	let left: number, top: number;
 
 	let startY: number;
 	let endY: number;

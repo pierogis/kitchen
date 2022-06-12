@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 
-	import type { Parameter, Shader } from '$lib/common/types';
-
-	import type { Connection, Ingredient, Flavor } from '$lib/common/types';
+	import type { Parameter, Shader, Connection, Ingredient, Flavor } from '$lib/common/types';
 
 	import { draw } from '$lib/common/draw';
 

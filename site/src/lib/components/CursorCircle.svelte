@@ -14,7 +14,7 @@
 	const touchDuration = 500;
 
 	// this timer will fire a callback if you press long enough
-	var longPressTimer: NodeJS.Timeout;
+	let longPressTimer: NodeJS.Timeout | null;
 
 	let dispatch = createEventDispatcher();
 

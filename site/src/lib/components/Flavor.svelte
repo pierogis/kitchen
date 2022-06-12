@@ -5,7 +5,7 @@
 	import type { FolderApi, TpChangeEvent } from 'tweakpane';
 	import TerminalRack from '$lib/terminals/TerminalRack.svelte';
 
-	import type { Flavor, FlavorType } from '$lib/common/types';
+	import { type Flavor, type FlavorType, Direction } from '$lib/common/types';
 	import { colorOnChange } from '$lib/flavors/color';
 	import { imageOnChange } from '$lib/flavors/image';
 	import { numberOnChange } from '$lib/flavors/number';
@@ -15,7 +15,6 @@
 
 	import type { Cable } from '$lib/connections/cable';
 	import Monitor from './tweakpane/Monitor.svelte';
-	import { Direction } from '$lib/common/types';
 
 	export let inCable: Cable | undefined = undefined;
 	export let outCables: Cable[];
