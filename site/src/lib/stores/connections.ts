@@ -1,9 +1,7 @@
 import { v4 as uuid } from 'uuid';
 
-import type { FullRecipe } from '$lib/common/types';
+import type { FullRecipe, Connection } from '$lib/common/types';
 import { writableMap, type WritableMap } from '$lib/common/stores';
-
-import type { Connection } from '$lib/connections';
 
 export const connections: WritableMap<string, Connection> = writableMap(new Map());
 

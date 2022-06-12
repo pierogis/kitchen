@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { calculateCenter } from '../common/utils';
-	import { dropCableStore, liveConnectionStore } from './live-connection';
+	import { dropCableStore, liveConnection } from './live-connection';
 	import { terminalHeight } from '$lib/terminals';
 
 	import Cable from '$lib/components/Cable.svelte';
 	import Terminal from '$lib/terminals/Terminal.svelte';
 
 	// access to a store of the coords for when a cable is being dragged
-	$: dragCoordsStore = $liveConnectionStore && $liveConnectionStore.dragCoordsStore;
+	$: dragCoordsStore = $liveConnection && $liveConnection.dragCoordsStore;
 
 	function dragTerminalAction(element: HTMLElement) {
 		let dragTerminalTimer: NodeJS.Timer;
@@ -49,18 +49,15 @@
 	}
 </script>
 
-{#if $liveConnectionStore}
-	<Cable
-		inCoords={$liveConnectionStore.dragCoordsStore}
-		outCoords={$liveConnectionStore.anchorCoordsStore}
-	/>
+{#if $liveConnection}
+	<Cable inCoords={$liveConnection.dragCoordsStore} outCoords={$liveConnection.anchorCoordsStore} />
 	<Terminal
 		actionDescriptions={[
 			{
 				action: dragTerminalAction
 			}
 		]}
-		direction={$liveConnectionStore.dragDirection}
+		direction={$liveConnection.dragDirection}
 		expanded={true}
 		cabled={true}
 		live={true}

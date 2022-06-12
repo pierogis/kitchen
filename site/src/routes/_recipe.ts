@@ -1,5 +1,4 @@
-import { Direction, type FullRecipe } from '$lib/common/types';
-import { FlavorType } from '$lib/flavors';
+import { Direction, type FullRecipe, FlavorType } from '$lib/common/types';
 
 export const defaultRecipe: FullRecipe = {
 	uuid: '0',
@@ -134,7 +133,7 @@ export const defaultRecipe: FullRecipe = {
 			recipeUuid: '0',
 			flavorUuid: '0',
 			callForUuid: '0',
-			value: {
+			payload: {
 				image: null,
 				height: null,
 				width: null
@@ -145,7 +144,7 @@ export const defaultRecipe: FullRecipe = {
 			recipeUuid: '0',
 			flavorUuid: '1',
 			callForUuid: '0',
-			value: {
+			payload: {
 				number: 0
 			}
 		},
@@ -154,7 +153,7 @@ export const defaultRecipe: FullRecipe = {
 			recipeUuid: '0',
 			flavorUuid: '2',
 			callForUuid: '0',
-			value: {
+			payload: {
 				number: 40
 			}
 		},
@@ -163,7 +162,7 @@ export const defaultRecipe: FullRecipe = {
 			recipeUuid: '0',
 			flavorUuid: '3',
 			callForUuid: '0',
-			value: {
+			payload: {
 				number: 180
 			}
 		},
@@ -172,7 +171,7 @@ export const defaultRecipe: FullRecipe = {
 			recipeUuid: '0',
 			flavorUuid: '4',
 			callForUuid: '1',
-			value: {
+			payload: {
 				text: ''
 			}
 		},
@@ -181,7 +180,7 @@ export const defaultRecipe: FullRecipe = {
 			recipeUuid: '0',
 			flavorUuid: '5',
 			callForUuid: '2',
-			value: {
+			payload: {
 				image: null,
 				height: null,
 				weight: null
@@ -192,7 +191,7 @@ export const defaultRecipe: FullRecipe = {
 			recipeUuid: '0',
 			flavorUuid: '6',
 			callForUuid: '2',
-			value: {
+			payload: {
 				text: ''
 			}
 		}

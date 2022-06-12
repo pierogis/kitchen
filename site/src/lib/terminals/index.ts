@@ -35,19 +35,19 @@ export const terminalCenters = derived(
 			connectionCenters.push({
 				flavorUuid: inFlavorUuid,
 				direction: Direction.In,
-				connectionUuid: Number(connectionUuid),
+				connectionUuid: connectionUuid,
 				coords: writable({ x: undefined, y: undefined })
 			});
 			connectionCenters.push({
 				flavorUuid: outFlavorUuid,
 				direction: Direction.Out,
-				connectionUuid: Number(connectionUuid),
+				connectionUuid: connectionUuid,
 				coords: writable({ x: undefined, y: undefined })
 			});
 		});
 
 		const novelCenters: TerminalCenter[] = [];
-		currentIngredients.values().forEach((ingredient) => {
+		Array.from(currentIngredients.values()).forEach((ingredient) => {
 			ingredient.flavors.forEach((flavor) => {
 				if (
 					!connectionCenters.find((center) => {

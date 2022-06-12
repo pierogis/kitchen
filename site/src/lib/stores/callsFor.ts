@@ -1,8 +1,7 @@
 import { v4 as uuid } from 'uuid';
 
-import type { FullRecipe } from '$lib/common/types';
+import type { FullRecipe, CallFor } from '$lib/common/types';
 import { writableMap, type WritableMap } from '$lib/common/stores';
-import type { CallFor } from '$lib/ingredients';
 
 export const callsFor: WritableMap<string, CallFor> = writableMap(new Map());
 

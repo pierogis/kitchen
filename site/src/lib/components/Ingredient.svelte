@@ -1,12 +1,10 @@
 <script lang="ts">
-	import type { Flavor } from '$lib/flavors';
 	import { draggableAction } from '$lib/common/actions/draggableAction';
+	import type { Direction, Flavor } from '$lib/common/types';
+	import { cables } from '$lib/connections/cable';
 
 	import Pane from '$lib/components/tweakpane/Pane.svelte';
-
 	import FlavorComponent from './Flavor.svelte';
-	import type { Direction } from '$lib/common/types';
-	import { cables } from '$lib/connections/cable';
 
 	export let ingredientUuid: string;
 	export let name: string;

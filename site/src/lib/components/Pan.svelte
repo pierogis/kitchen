@@ -3,9 +3,7 @@
 
 	import type { Parameter, Shader } from '$lib/common/types';
 
-	import type { Flavor } from '$lib/flavors';
-	import type { Ingredient } from '$lib/ingredients';
-	import type { Connection } from '$lib/connections';
+	import type { Connection, Ingredient, Flavor } from '$lib/common/types';
 
 	import { draw } from '$lib/common/draw';
 

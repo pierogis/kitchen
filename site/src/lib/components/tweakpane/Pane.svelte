@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { registerPlugins } from '$lib/flavors';
+	import { registerPlugins } from '$lib/flavors/plugins';
 	import { Pane } from 'tweakpane';
 
 	export let title: string;

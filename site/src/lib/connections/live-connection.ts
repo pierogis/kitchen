@@ -1,9 +1,7 @@
 import { derived, get, writable, type Writable } from 'svelte/store';
 import { terminalCenters, terminalHeight } from '$lib/terminals';
 import { checkPointWithinBox } from '$lib/common/utils';
-import { Direction } from '$lib/common/types';
-import type { Flavor, FlavorType } from '$lib/flavors';
-import type { Connection } from '.';
+import { Direction, type Flavor, type FlavorType, type Connection } from '$lib/common/types';
 import { addConnection, updateConnection } from '$lib/stores/connections';
 
 export type LiveConnectionState = {

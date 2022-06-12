@@ -1,8 +1,14 @@
 <script lang="ts">
 	import { derived, type Readable } from 'svelte/store';
 	import { Direction } from '$lib/common/types';
-	import type { CallFor, Ingredient, Location } from '$lib/ingredients';
-	import { type Flavor, FlavorType } from '$lib/flavors';
+	import {
+		type CallFor,
+		type Ingredient,
+		type Location,
+		type Flavor,
+		FlavorType
+	} from '$lib/common/types';
+	import {} from '$lib/flavors/plugins';
 
 	// store access
 	import { recipeUuid, ingredients, locations } from '$lib/stores';
@@ -11,9 +17,9 @@
 	import { addLocation } from '$lib/stores/locations';
 	import { addFlavor, flavors } from '$lib/stores/flavors';
 
-	import CursorCircle from '$lib/cursor-circle/CursorCircle.svelte';
+	import CursorCircle from '$lib/components/CursorCircle.svelte';
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
-	import Dock from '$lib/docks/Dock.svelte';
+	import Dock from '$lib/components/Dock.svelte';
 
 	export let focusedCallForUuid: string;
 
@@ -48,8 +54,6 @@
 		addLocation({ ...coords, callForUuid: newCallFor.uuid });
 	}
 
-	let canvasWidth: number, canvasHeight: number;
-
 	// collapse the stores into a list of currently-in-view ingredients with flavors and location
 	const nodes: Readable<(Ingredient & { flavors: Flavor[]; location: Location })[]> = derived(
 		[focusedCallsFor, ingredients, flavors, locations],
@@ -82,14 +86,6 @@
 	});
 </script>
 
-<svelte:window
-	bind:innerHeight={canvasHeight}
-	bind:innerWidth={canvasWidth}
-	on:scroll|preventDefault={() => {}}
-/>
-
-<canvas height={canvasHeight} width={canvasWidth} />
-
 {#each $nodes as node}
 	<IngredientComponent
 		ingredientUuid={node.uuid}
@@ -108,9 +104,3 @@
 		createIngredient(coords);
 	}}
 />
-
-<style>
-	canvas {
-		pointer-events: none;
-	}
-</style>

@@ -1,7 +1,6 @@
 import { v4 as uuid } from 'uuid';
 
-import type { FullRecipe } from '$lib/common/types';
-import type { Flavor } from '$lib/flavors';
+import type { FullRecipe, Flavor } from '$lib/common/types';
 
 import { writableMap, type WritableMap } from '$lib/common/stores';
 

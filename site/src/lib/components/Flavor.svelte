@@ -5,7 +5,7 @@
 	import type { FolderApi, TpChangeEvent } from 'tweakpane';
 	import TerminalRack from '$lib/terminals/TerminalRack.svelte';
 
-	import type { Flavor, FlavorType } from '$lib/flavors';
+	import type { Flavor, FlavorType } from '$lib/common/types';
 	import { colorOnChange } from '$lib/flavors/color';
 	import { imageOnChange } from '$lib/flavors/image';
 	import { numberOnChange } from '$lib/flavors/number';
@@ -54,6 +54,7 @@
 		if (unsub) {
 			unsub();
 		}
+		// needs attention
 		unsub = inCable?.payload.subscribe((newInPayload) => {
 			paramsStore.set(newInPayload);
 		});

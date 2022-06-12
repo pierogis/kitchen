@@ -14,15 +14,7 @@
 </script>
 
 <script lang="ts">
-	import {
-		storeRecipe,
-		ingredients,
-		callsFor,
-		flavors,
-		connections,
-		parameters,
-		shaders
-	} from '$lib/stores';
+	import { storeRecipe, ingredients, flavors, connections, parameters, shaders } from '$lib/stores';
 
 	import Pan from '$lib/components/Pan.svelte';
 	import Recipe from '$lib/components/Recipe.svelte';
@@ -34,7 +26,7 @@
 	let focusedCallForUuid = mainCallForUuid;
 </script>
 
-<svelte:window bind:innerWidth bind:innerHeight />
+<svelte:window bind:innerWidth bind:innerHeight on:scroll|preventDefault={() => {}} />
 
 <Recipe {focusedCallForUuid} />
 

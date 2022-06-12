@@ -21,8 +21,7 @@ import { derived, type Writable, writable } from 'svelte/store';
 import type { Direction, FullRecipe } from '$lib/common/types';
 import { writableMap, type WritableMap } from '$lib/common/stores';
 
-import type { FlavorType } from '$lib/flavors';
-import type { FullIngredient, Ingredient } from '$lib/ingredients';
+import type { Ingredient, FlavorType } from '$lib/common/types';
 
 export type NodeParameters = {
 	[key: string]: any;
