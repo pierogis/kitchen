@@ -14,17 +14,17 @@
 
 	let canvas: HTMLCanvasElement;
 
-	export let mainIngredientId: number;
+	export let mainCallForUuid: string;
 
-	export let flavors: Map<number, Flavor>;
-	export let ingredients: Map<number, Ingredient>;
-	export let connections: Map<number, Connection>;
-	export let shaders: Map<number, Shader>;
+	export let flavors: Map<string, Flavor>;
+	export let ingredients: Map<string, Ingredient>;
+	export let connections: Map<string, Connection>;
+	export let shaders: Map<string, Shader>;
 
 	// export let media: (HTMLImageElement | HTMLVideoElement | HTMLAudioElement | WebGLTexture)[];
 
-	export let programs: Map<number, WebGLProgram>;
-	export let parameters: Map<number, Parameter>;
+	const programs: Map<string, WebGLProgram> = new Map();
+	export let parameters: Map<string, Parameter>;
 
 	onMount(async () => {
 		await tick();
@@ -35,10 +35,10 @@
 			frame = requestAnimationFrame(loop);
 
 			if (gl) {
-				const knownParameters: Map<number, Parameter> = new Map(parameters);
+				const knownParameters: Map<string, Parameter> = new Map(parameters);
 				draw(
 					gl,
-					mainIngredientId,
+					mainCallForUuid,
 					knownParameters,
 					connections,
 					ingredients,

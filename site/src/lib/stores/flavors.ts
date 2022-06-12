@@ -1,27 +1,28 @@
-import { type Writable, writable } from 'svelte/store';
+import { v4 as uuid } from 'uuid';
+
 import type { FullRecipe } from '$lib/common/types';
 import type { Flavor } from '$lib/flavors';
-import type { FullIngredient } from '$lib/ingredients';
 
-export function flattenFlavors(recipe: FullRecipe): Map<number, Flavor> {
-	const flavors: Map<number, Flavor> = new Map();
+import { writableMap, type WritableMap } from '$lib/common/stores';
 
-	function getFlavorsFromIngredient(ingredient: FullIngredient) {
-		ingredient.flavors.forEach((flavor) => {
-			flavors.set(flavor.id, flavor);
-		});
-	}
+export const flavors: WritableMap<string, Flavor> = writableMap(new Map());
 
-	function flattenIngredient(ingredient: FullIngredient) {
-		getFlavorsFromIngredient(ingredient);
-		ingredient.subIngredients.forEach((subIngredient) => {
-			flattenIngredient(subIngredient);
-		});
-	}
+export function storeFlavors(recipe: FullRecipe) {
+	flavors.set(
+		new Map(
+			recipe.callsFor.reduce<[string, Flavor][]>((previous, callFor) => {
+				previous.concat(callFor.ingredient.flavors.map((flavor) => [flavor.uuid, flavor]));
 
-	flattenIngredient(recipe.mainIngredient);
-
-	return flavors;
+				return previous;
+			}, [])
+		)
+	);
 }
 
-export const flavors: Writable<Map<number, Flavor>> = writable(new Map());
+export function addFlavor(flavor: Omit<Flavor, 'uuid'>) {
+	const newUuid = uuid();
+
+	const newFlavor = { ...flavor, uuid: newUuid };
+
+	return flavors.add(newUuid, newFlavor);
+}

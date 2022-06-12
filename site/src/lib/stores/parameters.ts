@@ -1,14 +1,18 @@
-import { type Writable, writable } from 'svelte/store';
+import { v4 as uuid } from 'uuid';
+
 import type { FullRecipe, Parameter } from '$lib/common/types';
+import { writableMap, type WritableMap } from '$lib/common/stores';
 
-export function flattenParameters(recipe: FullRecipe): Map<number, Parameter> {
-	const parameters: Map<number, Parameter> = new Map();
+export const parameters: WritableMap<string, Parameter> = writableMap(new Map());
 
-	recipe.parameters.forEach((parameter) => {
-		parameters.set(parameter.flavorId, parameter);
-	});
-
-	return parameters;
+export function storeParameters(recipe: FullRecipe) {
+	parameters.set(new Map(recipe.parameters.map((parameter) => [parameter.uuid, parameter])));
 }
 
-export const parameters: Writable<Map<number, Parameter>> = writable(new Map());
+export function addParameter(parameter: Omit<Parameter, 'uuid'>) {
+	const newUuid = uuid();
+
+	const newParameter = { ...parameter, uuid: newUuid };
+
+	return parameters.add(newUuid, newParameter);
+}

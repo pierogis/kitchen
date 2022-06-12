@@ -1,14 +1,18 @@
-import { type Writable, writable } from 'svelte/store';
+import { v4 as uuid } from 'uuid';
+
 import type { FullRecipe, Shader } from '$lib/common/types';
+import { writableMap, type WritableMap } from '$lib/common/stores';
 
-export function flattenShaders(recipe: FullRecipe): Map<number, Shader> {
-	const shaders: Map<number, Shader> = new Map();
+export const shaders: WritableMap<string, Shader> = writableMap(new Map());
 
-	recipe.shaders.forEach((shader) => {
-		shaders.set(shader.id, shader);
-	});
-
-	return shaders;
+export function storeShaders(recipe: FullRecipe) {
+	shaders.set(new Map(recipe.shaders.map((shader) => [shader.uuid, shader])));
 }
 
-export const shaders: Writable<Map<number, Shader>> = writable(new Map());
+export function addShader(shader: Omit<Shader, 'uuid'>) {
+	const newUuid = uuid();
+
+	const newShader = { ...shader, uuid: newUuid };
+
+	return shaders.add(newUuid, newShader);
+}

@@ -1,68 +1,75 @@
 <script lang="ts" context="module">
-	import type { FullRecipe } from '$lib/common/types';
 	import { defaultRecipe } from './_recipe';
 
 	/** @type {import('./index').Load} */
 	export async function load() {
+		storeRecipe(defaultRecipe);
+
 		return {
 			props: {
-				recipe: defaultRecipe
+				mainCallForUuid: defaultRecipe.mainCallForUuid
 			}
 		};
 	}
 </script>
 
 <script lang="ts">
-	import { viewportStore } from '$lib/viewport/viewport';
-	import Pan from '$lib/components/Pan.svelte';
-	import type { Ingredient } from '$lib/ingredients';
+	import { derived, get } from 'svelte/store';
+
 	import {
-		flattenRecipe,
+		storeRecipe,
 		ingredients,
+		callsFor,
 		flavors,
 		connections,
 		parameters,
 		shaders
 	} from '$lib/stores';
 
+	import Pan from '$lib/components/Pan.svelte';
+	import Recipe from '$lib/components/Recipe.svelte';
+
 	let innerWidth = 0,
 		innerHeight = 0;
 
-	viewportStore.set({ width: innerWidth, height: innerHeight });
+	export let mainCallForUuid: string;
+	let focusedCallForUuid: string = mainCallForUuid;
 
-	export let recipe: FullRecipe;
+	// const ingredientss = derived([callsFor, flavors], ([currentCallsFor, currentFlavors]) => {
+	// 	currentCallsFor.forEach((callFor) => {callFor.})
+	// });
 
-	flattenRecipe(recipe);
+	const panIngredients = derived(ingredients, (currentIngredients) =>
+		Array.from(currentIngredients.values()).filter(
+			(ingredient) => ingredient.parentIngredientUuid == focusedCallForUuid
+		)
+	);
 
-	const connections = recipe.mainIngredient.connections.reduce((previous, current) => {
-		previous.set(current.id, current);
-		return previous;
-	}, new Map());
-	const programs = new Map();
-	const shaders = new Map();
-	const parameters = recipe.mainIngredient.flavors.reduce((previous, current) => {
-		previous.set(current.id, current);
-		return previous;
-	}, new Map());
+	const focusedIngredientFlavors = derived(
+		[callsFor, ingredients, flavors],
+		([currentCallsFor, currentIngredients, currentFlavors]) => {
+			return Array.from(currentFlavors.values()).filter(
+				(flavor) => flavor.ingredientUuid == currentCallsFor.get(focusedCallForUuid)?.ingredientUuid
+			);
+		}
+	);
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
 
-<!-- <Recipe
-	ingredientId={recipe.mainIngredientId}
-	flavors={recipe.mainIngredient.flavors}
-	ingredients={writable(recipe.mainIngredient.subIngredients)}
-	connections={recipe.mainIngredient.connections}
-/> -->
+<Recipe
+	ingredientUuid={focusedCallForUuid}
+	focusedFlavors={$focusedIngredientFlavors}
+	callsFor={$callsFor}
+/>
 
 <Pan
 	width={innerWidth}
 	height={innerHeight}
-	mainIngredientId={recipe.mainIngredientId}
+	{mainCallForUuid}
 	ingredients={$ingredients}
 	flavors={$flavors}
 	connections={$connections}
-	programs={$programs}
 	shaders={$shaders}
 	parameters={$parameters}
 />

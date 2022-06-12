@@ -1,27 +1,30 @@
-import { type Writable, writable } from 'svelte/store';
+import { v4 as uuid } from 'uuid';
+
 import type { FullRecipe } from '$lib/common/types';
+import { writableMap, type WritableMap } from '$lib/common/stores';
+
 import type { Connection } from '$lib/connections';
-import type { FullIngredient } from '$lib/ingredients';
 
-export function flattenConnections(recipe: FullRecipe): Map<number, Connection> {
-	const connections: Map<number, Connection> = new Map();
+export const connections: WritableMap<string, Connection> = writableMap(new Map());
 
-	function getConnectionsFromIngredient(ingredient: FullIngredient) {
-		ingredient.connections.forEach((connection) => {
-			connections.set(connection.id, connection);
-		});
-	}
+export function storeConnections(recipe: FullRecipe) {
+	connections.set(
+		new Map(
+			recipe.callsFor.reduce<[string, Connection][]>((previous, callFor) => {
+				previous.concat(
+					callFor.ingredient.connections.map((connection) => [connection.uuid, connection])
+				);
 
-	function flattenIngredient(ingredient: FullIngredient) {
-		getConnectionsFromIngredient(ingredient);
-		ingredient.subIngredients.forEach((subIngredient) => {
-			flattenIngredient(subIngredient);
-		});
-	}
-
-	flattenIngredient(recipe.mainIngredient);
-
-	return connections;
+				return previous;
+			}, [])
+		)
+	);
 }
 
-export const connections: Writable<Map<number, Connection>> = writable(new Map());
+export function addConnection(connection: Omit<Connection, 'uuid'>) {
+	const newUuid = uuid();
+
+	const newConnection = { ...connection, uuid: newUuid };
+
+	return connections.add(newUuid, newConnection);
+}

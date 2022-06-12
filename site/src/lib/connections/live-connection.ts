@@ -8,16 +8,16 @@ import type { Connection } from '.';
 
 export type LiveConnectionState = {
 	// only react if this a compatible terminal
-	connectionId: number;
-	parentIngredientId: number;
+	connectionUuid: number;
+	parentingredientUuid: number;
 	flavorType: FlavorType;
-	anchorFlavorId: number;
+	anchorFlavorUuid: number;
 	anchorDirection: Direction;
 	dragDirection: Direction;
 	anchorCoordsStore: Writable<{ x: number | undefined; y: number | undefined }>;
 	dragCoordsStore: Writable<{ x: number | undefined; y: number | undefined }>;
 	// call this when releasing the live terminal, if this live cable is compatible
-	attach: (targetFlavorId: number, existingConnectionId?: number) => void;
+	attach: (targetFlavorUuid: number, existingConnectionUuid?: string) => void;
 } | null;
 
 // object describing the live cable for target terminals
@@ -25,30 +25,30 @@ export type LiveConnectionState = {
 export const liveConnection: Writable<LiveConnectionState> = writable(null);
 
 export function anchorLiveConnection(
-	connectionId: number,
-	parentIngredientId: number,
-	anchorFlavorId: number,
+	connectionUuid: string,
+	parentingredientUuid: number,
+	anchorFlavorUuid: number,
 	anchorDirection: Direction,
 	dragDirection: Direction,
 	location: { x: number | undefined; y: number | undefined }
 ) {
-	let anchorFlavor: Flavor = flavors[anchorFlavorId];
+	let anchorFlavor: Flavor = flavors[anchorFlavorUuid];
 
-	let attach: (targetFlavorId: number, existingConnectionId?: number) => void;
+	let attach: (targetFlavorUuid: number, existingConnectionUuid?: number) => void;
 	// when a terminal gets a mouseup, add a new connection depending on the in/out
 	if (anchorDirection == Direction.In) {
-		attach = (targetFlavorId: number, existingConnectionId?: number) => {
+		attach = (targetFlavorUuid: number, existingConnectionUuid?: number) => {
 			// if this terminal is already connected, just update the connection's state to the new
-			// node id, parameter name,
+			// node uuid, parameter name,
 			const connectionState: Connection = {
-				id: connectionId,
-				parentIngredientId,
-				inFlavorId: anchorFlavorId,
-				outFlavorId: targetFlavorId
+				uuid: connectionUuid,
+				parentingredientUuid,
+				inFlavorUuid: anchorFlavorUuid,
+				outFlavorUuid: targetFlavorUuid
 			};
 
-			if (existingConnectionId) {
-				connectionState.id = existingConnectionId;
+			if (existingConnectionUuid) {
+				connectionState.uuid = existingConnectionUuid;
 				updateConnection(connectionState);
 			} else {
 				addConnection(connectionState);
@@ -58,16 +58,16 @@ export function anchorLiveConnection(
 			liveConnection.set(null);
 		};
 	} else {
-		attach = (targetFlavorId: number, existingConnectionId?: number) => {
+		attach = (targetFlavorUuid: number, existingConnectionUuid?: number) => {
 			const connectionState: Connection = {
-				id: connectionId,
-				parentIngredientId,
-				inFlavorId: targetFlavorId,
-				outFlavorId: anchorFlavorId
+				uuid: connectionUuid,
+				parentingredientUuid,
+				inFlavorUuid: targetFlavorUuid,
+				outFlavorUuid: anchorFlavorUuid
 			};
 
-			if (existingConnectionId) {
-				connectionState.id = existingConnectionId;
+			if (existingConnectionUuid) {
+				connectionState.uuid = existingConnectionUuid;
 
 				updateConnection(connectionState);
 			} else {
@@ -79,9 +79,9 @@ export function anchorLiveConnection(
 	}
 
 	liveConnection.set({
-		connectionId,
-		parentIngredientId,
-		anchorFlavorId,
+		connectionUuid,
+		parentingredientUuid,
+		anchorFlavorUuid,
 		flavorType: anchorFlavor.type,
 		anchorDirection,
 		dragDirection,
@@ -101,7 +101,7 @@ export const dropCableStore = derived(
 					(ingredientTerminalCenter) =>
 						currentLiveConnection.flavorType == ingredientTerminalCenter.flavorType &&
 						currentLiveConnection.dragDirection == ingredientTerminalCenter.direction &&
-						!(currentLiveConnection.anchorFlavorId == ingredientTerminalCenter.flavorId)
+						!(currentLiveConnection.anchorFlavorUuid == ingredientTerminalCenter.flavorUuid)
 				);
 
 				const nearTerminalDistance = 4;
@@ -122,7 +122,7 @@ export const dropCableStore = derived(
 
 				// use the callback from the liveConnection store
 				if (targetTerminal) {
-					currentLiveConnection.attach(targetTerminal.flavorId, targetTerminal.connectionId);
+					currentLiveConnection.attach(targetTerminal.flavorUuid, targetTerminal.connectionUuid);
 				} else {
 					liveConnection.set(null);
 				}

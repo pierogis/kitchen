@@ -21,7 +21,7 @@
 	export let outCables: Readable<Cable[]>;
 
 	export let folder: FolderApi;
-	export let ingredientId: number;
+	export let ingredientUuid: string;
 
 	const typeDescriptors: {
 		[type in FlavorType]: {
@@ -71,8 +71,8 @@
 			<TerminalRack
 				parentElement={monitorElement}
 				cables={direction == Direction.In ? derived(inCable, (c) => [c]) : outCables}
-				{ingredientId}
-				flavorId={flavor.id}
+				{ingredientUuid}
+				flavorUuid={flavor.uuid}
 				flavorName={flavor.name}
 				flavorType={flavor.type}
 				showNovelTerminal={direction == Direction.In && $inCable != null}
@@ -86,8 +86,8 @@
 			<TerminalRack
 				parentElement={inputElement}
 				cables={direction == Direction.In ? derived(inCable, (c) => [c]) : outCables}
-				{ingredientId}
-				flavorId={flavor.id}
+				{ingredientUuid}
+				flavorUuid={flavor.uuid}
 				flavorName={flavor.name}
 				flavorType={flavor.type}
 				showNovelTerminal={direction == Direction.In && $inCable != null}
@@ -111,7 +111,7 @@
 			<TerminalRack
 				parentElement={inputElement}
 				bind:container={terminalRackContainers[direction][flavor.name]}
-				{ingredientId}
+				{ingredientUuid}
 				flavorName={flavor.name}
 				flavorType={flavor.type}
 				{direction}
@@ -130,7 +130,7 @@
 			<TerminalRack
 				parentElement={inputElement}
 				bind:container={terminalRackContainers[direction][flavor.name]}
-				{ingredientId}
+				{ingredientUuid}
 				flavorName={flavor.name}
 				flavorType={flavor.type}
 				{direction}
@@ -149,7 +149,7 @@
 			<TerminalRack
 				parentElement={inputElement}
 				bind:container={terminalRackContainers[direction][flavor.name]}
-				{ingredientId}
+				{ingredientUuid}
 				flavorName={flavor.name}
 				flavorType={flavor.type}
 				{direction}

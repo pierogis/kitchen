@@ -1,43 +1,47 @@
 <script lang="ts">
+	import { derived } from 'svelte/store';
 	import { Direction } from '$lib/common/types';
-	import type { FullIngredient } from '$lib/ingredients';
-	import type { Flavor } from '$lib/flavors';
+	import type { CallFor, Ingredient } from '$lib/ingredients';
+	import { type Flavor, FlavorType } from '$lib/flavors';
 	import type { Connection } from '$lib/connections';
+
+	// store access
+	import { recipeUuid } from '$lib/stores';
+	import { addCallFor } from '$lib/stores/callsFor';
+	import { addIngredient } from '$lib/stores/ingredients';
+	import { addLocation } from '$lib/stores/locations';
+	import { addFlavor, flavors } from '$lib/stores/flavors';
 
 	import CursorCircle from '$lib/cursor-circle/CursorCircle.svelte';
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/docks/Dock.svelte';
-	import { FlavorType } from '@prisma/client';
-	import type { Writable } from 'svelte/store';
 
-	export let ingredientId: number;
-	export let flavors: Flavor[];
-	export let ingredients: Writable<FullIngredient[]>;
+	export let ingredientUuid: string;
+	export let focusedFlavors: Flavor[];
+	export let callsFor: Map<string, CallFor>;
+	export let ingredients: Map<string, Ingredient>;
 	export let connections: Connection[];
 
-	function createDefaultNode(coords: { x: number; y: number }) {
-		const defaultIngredient: FullIngredient = {
-			id: null,
+	function createIngredient(coords: { x: number; y: number }) {
+		const newIngredient = addIngredient({
 			name: 'default',
-			flavors: [
-				{
-					id: null,
-					ingredientId: null,
-					type: FlavorType.Text,
-					name: 'text',
-					parameters: { text: '' },
-					options: null,
-					directions: [Direction.Out]
-				}
-			],
-			subIngredients: [],
-			connections: [],
-			parentIngredientId: ingredientId,
-			x: coords.x,
-			y: coords.y
-		};
+			parentIngredientUuid: ingredientUuid
+		});
 
-		$ingredients = [...$ingredients, defaultIngredient];
+		const newCallFor = addCallFor({
+			recipeUuid: $recipeUuid,
+			ingredientUuid: newIngredient.uuid
+		});
+
+		addFlavor({
+			ingredientUuid: newIngredient.uuid,
+			type: FlavorType.Text,
+			name: 'text',
+			options: null,
+			directions: [Direction.Out]
+		});
+
+		addLocation({ ...coords, callForUuid: newCallFor.uuid });
 	}
 
 	let canvasWidth: number, canvasHeight: number;
@@ -51,12 +55,12 @@
 
 <canvas height={canvasHeight} width={canvasWidth} />
 
-{#each $ingredients as ingredient}
+{#each Array.from(callsFor.values()) as callFor}
 	<IngredientComponent
-		ingredientId={ingredient.id}
-		name={ingredient.name}
-		flavors={ingredient.flavors}
-		coords={{ x: ingredient.x, y: ingredient.y }}
+		ingredientUuid={callFor.ingredientUuid}
+		name={ingredients.get(callFor.ingredientUuid)?.name}
+		flavors={ingredientFlavors.get()}
+		coords={coord.get(callFor.ingredientUuid).name}
 	/>
 {/each}
 
@@ -66,7 +70,7 @@
 <CursorCircle
 	on:longpress={(event) => {
 		let coords = event.detail;
-		createDefaultNode(coords);
+		createIngredient(coords);
 	}}
 />
 

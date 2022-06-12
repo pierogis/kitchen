@@ -21,70 +21,98 @@ enum Direction {
 
 model Flavor {
   id             Int          @id @default(autoincrement())
-  ingredientId   Int
+  uuid           String       @unique @db.Uuid
+  ingredientUuid String       @db.Uuid
   type           FlavorType
   name           String       @db.VarChar(255)
   options        Json?
-  ingredient     Ingredient   @relation(fields: [ingredientId], references: [id])
+  ingredient     Ingredient   @relation(fields: [ingredientUuid], references: [uuid])
   directions     Direction[]
   inConnection   Connection?  @relation("Flavor_inConnection")
   outConnections Connection[] @relation("Flavor_outConnections")
   shader         Shader?      @relation("Shader_imageFlavor")
-  parameter      Parameter?   @relation()
+  parameter      Parameter?   @relation("Parameter_flavor")
 }
 
 model Ingredient {
-  id                 Int          @id @default(autoincrement())
-  name               String       @db.VarChar(255)
-  recipe             Recipe?
-  flavors            Flavor[]
-  connections        Connection[]
-  x                  Int
-  y                  Int
-  parentIngredientId Int?
-  parentIngredient   Ingredient?  @relation("Ingredient_subIngredients", fields: [parentIngredientId], references: [id])
-  subIngredients     Ingredient[] @relation("Ingredient_subIngredients")
-  shader             Shader?      @relation()
+  id                   Int          @id @default(autoincrement())
+  uuid                 String       @unique @db.Uuid
+  name                 String       @db.VarChar(255)
+  flavors              Flavor[]
+  connections          Connection[]
+  parentIngredientUuid String       @db.Uuid
+  parentIngredient     Ingredient?  @relation("Ingredient_subIngredients", fields: [parentIngredientUuid], references: [uuid])
+  subIngredients       Ingredient[] @relation("Ingredient_subIngredients")
+  shader               Shader?      @relation("Shader_ingredient")
+  callsFor             CallFor[]    @relation("CallFor_ingredient")
 }
 
 model Connection {
-  id                 Int        @id @default(autoincrement())
-  parentIngredientId Int
-  parentIngredient   Ingredient @relation(fields: [parentIngredientId], references: [id])
-  inFlavorId         Int        @unique
-  inFlavor           Flavor     @relation("Flavor_inConnection", fields: [inFlavorId], references: [id])
-  outFlavorId        Int
-  outFlavor          Flavor     @relation("Flavor_outConnections", fields: [outFlavorId], references: [id])
+  id                   Int        @id @default(autoincrement())
+  uuid                 String     @unique @db.Uuid
+  parentIngredientUuid String     @db.Uuid
+  parentIngredient     Ingredient @relation(fields: [parentIngredientUuid], references: [uuid])
+  inFlavorUuid         String     @unique @db.Uuid
+  inFlavor             Flavor     @relation("Flavor_inConnection", fields: [inFlavorUuid], references: [uuid])
+  outFlavorUuid        String     @db.Uuid
+  outFlavor            Flavor     @relation("Flavor_outConnections", fields: [outFlavorUuid], references: [uuid])
 
-  @@unique([parentIngredientId, inFlavorId, outFlavorId])
+  @@unique([parentIngredientUuid, inFlavorUuid, outFlavorUuid])
 }
 
 model Recipe {
-  id               Int         @id @default(autoincrement())
-  mainIngredientId Int         @unique
-  mainIngredient   Ingredient  @relation(fields: [mainIngredientId], references: [id])
-  parameters       Parameter[]
-  shaders          Shader[]
+  id              Int         @id @default(autoincrement())
+  uuid            String      @unique @db.Uuid
+  mainCallForUuid String      @unique @db.Uuid
+  mainCallFor     CallFor     @relation("Recipe_mainCallFor", fields: [mainCallForUuid], references: [uuid])
+  parameters      Parameter[] @relation("Parameter_recipe")
+  shaders         Shader[]    @relation("Shader_recipe")
+  callsFor        CallFor[]   @relation("CallFor_recipe")
 }
 
 model Parameter {
-  value    Json
-  recipeId Int
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
-  flavorId Int    @unique
-  flavor   Flavor @relation(fields: [flavorId], references: [id])
+  id          Int     @id @default(autoincrement())
+  uuid        String  @unique @db.Uuid
+  value       Json
+  recipeUuid  String
+  recipe      Recipe  @relation("Parameter_recipe", fields: [recipeUuid], references: [uuid])
+  flavorUuid  String  @unique
+  flavor      Flavor  @relation("Parameter_flavor", fields: [flavorUuid], references: [uuid])
+  callForUuid String
+  callFor     CallFor @relation("Parameter_callFor", fields: [callForUuid], references: [uuid])
 
-  @@id([recipeId, flavorId])
+  @@unique([recipeUuid, flavorUuid])
 }
 
 model Shader {
-  id             Int        @id @default(autoincrement())
-  recipeId       Int        @unique
-  recipe         Recipe     @relation(fields: [recipeId], references: [id])
-  ingredientId   Int        @unique
-  ingredient     Ingredient @relation(fields: [ingredientId], references: [id])
-  imageFlavorId  Int        @unique
-  imageFlavor    Flavor     @relation("Shader_imageFlavor", fields: [imageFlavorId], references: [id])
-  vertexSource   String     @db.VarChar(16383)
-  fragmentSource String     @db.VarChar(16383)
+  id              Int        @id @default(autoincrement())
+  uuid            String     @unique @db.Uuid
+  recipeUuid      String     @unique @db.Uuid
+  recipe          Recipe     @relation("Shader_recipe", fields: [recipeUuid], references: [uuid])
+  ingredientUuid  String     @unique @db.Uuid
+  ingredient      Ingredient @relation("Shader_ingredient", fields: [ingredientUuid], references: [uuid])
+  imageFlavorUuid String     @unique @db.Uuid
+  imageFlavor     Flavor     @relation("Shader_imageFlavor", fields: [imageFlavorUuid], references: [uuid])
+  vertexSource    String     @db.VarChar(16383)
+  fragmentSource  String     @db.VarChar(16383)
+}
+
+model CallFor {
+  id             Int         @id @default(autoincrement())
+  uuid           String      @unique @db.Uuid
+  mainRecipe     Recipe?     @relation("Recipe_mainCallFor")
+  recipeUuid     String      @db.Uuid
+  recipe         Recipe      @relation("CallFor_recipe", fields: [recipeUuid], references: [uuid], onDelete: Cascade)
+  ingredientUuid String      @db.Uuid
+  ingredient     Ingredient  @relation("CallFor_ingredient", fields: [ingredientUuid], references: [uuid])
+  parameters     Parameter[] @relation("Parameter_callFor")
+  location       Location?   @relation("Location_callFor")
+}
+
+model Location {
+  id          Int     @id @default(autoincrement())
+  callForUuid String  @unique @db.Uuid
+  callFor     CallFor @relation("Location_callFor", fields: [callForUuid], references: [uuid], onDelete: Cascade)
+  x           Int
+  y           Int
 }

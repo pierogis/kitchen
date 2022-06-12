@@ -1,20 +1,31 @@
 import type { FullRecipe } from '$lib/common/types';
-import { flattenIngredients, ingredients } from './ingredients';
-import { flattenFlavors, flavors } from './flavors';
-import { flattenConnections, connections } from './connections';
-import { flattenShaders, shaders } from './shaders';
-import { flattenParameters, parameters } from './parameters';
 
-export function flattenRecipe(recipe: FullRecipe) {
-	ingredients.set(flattenIngredients(recipe));
-	flavors.set(flattenFlavors(recipe));
-	connections.set(flattenConnections(recipe));
-	shaders.set(flattenShaders(recipe));
-	parameters.set(flattenParameters(recipe));
+import { recipeUuid } from './recipe';
+import { storeCallsFor } from './callsFor';
+import { storeIngredients } from './ingredients';
+import { storeFlavors } from './flavors';
+import { storeConnections } from './connections';
+import { storeShaders } from './shaders';
+import { storeParameters } from './parameters';
+import { storeLocations } from './locations';
+
+export function storeRecipe(recipe: FullRecipe) {
+	recipeUuid.set(recipe.uuid);
+
+	storeCallsFor(recipe);
+	storeIngredients(recipe);
+	storeFlavors(recipe);
+	storeConnections(recipe);
+	storeShaders(recipe);
+	storeParameters(recipe);
+	storeLocations(recipe);
 }
 
+export { recipeUuid } from './recipe';
+export { callsFor } from './callsFor';
 export { ingredients } from './ingredients';
 export { flavors } from './flavors';
 export { connections } from './connections';
-export { parameters } from './parameters';
 export { shaders } from './shaders';
+export { parameters } from './parameters';
+export { locations } from './locations';

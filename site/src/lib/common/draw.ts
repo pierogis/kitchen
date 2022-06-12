@@ -122,40 +122,40 @@ export function drawCanvasFramebuffer(gl: WebGLRenderingContext, targetTexture: 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
-function getPreviousFlavorId(
-	flavorId: number,
-	connections: Map<number, Connection>
-): number | undefined {
+function getPreviousFlavorUuid(
+	flavorUuid: string,
+	connections: Map<string, Connection>
+): string | undefined {
 	for (const connection of connections.values()) {
-		if (connection.inFlavorId == flavorId) {
-			return connection.outFlavorId;
+		if (connection.inFlavorUuid == flavorUuid) {
+			return connection.outFlavorUuid;
 		}
 	}
 }
 
 function calculateFlavor(
 	gl: WebGLRenderingContext,
-	flavorId: number,
-	connections: Map<number, Connection>,
-	knownParameters: Map<number, Parameter>,
-	shaders: Map<number, Shader>,
-	flavors: Map<number, Flavor>,
-	programs: Map<number, WebGLProgram>
+	flavorUuid: string,
+	connections: Map<string, Connection>,
+	knownParameters: Map<string, Parameter>,
+	shaders: Map<string, Shader>,
+	flavors: Map<string, Flavor>,
+	programs: Map<string, WebGLProgram>
 ): Parameter {
 	// get the flavor leading to this flavor's in connection (if exists)
-	const previousFlavorId = getPreviousFlavorId(flavorId, connections);
+	const previousFlavorUuid = getPreviousFlavorUuid(flavorUuid, connections);
 
 	let calculatedParameter: Parameter | undefined;
 
-	if (previousFlavorId) {
+	if (previousFlavorUuid) {
 		// the value from the previous may be already calculated
-		calculatedParameter = knownParameters.get(previousFlavorId);
+		calculatedParameter = knownParameters.get(previousFlavorUuid);
 
 		if (!calculatedParameter) {
 			// if not already calculated, do that one first
 			calculatedParameter = calculateFlavor(
 				gl,
-				previousFlavorId,
+				previousFlavorUuid,
 				connections,
 				knownParameters,
 				shaders,
@@ -167,27 +167,27 @@ function calculateFlavor(
 
 	// find if this flavor is an image associated with a shader
 	for (const shader of shaders.values()) {
-		if (shader.imageFlavorId == flavorId) {
+		if (shader.imageFlavorUuid == flavorUuid) {
 			// get compiled shader program, or compile
 
 			const shaderParameters: Map<string, Parameter> = new Map();
 
 			// now get the other flavors on this shader ingredient
 			for (const flavor of flavors.values()) {
-				if (flavor.ingredientId == shader.ingredientId && flavor.id != flavorId) {
-					const subFlavorId = flavor.id;
-					let calculatedSubFlavorParameter = knownParameters.get(subFlavorId);
+				if (flavor.ingredientUuid == shader.ingredientUuid && flavor.uuid != flavorUuid) {
+					const subFlavorUuid = flavor.uuid;
+					let calculatedSubFlavorParameter = knownParameters.get(subFlavorUuid);
 					if (!calculatedSubFlavorParameter) {
 						calculatedSubFlavorParameter = calculateFlavor(
 							gl,
-							subFlavorId,
+							subFlavorUuid,
 							connections,
 							knownParameters,
 							shaders,
 							flavors,
 							programs
 						);
-						knownParameters.set(subFlavorId, calculatedSubFlavorParameter);
+						knownParameters.set(subFlavorUuid, calculatedSubFlavorParameter);
 					}
 
 					shaderParameters.set(flavor.name, calculatedSubFlavorParameter);
@@ -195,11 +195,11 @@ function calculateFlavor(
 			}
 
 			// run shader program with uniforms and cookedPrevious
-			let program = programs.get(shader.id);
+			let program = programs.get(shader.uuid);
 			if (program === undefined) {
 				program = createProgram(gl, shader.vertexSource, shader.fragmentSource);
 
-				programs.set(shader.id, program);
+				programs.set(shader.uuid, program);
 			}
 
 			drawOnTexture(gl, program, shaderParameters);
@@ -207,7 +207,7 @@ function calculateFlavor(
 	}
 
 	if (calculatedParameter) {
-		knownParameters.set(flavorId, calculatedParameter);
+		knownParameters.set(flavorUuid, calculatedParameter);
 		return calculatedParameter;
 	} else {
 		throw "Couldn't calculate parameter";
@@ -216,22 +216,22 @@ function calculateFlavor(
 
 export function draw(
 	gl: WebGLRenderingContext,
-	mainIngredientId: number,
-	knownParameters: Map<number, Parameter>,
-	connections: Map<number, Connection>,
-	ingredients: Map<number, Ingredient>,
-	flavors: Map<number, Flavor>,
-	shaders: Map<number, Shader>,
-	programs: Map<number, WebGLProgram>
+	mainIngredientUuid: string,
+	knownParameters: Map<string, Parameter>,
+	connections: Map<string, Connection>,
+	ingredients: Map<string, Ingredient>,
+	flavors: Map<string, Flavor>,
+	shaders: Map<string, Shader>,
+	programs: Map<string, WebGLProgram>
 ) {
-	// function findPathFromSourceFlavor(flavorId: number, path: number[] = []): number[] {
+	// function findPathFromSourceFlavor(flavorUuid: number, path: number[] = []): number[] {
 	// 	for (const connection of connections.values()) {
-	// 		if (connection.inFlavorId == flavorId) {
-	// 			let calculatedParameter = knownParameters.get(connection.outFlavorId);
+	// 		if (connection.inFlavorUuid == flavorUuid) {
+	// 			let calculatedParameter = knownParameters.get(connection.outFlavorUuid);
 	// 			if (calculatedParameter) {
 	// 			}
-	// 			path.push(flavorId);
-	// 			return findPathFromSourceFlavor(connection.outFlavorId, path);
+	// 			path.push(flavorUuid);
+	// 			return findPathFromSourceFlavor(connection.outFlavorUuid, path);
 	// 		}
 	// 	}
 
@@ -239,7 +239,7 @@ export function draw(
 	// }
 
 	// get the main ingredient that we are cooking
-	let mainIngredient = ingredients.get(mainIngredientId);
+	let mainIngredient = ingredients.get(mainIngredientUuid);
 
 	if (mainIngredient) {
 		// find image out flavors on the main ingredient
@@ -247,10 +247,10 @@ export function draw(
 			if (
 				flavor.type == FlavorType.Image &&
 				Direction.Out in flavor.directions &&
-				flavor.ingredientId == mainIngredientId
+				flavor.ingredientUuid == mainIngredientUuid
 			) {
 				let texture = createTexture(gl);
-				calculateFlavor(gl, flavor.id, connections, knownParameters, shaders, flavors, programs);
+				calculateFlavor(gl, flavor.uuid, connections, knownParameters, shaders, flavors, programs);
 
 				drawCanvasFramebuffer(gl, texture);
 			}
@@ -267,7 +267,7 @@ export function draw(
 	// loop walking back through list of image flavors, popping from front (routine 2)
 	//     check if this flavor is part of a shader
 	//     if so
-	//         compile this shader with code and classify by id
+	//         compile this shader with code and classify by uuid
 	//         get the ingredient/sibling flavors to act as uniforms
 	//         loop each sibling flavor
 	//             proceed back through inConnection until no inconnection, taking list of flavors (routine 1)

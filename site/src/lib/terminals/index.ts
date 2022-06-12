@@ -8,9 +8,9 @@ import { Direction } from '$lib/common/types';
 export const terminalHeight = 10;
 
 export type TerminalCenter = {
-	flavorId: number;
+	flavorUuid: number;
 	direction: Direction;
-	connectionId: number | undefined;
+	connectionUuid: number | undefined;
 	coords: Writable<{ x: number | undefined; y: number | undefined }>;
 };
 
@@ -19,13 +19,13 @@ export const terminalCenters = derived(
 	([currentIngredients, currentConnections]) => {
 		const connectionCenters: TerminalCenter[] = [];
 
-		Object.entries(currentConnections).forEach(([connectionId, connection]) => {
-			// the context is keyed by ingredientId as a string
+		Object.entries(currentConnections).forEach(([connectionUuid, connection]) => {
+			// the context is keyed by ingredientUuid as a string
 			// using an object key requires matching the reference
 			// maybe pass down through props
-			const inFlavorId = connection.inFlavorId;
+			const inFlavorUuid = connection.inFlavorUuid;
 			// do the same for out
-			const outFlavorId = connection.outFlavorId;
+			const outFlavorUuid = connection.outFlavorUuid;
 
 			// add to the callbacks set for the given connection's "in" parameter name
 			// this corresponds to the in (left) terminal on parameters
@@ -34,31 +34,31 @@ export const terminalCenters = derived(
 			// they providing updates on their bounding rect
 			// use the out callback
 			connectionCenters.push({
-				flavorId: inFlavorId,
+				flavorUuid: inFlavorUuid,
 				direction: Direction.In,
-				connectionId: Number(connectionId),
+				connectionUuid: Number(connectionUuid),
 				coords: writable({ x: undefined, y: undefined })
 			});
 			connectionCenters.push({
-				flavorId: outFlavorId,
+				flavorUuid: outFlavorUuid,
 				direction: Direction.Out,
-				connectionId: Number(connectionId),
+				connectionUuid: Number(connectionUuid),
 				coords: writable({ x: undefined, y: undefined })
 			});
 		});
 
 		const novelCenters: TerminalCenter[] = [];
-		Object.entries(currentIngredients).forEach(([ingredientId, ingredient]) => {
+		Object.entries(currentIngredients).forEach(([ingredientUuid, ingredient]) => {
 			ingredient.flavors.forEach((flavor) => {
 				if (
 					!connectionCenters.find((center) => {
-						return center.direction == Direction.In && center.flavorId == flavor.id;
+						return center.direction == Direction.In && center.flavorUuid == flavor.uuid;
 					})
 				) {
 					const novelCenter: TerminalCenter = {
 						direction: Direction.In,
-						flavorId: flavor.id,
-						connectionId: undefined,
+						flavorUuid: flavor.uuid,
+						connectionUuid: undefined,
 						coords: writable({ x: undefined, y: undefined })
 					};
 					novelCenters.push(novelCenter);
@@ -67,8 +67,8 @@ export const terminalCenters = derived(
 			Object.entries(node.racks.Out).forEach(([flavorName, outRack]) => {
 				const novelCenter = {
 					direction: Direction.Out,
-					connectionId: null,
-					flavorId: flavor.id,
+					connectionUuid: null,
+					flavorUuid: flavor.uuid,
 					coords: writable({ x: undefined, y: undefined })
 				};
 				novelCenters.push(novelCenter);

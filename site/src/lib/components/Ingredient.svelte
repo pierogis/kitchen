@@ -7,7 +7,7 @@
 	import FlavorComponent from './Flavor.svelte';
 	import type { Direction } from '$lib/common/types';
 
-	export let ingredientId: number;
+	export let ingredientUuid: string;
 	export let name: string;
 	export let flavors: Flavor[];
 	export let coords: { x: number; y: number };
@@ -48,7 +48,7 @@
 	<Pane let:pane title={name}>
 		{#if pane}
 			{#each flavors as flavor}
-				<FlavorComponent {terminalRackContainers} {flavor} folder={pane} {ingredientId} />
+				<FlavorComponent {terminalRackContainers} {flavor} folder={pane} {ingredientUuid} />
 			{/each}
 		{/if}
 	</Pane>

@@ -1,29 +1,31 @@
-import type { Connection } from '@prisma/client';
-export type { Connection } from '@prisma/client';
-
-import { type Writable, writable } from 'svelte/store';
-
-export const connections: Writable<{
-	[connectionId: number]: Connection;
-}> = writable({});
-
-export function addConnection(connection: Connection) {
-	connections.update((currentConnections) => {
-		currentConnections[connection.id] = connection;
-		return currentConnections;
-	});
+export interface Connection {
+	uuid: string;
+	parentIngredientUuid: string;
+	inFlavorUuid: string;
+	outFlavorUuid: string;
 }
 
-export function updateConnection(connection: Connection) {
-	connections.update((currentConnections) => {
-		currentConnections[connection.id] = connection;
-		return currentConnections;
-	});
-}
+// import { type Writable, writable } from 'svelte/store';
 
-export function removeConnection(connectionId: number): void {
-	connections.update((currentConnections) => {
-		delete currentConnections[connectionId];
-		return currentConnections;
-	});
-}
+// export const connections: Writable<Map<string, Connection>> = writable();
+
+// export function addConnection(connection: Connection) {
+// 	connections.update((currentConnections) => {
+// 		currentConnections[connection.uuid] = connection;
+// 		return currentConnections;
+// 	});
+// }
+
+// export function updateConnection(connection: Connection) {
+// 	connections.update((currentConnections) => {
+// 		currentConnections[connection.uuid] = connection;
+// 		return currentConnections;
+// 	});
+// }
+
+// export function removeConnection(connectionUuid: number): void {
+// 	connections.update((currentConnections) => {
+// 		delete currentConnections[connectionUuid];
+// 		return currentConnections;
+// 	});
+// }

@@ -27,8 +27,8 @@
 
 	let near = false;
 
-	export let ingredientId: number;
-	export let flavorId: number;
+	export let ingredientUuid: string;
+	export let flavorUuid: number;
 	export let flavorName: string;
 	export let flavorType: FlavorType;
 	export let cables: Readable<(Cable | null)[]>;
@@ -41,19 +41,19 @@
 	// get store containing coord stores to use to broadcast bounding rect
 	// look for matching node, parameter name, direction
 	// const ingredientTerminalRectCenters: Readable<{
-	// 	[connectionId: number]: TerminalCenter;
+	// 	[connectionUuid: number]: TerminalCenter;
 	// }> = derived(
 	// 	[terminalCenters, liveConnection],
 	// 	([currentTerminalCenters, currentLiveConnection]: [TerminalCenter[], LiveConnectionState]) => {
 	// 		let nodeCenters = currentTerminalCenters.filter(
-	// 			(center) => center.direction == direction && center.flavorId == flavorId
+	// 			(center) => center.direction == direction && center.flavorUuid == flavorUuid
 	// 		);
 
 	// 		let centerStores = nodeCenters.reduce<{
-	// 			[connectionId: number]: TerminalCenter;
+	// 			[connectionUuid: number]: TerminalCenter;
 	// 		}>((currentCenterStores, center) => {
-	// 			if (center.connectionId) {
-	// 				currentCenterStores[center.connectionId] = center;
+	// 			if (center.connectionUuid) {
+	// 				currentCenterStores[center.connectionUuid] = center;
 	// 			} else {
 	// 				currentCenterStores[NOVEL_CONNECTION_ID] = center;
 	// 			}
@@ -63,14 +63,14 @@
 	// 		// add a rect center store to update from the live connection
 	// 		if (
 	// 			currentLiveConnection &&
-	// 			currentLiveConnection.anchorFlavorId == ingredientId &&
+	// 			currentLiveConnection.anchorFlavorUuid == ingredientUuid &&
 	// 			currentLiveConnection.anchorDirection == direction
 	// 		) {
-	// 			centerStores[currentLiveConnection.connectionId] = {
-	// 				ingredientId: ingredientId,
+	// 			centerStores[currentLiveConnection.connectionUuid] = {
+	// 				ingredientUuid: ingredientUuid,
 	// 				direction: direction,
 	// 				flavorName: flavorName,
-	// 				connectionId: currentLiveConnection.connectionId,
+	// 				connectionUuid: currentLiveConnection.connectionUuid,
 	// 				flavorType: currentLiveConnection.flavorType,
 	// 				coords: currentLiveConnection.anchorCoordsStore
 	// 			};
@@ -88,7 +88,7 @@
 
 	// grabbing novel terminal should start relaying the coords of the terminal
 	// and add event listeners for release
-	function handleNovelGrabAction(element: HTMLElement, params: { connectionId: number }) {
+	function handleNovelGrabAction(element: HTMLElement, params: { connectionUuid: number }) {
 		const handleMouseUp = (event: MouseEvent) => {
 			usingNovelTerminal = false;
 			window.removeEventListener('mouseup', handleMouseUp);
@@ -99,9 +99,9 @@
 			if (event.button == 0) {
 				const dragDirection = direction == Direction.In ? Direction.Out : Direction.In;
 				anchorLiveConnection(
-					params.connectionId,
-					ingredientId,
-					flavorId,
+					params.connectionUuid,
+					ingredientUuid,
+					flavorUuid,
 					direction,
 					dragDirection,
 					{
@@ -118,7 +118,7 @@
 		element.addEventListener('mousedown', handleNovelGrab);
 
 		return {
-			update(newParams: { connectionId: number }) {
+			update(newParams: { connectionUuid: number }) {
 				params = newParams;
 			},
 			destroy() {
@@ -127,7 +127,7 @@
 		};
 	}
 
-	function handleDisconnectGrabAction(element: HTMLElement, params: { connectionId: number }) {
+	function handleDisconnectGrabAction(element: HTMLElement, params: { connectionUuid: number }) {
 		let handleMouseUp = () => {
 			element.style.cursor = '';
 			window.removeEventListener('mouseup', handleMouseUp);
@@ -139,7 +139,7 @@
 					x: event.x,
 					y: event.y
 				};
-				const connection = $connections[params.connectionId];
+				const connection = $connections[params.connectionUuid];
 
 				// anchorDirection is the opposite of the direction that engaged
 				// this callback
@@ -147,15 +147,15 @@
 
 				// const flavorType = connection;
 
-				const anchorFlavorId =
-					anchorDirection == Direction.In ? connection.inFlavorId : connection.outFlavorId;
+				const anchorFlavorUuid =
+					anchorDirection == Direction.In ? connection.inFlavorUuid : connection.outFlavorUuid;
 
-				removeConnection(params.connectionId);
+				removeConnection(params.connectionUuid);
 
 				anchorLiveConnection(
-					params.connectionId,
-					ingredientId,
-					anchorFlavorId,
+					params.connectionUuid,
+					ingredientUuid,
+					anchorFlavorUuid,
 					anchorDirection,
 					direction,
 					location
@@ -169,7 +169,7 @@
 		element.addEventListener('mousedown', handleDisconnectGrab);
 
 		return {
-			update(newParams: { connectionId: number }) {
+			update(newParams: { connectionUuid: number }) {
 				params = newParams;
 			},
 			destroy() {
@@ -178,7 +178,7 @@
 		};
 	}
 
-	// $: connectionIds = (
+	// $: connectionUuids = (
 	// 	$ingredientTerminalRectCenters ? Object.keys($ingredientTerminalRectCenters) : []
 	// ).map(Number);
 
@@ -190,22 +190,22 @@
 	// }[];
 	// $: {
 	// 	let showNovelTerminal;
-	// 	terminals = [...connectionIds].reduce<
+	// 	terminals = [...connectionUuids].reduce<
 	// 		{
 	// 			actionDescriptions: ActionDescription<any>[];
 	// 			cabled: boolean;
 	// 		}[]
-	// 	>((result, connectionId) => {
-	// 		if (connectionId != NOVEL_CONNECTION_ID) {
+	// 	>((result, connectionUuid) => {
+	// 		if (connectionUuid != NOVEL_CONNECTION_ID) {
 	// 			const terminal = {
 	// 				actionDescriptions: [
 	// 					{
 	// 						action: terminalCenterUpdateAction,
-	// 						params: { connectionId: connectionId }
+	// 						params: { connectionUuid: connectionUuid }
 	// 					},
 	// 					{
 	// 						action: handleDisconnectGrabAction,
-	// 						params: { connectionId: connectionId }
+	// 						params: { connectionUuid: connectionUuid }
 	// 					}
 	// 				],
 	// 				cabled: true
@@ -224,11 +224,11 @@
 	// 			actionDescriptions: [
 	// 				{
 	// 					action: terminalCenterUpdateAction,
-	// 					params: { connectionId: NOVEL_CONNECTION_ID }
+	// 					params: { connectionUuid: NOVEL_CONNECTION_ID }
 	// 				},
 	// 				{
 	// 					action: handleNovelGrabAction,
-	// 					params: { connectionId: uuidv4() }
+	// 					params: { connectionUuid: uuidv4() }
 	// 				}
 	// 			],
 	// 			cabled: false

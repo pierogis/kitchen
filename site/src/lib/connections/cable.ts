@@ -8,7 +8,7 @@ let flavors: Readable<Flavor[]> = writable([]);
 
 let asdasd = derived([connections, flavors], ([currentConnections, currentFlavors]) =>
 	currentConnections.map((connection) => {
-		const inFlavor = currentFlavors.find((flavor) => flavor.id == connection.inFlavorId);
+		const inFlavor = currentFlavors.find((flavor) => flavor.uuid == connection.inFlavorUuid);
 		return {
 			inCoords: writable({ x: undefined, y: undefined }),
 			outCoords: writable({ x: undefined, y: undefined }),
