@@ -4,7 +4,7 @@ import type { Connection } from '$lib/connections';
 export interface Ingredient {
 	uuid: string;
 	name: string;
-	parentIngredientUuid: string;
+	parentIngredientUuid?: string;
 }
 
 export interface CallFor {

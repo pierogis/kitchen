@@ -2,29 +2,29 @@ import { Direction, type FullRecipe } from '$lib/common/types';
 import { FlavorType } from '$lib/flavors';
 
 export const defaultRecipe: FullRecipe = {
-	uuid: 0,
-	mainCallForUuid: 0,
+	uuid: '0',
+	mainCallForUuid: '0',
 	callsFor: [
 		{
-			uuid: 0,
-			recipeUuid: 0,
-			ingredientUuid: 0,
+			uuid: '0',
+			recipeUuid: '0',
+			ingredientUuid: '0',
 			ingredient: {
-				uuid: 0,
-				parentingredientUuid: null,
+				uuid: '0',
+				parentIngredientUuid: undefined,
 				name: 'sort',
 				flavors: [
 					{
-						uuid: 0,
-						ingredientUuid: 0,
+						uuid: '0',
+						ingredientUuid: '0',
 						name: 'image',
 						type: FlavorType.Image,
 						directions: [Direction.In, Direction.Out],
 						options: null
 					},
 					{
-						uuid: 1,
-						ingredientUuid: 0,
+						uuid: '1',
+						ingredientUuid: '0',
 						name: 'angle',
 						type: FlavorType.Number,
 						directions: [Direction.In],
@@ -34,8 +34,8 @@ export const defaultRecipe: FullRecipe = {
 						}
 					},
 					{
-						uuid: 2,
-						ingredientUuid: 0,
+						uuid: '2',
+						ingredientUuid: '0',
 						name: 'lower',
 						type: FlavorType.Number,
 						directions: [Direction.In],
@@ -45,8 +45,8 @@ export const defaultRecipe: FullRecipe = {
 						}
 					},
 					{
-						uuid: 3,
-						ingredientUuid: 0,
+						uuid: '3',
+						ingredientUuid: '0',
 						name: 'upper',
 						type: FlavorType.Number,
 						directions: [Direction.In],
@@ -58,25 +58,25 @@ export const defaultRecipe: FullRecipe = {
 				],
 				connections: []
 			},
-			coordinates: {
-				uuid: 0,
-				callForUuid: 0,
+			location: {
+				uuid: '0',
+				callForUuid: '0',
 				x: 100,
 				y: 200
 			}
 		},
 		{
-			uuid: 1,
-			recipeUuid: 0,
-			ingredientUuid: 1,
+			uuid: '1',
+			recipeUuid: '0',
+			ingredientUuid: '1',
 			ingredient: {
-				uuid: 1,
-				parentingredientUuid: 0,
+				uuid: '1',
+				parentIngredientUuid: '0',
 				name: 'code',
 				flavors: [
 					{
-						uuid: 4,
-						ingredientUuid: 1,
+						uuid: '4',
+						ingredientUuid: '1',
 						name: 'code',
 						type: FlavorType.Text,
 						directions: [Direction.Out],
@@ -85,33 +85,33 @@ export const defaultRecipe: FullRecipe = {
 				],
 				connections: []
 			},
-			coordinates: {
-				uuid: 1,
-				callForUuid: 1,
+			location: {
+				uuid: '1',
+				callForUuid: '1',
 				x: 200,
 				y: 400
 			}
 		},
 		{
-			uuid: 2,
-			recipeUuid: 0,
-			ingredientUuid: 2,
+			uuid: '2',
+			recipeUuid: '0',
+			ingredientUuid: '2',
 			ingredient: {
-				uuid: 2,
-				parentingredientUuid: 0,
+				uuid: '2',
+				parentIngredientUuid: '0',
 				name: 'shader',
 				flavors: [
 					{
-						uuid: 5,
-						ingredientUuid: 2,
+						uuid: '5',
+						ingredientUuid: '2',
 						name: 'texture',
 						type: FlavorType.Image,
 						directions: [Direction.In, Direction.Out],
 						options: null
 					},
 					{
-						uuid: 6,
-						ingredientUuid: 2,
+						uuid: '6',
+						ingredientUuid: '2',
 						name: 'code',
 						type: FlavorType.Text,
 						directions: [Direction.In],
@@ -120,9 +120,9 @@ export const defaultRecipe: FullRecipe = {
 				],
 				connections: []
 			},
-			coordinates: {
-				uuid: 2,
-				callForUuid: 2,
+			location: {
+				uuid: '2',
+				callForUuid: '2',
 				x: 400,
 				y: 400
 			}
@@ -130,10 +130,10 @@ export const defaultRecipe: FullRecipe = {
 	],
 	parameters: [
 		{
-			uuid: 0,
-			recipeUuid: 0,
-			flavorUuid: 0,
-			callForUuid: 0,
+			uuid: '0',
+			recipeUuid: '0',
+			flavorUuid: '0',
+			callForUuid: '0',
 			value: {
 				image: null,
 				height: null,
@@ -141,46 +141,46 @@ export const defaultRecipe: FullRecipe = {
 			}
 		},
 		{
-			uuid: 1,
-			recipeUuid: 0,
-			flavorUuid: 1,
-			callForUuid: 0,
+			uuid: '1',
+			recipeUuid: '0',
+			flavorUuid: '1',
+			callForUuid: '0',
 			value: {
 				number: 0
 			}
 		},
 		{
-			uuid: 2,
-			recipeUuid: 0,
-			flavorUuid: 2,
-			callForUuid: 0,
+			uuid: '2',
+			recipeUuid: '0',
+			flavorUuid: '2',
+			callForUuid: '0',
 			value: {
 				number: 40
 			}
 		},
 		{
-			uuid: 3,
-			recipeUuid: 0,
-			flavorUuid: 3,
-			callForUuid: 0,
+			uuid: '3',
+			recipeUuid: '0',
+			flavorUuid: '3',
+			callForUuid: '0',
 			value: {
 				number: 180
 			}
 		},
 		{
-			uuid: 4,
-			recipeUuid: 0,
-			flavorUuid: 4,
-			callForUuid: 1,
+			uuid: '4',
+			recipeUuid: '0',
+			flavorUuid: '4',
+			callForUuid: '1',
 			value: {
 				text: ''
 			}
 		},
 		{
-			uuid: 5,
-			recipeUuid: 0,
-			flavorUuid: 5,
-			callForUuid: 2,
+			uuid: '5',
+			recipeUuid: '0',
+			flavorUuid: '5',
+			callForUuid: '2',
 			value: {
 				image: null,
 				height: null,
@@ -188,10 +188,10 @@ export const defaultRecipe: FullRecipe = {
 			}
 		},
 		{
-			uuid: 6,
-			recipeUuid: 0,
-			flavorUuid: 6,
-			callForUuid: 2,
+			uuid: '6',
+			recipeUuid: '0',
+			flavorUuid: '6',
+			callForUuid: '2',
 			value: {
 				text: ''
 			}

@@ -11,7 +11,7 @@ export function storeConnections(recipe: FullRecipe) {
 	connections.set(
 		new Map(
 			recipe.callsFor.reduce<[string, Connection][]>((previous, callFor) => {
-				previous.concat(
+				previous = previous.concat(
 					callFor.ingredient.connections.map((connection) => [connection.uuid, connection])
 				);
 
@@ -27,4 +27,12 @@ export function addConnection(connection: Omit<Connection, 'uuid'>) {
 	const newConnection = { ...connection, uuid: newUuid };
 
 	return connections.add(newUuid, newConnection);
+}
+
+export function updateConnection(connection: Connection) {
+	return connections.updateEntry(connection.uuid, connection);
+}
+
+export function removeConnection(uuid: string) {
+	return connections.delete(uuid);
 }

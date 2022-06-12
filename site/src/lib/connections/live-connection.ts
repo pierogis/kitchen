@@ -2,22 +2,22 @@ import { derived, get, writable, type Writable } from 'svelte/store';
 import { terminalCenters, terminalHeight } from '$lib/terminals';
 import { checkPointWithinBox } from '$lib/common/utils';
 import { Direction } from '$lib/common/types';
-import { addConnection, connections, updateConnection } from '$lib/connections';
 import type { Flavor, FlavorType } from '$lib/flavors';
 import type { Connection } from '.';
+import { addConnection, updateConnection } from '$lib/stores/connections';
 
 export type LiveConnectionState = {
 	// only react if this a compatible terminal
-	connectionUuid: number;
-	parentingredientUuid: number;
+	connectionUuid: string;
+	parentIngredientUuid: string;
 	flavorType: FlavorType;
-	anchorFlavorUuid: number;
+	anchorFlavorUuid: string;
 	anchorDirection: Direction;
 	dragDirection: Direction;
 	anchorCoordsStore: Writable<{ x: number | undefined; y: number | undefined }>;
 	dragCoordsStore: Writable<{ x: number | undefined; y: number | undefined }>;
 	// call this when releasing the live terminal, if this live cable is compatible
-	attach: (targetFlavorUuid: number, existingConnectionUuid?: string) => void;
+	attach: (targetFlavorUuid: string, existingConnectionUuid?: string) => void;
 } | null;
 
 // object describing the live cable for target terminals
@@ -26,23 +26,23 @@ export const liveConnection: Writable<LiveConnectionState> = writable(null);
 
 export function anchorLiveConnection(
 	connectionUuid: string,
-	parentingredientUuid: number,
-	anchorFlavorUuid: number,
+	parentIngredientUuid: string,
+	anchorFlavorUuid: string,
 	anchorDirection: Direction,
 	dragDirection: Direction,
 	location: { x: number | undefined; y: number | undefined }
 ) {
 	let anchorFlavor: Flavor = flavors[anchorFlavorUuid];
 
-	let attach: (targetFlavorUuid: number, existingConnectionUuid?: number) => void;
+	let attach: (targetFlavorUuid: string, existingConnectionUuid?: string) => void;
 	// when a terminal gets a mouseup, add a new connection depending on the in/out
 	if (anchorDirection == Direction.In) {
-		attach = (targetFlavorUuid: number, existingConnectionUuid?: number) => {
+		attach = (targetFlavorUuid: string, existingConnectionUuid?: string) => {
 			// if this terminal is already connected, just update the connection's state to the new
 			// node uuid, parameter name,
 			const connectionState: Connection = {
 				uuid: connectionUuid,
-				parentingredientUuid,
+				parentIngredientUuid,
 				inFlavorUuid: anchorFlavorUuid,
 				outFlavorUuid: targetFlavorUuid
 			};
@@ -58,10 +58,10 @@ export function anchorLiveConnection(
 			liveConnection.set(null);
 		};
 	} else {
-		attach = (targetFlavorUuid: number, existingConnectionUuid?: number) => {
+		attach = (targetFlavorUuid: string, existingConnectionUuid?: string) => {
 			const connectionState: Connection = {
 				uuid: connectionUuid,
-				parentingredientUuid,
+				parentIngredientUuid,
 				inFlavorUuid: targetFlavorUuid,
 				outFlavorUuid: anchorFlavorUuid
 			};
@@ -80,7 +80,7 @@ export function anchorLiveConnection(
 
 	liveConnection.set({
 		connectionUuid,
-		parentingredientUuid,
+		parentIngredientUuid,
 		anchorFlavorUuid,
 		flavorType: anchorFlavor.type,
 		anchorDirection,
@@ -109,15 +109,17 @@ export const dropCableStore = derived(
 				const targetTerminal = targetTerminals.find((terminalCenter) => {
 					const terminalCoords = get(terminalCenter.coords);
 
-					const left = terminalCoords.x - (terminalHeight / 2 + nearTerminalDistance);
-					const top = terminalCoords.y - (terminalHeight / 2 + nearTerminalDistance);
-					const right = terminalCoords.x + (terminalHeight / 2 + nearTerminalDistance);
-					const bottom = terminalCoords.y + (terminalHeight / 2 + nearTerminalDistance);
+					if (terminalCoords.x && terminalCoords.y) {
+						const left = terminalCoords.x - (terminalHeight / 2 + nearTerminalDistance);
+						const top = terminalCoords.y - (terminalHeight / 2 + nearTerminalDistance);
+						const right = terminalCoords.x + (terminalHeight / 2 + nearTerminalDistance);
+						const bottom = terminalCoords.y + (terminalHeight / 2 + nearTerminalDistance);
 
-					return checkPointWithinBox(
-						{ x: coords.x, y: coords.y },
-						{ top: top, bottom: bottom, left: left, right: right }
-					);
+						return checkPointWithinBox(
+							{ x: coords.x, y: coords.y },
+							{ top: top, bottom: bottom, left: left, right: right }
+						);
+					}
 				});
 
 				// use the callback from the liveConnection store

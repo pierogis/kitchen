@@ -6,7 +6,7 @@
 	import TerminalRack from '$lib/terminals/TerminalRack.svelte';
 
 	import type { Flavor, FlavorType } from '$lib/flavors';
-	import { colorOnChange, type ColorParams } from '$lib/flavors/color';
+	import { colorOnChange } from '$lib/flavors/color';
 	import { imageOnChange } from '$lib/flavors/image';
 	import { numberOnChange } from '$lib/flavors/number';
 	import { textOnChange } from '$lib/flavors/text';
@@ -18,7 +18,7 @@
 	import { Direction } from '$lib/common/types';
 
 	export let inCable: Cable | undefined = undefined;
-	export let outCables: Readable<Cable[]>;
+	export let outCables: Cable[];
 
 	export let folder: FolderApi;
 	export let ingredientUuid: string;
@@ -47,35 +47,37 @@
 		}
 	};
 
-	let paramsStore = writable(flavor.parameters);
-	let unsub: Unsubscriber;
-	unsub = inCable.payload.subscribe((newInPayload) => {
-		paramsStore.set(newInPayload);
-	});
+	let paramsStore = writable(inCable?.parameters);
+	let unsub: Unsubscriber | undefined;
 
-	inCable.subscribe((newInCable) => {
-		unsub();
-	});
+	$: {
+		if (unsub) {
+			unsub();
+		}
+		unsub = inCable?.payload.subscribe((newInPayload) => {
+			paramsStore.set(newInPayload);
+		});
+	}
 
 	paramsStore.subscribe((newParams) => {
-		$outCables.map((outCable) => outCable.payload.set(newParams));
+		outCables.map((outCable) => outCable.payload.set(newParams));
 	});
 
 	const key = typeDescriptors[flavor.type].key;
 	const onChange = typeDescriptors[flavor.type].onChange;
 </script>
 
-{#if $inCable}
-	<Monitor {folder} paramsStore={$inCable.payload} {key} let:monitorElement>
+{#if inCable}
+	<Monitor {folder} paramsStore={inCable.payload} {key} let:monitorElement>
 		{#each flavor.directions as direction}
 			<TerminalRack
 				parentElement={monitorElement}
-				cables={direction == Direction.In ? derived(inCable, (c) => [c]) : outCables}
+				cables={direction == Direction.In ? [inCable] : outCables}
 				{ingredientUuid}
 				flavorUuid={flavor.uuid}
 				flavorName={flavor.name}
 				flavorType={flavor.type}
-				showNovelTerminal={direction == Direction.In && $inCable != null}
+				showNovelTerminal={direction == Direction.In && inCable != null}
 				{direction}
 			/>
 		{/each}
@@ -85,7 +87,7 @@
 		{#each flavor.directions as direction}
 			<TerminalRack
 				parentElement={inputElement}
-				cables={direction == Direction.In ? derived(inCable, (c) => [c]) : outCables}
+				cables={direction == Direction.In ? [] : outCables}
 				{ingredientUuid}
 				flavorUuid={flavor.uuid}
 				flavorName={flavor.name}

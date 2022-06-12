@@ -6,7 +6,7 @@
 	import type { Direction } from '$lib/common/types';
 	import { calculateCenter } from '$lib/common/utils';
 
-	export let coords: Writable<{ x: number; y: number }>;
+	export let coords: Writable<{ x: number | undefined; y: number | undefined }>;
 	export let direction: Direction;
 	export let expanded: boolean;
 	export let terminalHeight: number;

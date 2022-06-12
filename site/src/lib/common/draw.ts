@@ -101,7 +101,7 @@ export function drawOnTexture(
 	for (const [parameterName, parameter] of shaderParameters) {
 		// Attach the color as a uniform for the GL gl.
 		let uniform = gl.getUniformLocation(program, `u_${parameterName}`);
-		// parameter.value
+		// parameter.payload
 		// switch on parameter.type to determine uniform3f, texture, etc
 		gl.uniform3f(uniform, 255, 223, 211);
 	}
@@ -224,7 +224,7 @@ export function draw(
 	shaders: Map<string, Shader>,
 	programs: Map<string, WebGLProgram>
 ) {
-	// function findPathFromSourceFlavor(flavorUuid: number, path: number[] = []): number[] {
+	// function findPathFromSourceFlavor(flavorUuid: string, path: number[] = []): number[] {
 	// 	for (const connection of connections.values()) {
 	// 		if (connection.inFlavorUuid == flavorUuid) {
 	// 			let calculatedParameter = knownParameters.get(connection.outFlavorUuid);

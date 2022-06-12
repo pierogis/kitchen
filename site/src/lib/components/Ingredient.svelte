@@ -6,6 +6,7 @@
 
 	import FlavorComponent from './Flavor.svelte';
 	import type { Direction } from '$lib/common/types';
+	import { cables } from '$lib/connections/cable';
 
 	export let ingredientUuid: string;
 	export let name: string;
@@ -48,7 +49,7 @@
 	<Pane let:pane title={name}>
 		{#if pane}
 			{#each flavors as flavor}
-				<FlavorComponent {terminalRackContainers} {flavor} folder={pane} {ingredientUuid} />
+				<FlavorComponent outCables={$cables} {flavor} folder={pane} {ingredientUuid} />
 			{/each}
 		{/if}
 	</Pane>

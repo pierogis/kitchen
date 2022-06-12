@@ -23,7 +23,7 @@ export interface Connection {
 // 	});
 // }
 
-// export function removeConnection(connectionUuid: number): void {
+// export function removeConnection(connectionUuid: string): void {
 // 	connections.update((currentConnections) => {
 // 		delete currentConnections[connectionUuid];
 // 		return currentConnections;

@@ -14,8 +14,6 @@
 </script>
 
 <script lang="ts">
-	import { derived, get } from 'svelte/store';
-
 	import {
 		storeRecipe,
 		ingredients,
@@ -33,35 +31,12 @@
 		innerHeight = 0;
 
 	export let mainCallForUuid: string;
-	let focusedCallForUuid: string = mainCallForUuid;
-
-	// const ingredientss = derived([callsFor, flavors], ([currentCallsFor, currentFlavors]) => {
-	// 	currentCallsFor.forEach((callFor) => {callFor.})
-	// });
-
-	const panIngredients = derived(ingredients, (currentIngredients) =>
-		Array.from(currentIngredients.values()).filter(
-			(ingredient) => ingredient.parentIngredientUuid == focusedCallForUuid
-		)
-	);
-
-	const focusedIngredientFlavors = derived(
-		[callsFor, ingredients, flavors],
-		([currentCallsFor, currentIngredients, currentFlavors]) => {
-			return Array.from(currentFlavors.values()).filter(
-				(flavor) => flavor.ingredientUuid == currentCallsFor.get(focusedCallForUuid)?.ingredientUuid
-			);
-		}
-	);
+	let focusedCallForUuid = mainCallForUuid;
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
 
-<Recipe
-	ingredientUuid={focusedCallForUuid}
-	focusedFlavors={$focusedIngredientFlavors}
-	callsFor={$callsFor}
-/>
+<Recipe {focusedCallForUuid} />
 
 <Pan
 	width={innerWidth}

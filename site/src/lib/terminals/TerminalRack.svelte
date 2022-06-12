@@ -1,9 +1,9 @@
 <script lang="ts" context="module">
-	const NOVEL_CONNECTION_ID = -1;
+	const NOVEL_CONNECTION_UUID = '-1';
 </script>
 
 <script lang="ts">
-	import type { Readable } from 'svelte/store';
+	import { writable } from 'svelte/store';
 
 	import { terminalHeight } from '$lib/terminals';
 	import {
@@ -14,13 +14,14 @@
 	import type { ActionDescription } from '$lib/common/actions/useActions';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 	import { calculateCenter } from '$lib/common/utils';
-	import { connections, removeConnection } from '$lib/connections';
+	import { connections, removeConnection } from '$lib/stores/connections';
 	import { Direction } from '$lib/common/types';
 
 	import Terminal from '$lib/terminals/Terminal.svelte';
 	import type { FlavorType } from '@prisma/client';
 	import { onMount } from 'svelte';
 	import type { Cable } from '$lib/connections/cable';
+	import type { Connection } from '$lib/connections';
 
 	export let direction: Direction;
 	export let container: HTMLElement | null = null;
@@ -28,10 +29,10 @@
 	let near = false;
 
 	export let ingredientUuid: string;
-	export let flavorUuid: number;
+	export let flavorUuid: string;
 	export let flavorName: string;
 	export let flavorType: FlavorType;
-	export let cables: Readable<(Cable | null)[]>;
+	export let cables: Cable[];
 
 	const nearTerminalRackDistance = 12;
 	const rackHeight = 20;
@@ -41,7 +42,7 @@
 	// get store containing coord stores to use to broadcast bounding rect
 	// look for matching node, parameter name, direction
 	// const ingredientTerminalRectCenters: Readable<{
-	// 	[connectionUuid: number]: TerminalCenter;
+	// 	[connectionUuid: string]: TerminalCenter;
 	// }> = derived(
 	// 	[terminalCenters, liveConnection],
 	// 	([currentTerminalCenters, currentLiveConnection]: [TerminalCenter[], LiveConnectionState]) => {
@@ -50,7 +51,7 @@
 	// 		);
 
 	// 		let centerStores = nodeCenters.reduce<{
-	// 			[connectionUuid: number]: TerminalCenter;
+	// 			[connectionUuid: string]: TerminalCenter;
 	// 		}>((currentCenterStores, center) => {
 	// 			if (center.connectionUuid) {
 	// 				currentCenterStores[center.connectionUuid] = center;
@@ -88,7 +89,7 @@
 
 	// grabbing novel terminal should start relaying the coords of the terminal
 	// and add event listeners for release
-	function handleNovelGrabAction(element: HTMLElement, params: { connectionUuid: number }) {
+	function handleNovelGrabAction(element: HTMLElement, params: { connectionUuid: string }) {
 		const handleMouseUp = (event: MouseEvent) => {
 			usingNovelTerminal = false;
 			window.removeEventListener('mouseup', handleMouseUp);
@@ -118,7 +119,7 @@
 		element.addEventListener('mousedown', handleNovelGrab);
 
 		return {
-			update(newParams: { connectionUuid: number }) {
+			update(newParams: { connectionUuid: string }) {
 				params = newParams;
 			},
 			destroy() {
@@ -127,7 +128,7 @@
 		};
 	}
 
-	function handleDisconnectGrabAction(element: HTMLElement, params: { connectionUuid: number }) {
+	function handleDisconnectGrabAction(element: HTMLElement, params: { connection: Connection }) {
 		let handleMouseUp = () => {
 			element.style.cursor = '';
 			window.removeEventListener('mouseup', handleMouseUp);
@@ -139,7 +140,7 @@
 					x: event.x,
 					y: event.y
 				};
-				const connection = $connections[params.connectionUuid];
+				const connection = params.connection;
 
 				// anchorDirection is the opposite of the direction that engaged
 				// this callback
@@ -150,10 +151,10 @@
 				const anchorFlavorUuid =
 					anchorDirection == Direction.In ? connection.inFlavorUuid : connection.outFlavorUuid;
 
-				removeConnection(params.connectionUuid);
+				removeConnection(connection.uuid);
 
 				anchorLiveConnection(
-					params.connectionUuid,
+					params.connection.uuid,
 					ingredientUuid,
 					anchorFlavorUuid,
 					anchorDirection,
@@ -169,7 +170,7 @@
 		element.addEventListener('mousedown', handleDisconnectGrab);
 
 		return {
-			update(newParams: { connectionUuid: number }) {
+			update(newParams: { connection: Connection }) {
 				params = newParams;
 			},
 			destroy() {
@@ -178,9 +179,9 @@
 		};
 	}
 
-	// $: connectionUuids = (
-	// 	$ingredientTerminalRectCenters ? Object.keys($ingredientTerminalRectCenters) : []
-	// ).map(Number);
+	// $: connections = $ingredientTerminalRectCenters
+	// 	? Object.keys($ingredientTerminalRectCenters)
+	// 	: [];
 
 	$: expanded = near || usingNovelTerminal;
 
@@ -190,33 +191,33 @@
 	// }[];
 	// $: {
 	// 	let showNovelTerminal;
-	// 	terminals = [...connectionUuids].reduce<
+	// 	terminals = [...connections].reduce<
 	// 		{
 	// 			actionDescriptions: ActionDescription<any>[];
 	// 			cabled: boolean;
 	// 		}[]
-	// 	>((result, connectionUuid) => {
-	// 		if (connectionUuid != NOVEL_CONNECTION_ID) {
+	// 	>((previous, connection) => {
+	// 		if (connection.uuid != NOVEL_CONNECTION_UUID) {
 	// 			const terminal = {
 	// 				actionDescriptions: [
 	// 					{
 	// 						action: terminalCenterUpdateAction,
-	// 						params: { connectionUuid: connectionUuid }
+	// 						params: { connectionUuid: connection.uuid }
 	// 					},
 	// 					{
 	// 						action: handleDisconnectGrabAction,
-	// 						params: { connectionUuid: connectionUuid }
+	// 						params: { connection }
 	// 					}
 	// 				],
 	// 				cabled: true
 	// 			};
 
-	// 			result.push(terminal);
+	// 			previous.push(terminal);
 	// 		} else {
 	// 			showNovelTerminal = true;
 	// 		}
 
-	// 		return result;
+	// 		return previous;
 	// 	}, []);
 
 	// 	if (showNovelTerminal) {
@@ -224,7 +225,7 @@
 	// 			actionDescriptions: [
 	// 				{
 	// 					action: terminalCenterUpdateAction,
-	// 					params: { connectionUuid: NOVEL_CONNECTION_ID }
+	// 					params: { connectionUuid: NOVEL_CONNECTION_UUID }
 	// 				},
 	// 				{
 	// 					action: handleNovelGrabAction,
@@ -240,7 +241,7 @@
 
 	export let showNovelTerminal: boolean;
 
-	let terminals = $cables.length + (showNovelTerminal ? 1 : 0);
+	let terminals = cables.length + (showNovelTerminal ? 1 : 0);
 
 	// if expanded, take a width dependent on the number of terminals
 	// 1 more terminal than there are connections
@@ -283,7 +284,7 @@
 		style:--rack-height={rackHeight + 'px'}
 		style:--pane-offset={paneOffset + 'px'}
 	>
-		{#each $cables as cable}
+		{#each cables as cable}
 			<Terminal
 				coords={direction == Direction.In ? cable.inCoords : cable.outCoords}
 				cabled={true}
@@ -294,7 +295,7 @@
 		{/each}
 		{#if showNovelTerminal}
 			<Terminal
-				coords={direction == Direction.In ? cable.inCoords : cable.outCoords}
+				coords={writable({ x: undefined, y: undefined })}
 				cabled={false}
 				{direction}
 				{expanded}

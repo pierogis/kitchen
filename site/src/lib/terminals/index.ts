@@ -1,16 +1,15 @@
 import { derived, writable, type Writable } from 'svelte/store';
 
-import { connections } from '$lib/connections';
-import { ingredients } from '$lib/stores';
+import { ingredients, connections } from '$lib/stores';
 
 import { Direction } from '$lib/common/types';
 
 export const terminalHeight = 10;
 
 export type TerminalCenter = {
-	flavorUuid: number;
+	flavorUuid: string;
 	direction: Direction;
-	connectionUuid: number | undefined;
+	connectionUuid: string | undefined;
 	coords: Writable<{ x: number | undefined; y: number | undefined }>;
 };
 
@@ -48,7 +47,7 @@ export const terminalCenters = derived(
 		});
 
 		const novelCenters: TerminalCenter[] = [];
-		Object.entries(currentIngredients).forEach(([ingredientUuid, ingredient]) => {
+		currentIngredients.values().forEach((ingredient) => {
 			ingredient.flavors.forEach((flavor) => {
 				if (
 					!connectionCenters.find((center) => {

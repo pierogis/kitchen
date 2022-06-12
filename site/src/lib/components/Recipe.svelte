@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { derived } from 'svelte/store';
+	import { derived, type Readable } from 'svelte/store';
 	import { Direction } from '$lib/common/types';
-	import type { CallFor, Ingredient } from '$lib/ingredients';
+	import type { CallFor, Ingredient, Location } from '$lib/ingredients';
 	import { type Flavor, FlavorType } from '$lib/flavors';
-	import type { Connection } from '$lib/connections';
 
 	// store access
-	import { recipeUuid } from '$lib/stores';
-	import { addCallFor } from '$lib/stores/callsFor';
+	import { recipeUuid, ingredients, locations } from '$lib/stores';
+	import { addCallFor, callsFor } from '$lib/stores/callsFor';
 	import { addIngredient } from '$lib/stores/ingredients';
 	import { addLocation } from '$lib/stores/locations';
 	import { addFlavor, flavors } from '$lib/stores/flavors';
@@ -16,16 +15,21 @@
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/docks/Dock.svelte';
 
-	export let ingredientUuid: string;
-	export let focusedFlavors: Flavor[];
-	export let callsFor: Map<string, CallFor>;
-	export let ingredients: Map<string, Ingredient>;
-	export let connections: Connection[];
+	export let focusedCallForUuid: string;
+
+	const focusedCallsFor = derived(
+		[callsFor, ingredients],
+		([currentCallsFor, currentIngredients]) =>
+			Array.from(currentCallsFor.values()).filter(
+				(callFor) =>
+					currentIngredients.get(callFor.ingredientUuid)?.parentIngredientUuid == focusedCallForUuid
+			)
+	);
 
 	function createIngredient(coords: { x: number; y: number }) {
 		const newIngredient = addIngredient({
 			name: 'default',
-			parentIngredientUuid: ingredientUuid
+			parentIngredientUuid: focusedCallForUuid
 		});
 
 		const newCallFor = addCallFor({
@@ -45,6 +49,37 @@
 	}
 
 	let canvasWidth: number, canvasHeight: number;
+
+	// collapse the stores into a list of currently-in-view ingredients with flavors and location
+	const nodes: Readable<(Ingredient & { flavors: Flavor[]; location: Location })[]> = derived(
+		[focusedCallsFor, ingredients, flavors, locations],
+		([currentFocusedCallsFor, currentIngredients, currentFlavors, currentLocations]) => {
+			return Array.from(currentFocusedCallsFor.values()).map((callFor) => {
+				const ingredient = currentIngredients.get(callFor.ingredientUuid);
+
+				const location = Array.from(currentLocations.values()).find(
+					(location) => location.callForUuid == callFor.uuid
+				);
+
+				if (!ingredient || !location) {
+					throw 'wtf';
+				}
+
+				const ingredientFlavors = Array.from(currentFlavors.values()).filter(
+					(flavor) => flavor.ingredientUuid == ingredient.uuid
+				);
+
+				return { ...ingredient, flavors: ingredientFlavors, location };
+			});
+		}
+	);
+
+	// used for the side docks
+	const focusedFlavors = derived([flavors], ([currentFlavors]) => {
+		return Array.from(currentFlavors.values()).filter(
+			(flavor) => flavor.ingredientUuid == focusedCallForUuid
+		);
+	});
 </script>
 
 <svelte:window
@@ -55,12 +90,12 @@
 
 <canvas height={canvasHeight} width={canvasWidth} />
 
-{#each Array.from(callsFor.values()) as callFor}
+{#each $nodes as node}
 	<IngredientComponent
-		ingredientUuid={callFor.ingredientUuid}
-		name={ingredients.get(callFor.ingredientUuid)?.name}
-		flavors={ingredientFlavors.get()}
-		coords={coord.get(callFor.ingredientUuid).name}
+		ingredientUuid={node.uuid}
+		name={node.name}
+		flavors={node.flavors}
+		coords={node.location}
 	/>
 {/each}
 

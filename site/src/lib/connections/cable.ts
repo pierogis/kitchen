@@ -1,24 +1,25 @@
 import { derived, writable, type Readable, type Writable } from 'svelte/store';
 
-import type { Connection } from '$lib/connections';
-import type { Flavor } from '$lib/flavors';
+import { connections, flavors, parameters } from '$lib/stores';
 
-let connections: Readable<Connection[]> = writable([]);
-let flavors: Readable<Flavor[]> = writable([]);
-
-let asdasd = derived([connections, flavors], ([currentConnections, currentFlavors]) =>
-	currentConnections.map((connection) => {
-		const inFlavor = currentFlavors.find((flavor) => flavor.uuid == connection.inFlavorUuid);
-		return {
-			inCoords: writable({ x: undefined, y: undefined }),
-			outCoords: writable({ x: undefined, y: undefined }),
-			parameters: writable(inFlavor?.parameters)
-		};
-	})
+export const cables: Readable<Cable[]> = derived(
+	[connections, flavors, parameters],
+	([currentConnections, currentFlavors, currentParameters]) =>
+		Array.from(currentConnections.values()).map((connection) => {
+			const outFlavor = currentFlavors.get(connection.inFlavorUuid);
+			const outParameter = Array.from(currentParameters.values()).find(
+				(parameter) => parameter.flavorUuid == outFlavor?.uuid
+			);
+			return {
+				inCoords: writable({ x: undefined, y: undefined }),
+				outCoords: writable({ x: undefined, y: undefined }),
+				payload: writable(outParameter?.payload)
+			};
+		})
 );
 
 export interface Cable {
-	inCoords: Writable<{ x: number; y: number }>;
-	outCoords: Writable<{ x: number; y: number }>;
+	inCoords: Writable<{ x: number | undefined; y: number | undefined }>;
+	outCoords: Writable<{ x: number | undefined; y: number | undefined }>;
 	payload: Writable<any>;
 }

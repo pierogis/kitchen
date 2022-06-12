@@ -11,7 +11,9 @@ export function storeFlavors(recipe: FullRecipe) {
 	flavors.set(
 		new Map(
 			recipe.callsFor.reduce<[string, Flavor][]>((previous, callFor) => {
-				previous.concat(callFor.ingredient.flavors.map((flavor) => [flavor.uuid, flavor]));
+				previous = previous.concat(
+					callFor.ingredient.flavors.map((flavor) => [flavor.uuid, flavor])
+				);
 
 				return previous;
 			}, [])

@@ -79,7 +79,7 @@ export function addIngredient(ingredient: Omit<Ingredient, 'uuid'>) {
 // }
 
 export const ingredientsRacks = derived(ingredients, (currentIngredients) =>
-	Object.entries(currentIngredients).reduce<{ [ingredientUuid: number]: RackState }>(
+	Object.entries(currentIngredients).reduce<{ [ingredientUuid: string]: RackState }>(
 		(currentIngredientsRacks, [ingredientUuid, ingredient]) => {
 			currentIngredientsRacks[Number(ingredientUuid)] = ingredient.flavors;
 			return currentIngredientsRacks;
