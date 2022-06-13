@@ -52,14 +52,25 @@ export interface Shader {
 
 export interface Parameter {
 	uuid: string;
-	number?: number;
-	text?: string;
-	color?: string;
-	image?: string;
+	payload: Payload<FlavorType>;
 	recipeUuid: string;
 	flavorUuid: string;
 	callForUuid: string;
 }
+
+type FlavorTypesPayloadMapper = {
+	type: FlavorType;
+	Color: { r: number; g: number; b: number };
+	Image: string;
+	Number: number;
+	Text: string;
+};
+
+export type Payload<T> = T extends FlavorType
+	? { [key in T]: FlavorTypesPayloadMapper[T] } & {
+			type: T;
+	  }
+	: never;
 
 export interface Location {
 	uuid: string;

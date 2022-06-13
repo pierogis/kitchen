@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { draggableAction } from '$lib/common/actions/draggableAction';
-	import type { Direction, Flavor } from '$lib/common/types';
+	import type { Flavor } from '$lib/common/types';
 	import { cables } from '$lib/connections/cable';
 
+	import { draggableAction } from '$lib/common/actions/draggableAction';
 	import Pane from '$lib/components/tweakpane/Pane.svelte';
 	import FlavorComponent from './Flavor.svelte';
 
@@ -10,11 +10,6 @@
 	export let name: string;
 	export let flavors: Flavor[];
 	export let coords: { x: number; y: number };
-
-	// these will bind to the terminal racks inside
-	let terminalRackContainers: {
-		[direction in Direction]: { [flavorName: string]: HTMLElement };
-	} = { In: {}, Out: {} };
 
 	let grabTarget: HTMLElement;
 	let dragging = false;

@@ -59,16 +59,20 @@
 		[focusedCallsFor, ingredients, flavors, locations],
 		([currentFocusedCallsFor, currentIngredients, currentFlavors, currentLocations]) => {
 			return Array.from(currentFocusedCallsFor.values()).map((callFor) => {
+				// find ingredient that matches this callFor
 				const ingredient = currentIngredients.get(callFor.ingredientUuid);
 
+				// find location that matches this callFor
 				const location = Array.from(currentLocations.values()).find(
 					(location) => location.callForUuid == callFor.uuid
 				);
 
+				// find ingredient that matches this callFor
 				if (!ingredient || !location) {
-					throw 'wtf';
+					throw "Couldn't find referenced ingredient or location";
 				}
 
+				// get the flavors that attach to this ingredient
 				const ingredientFlavors = Array.from(currentFlavors.values()).filter(
 					(flavor) => flavor.ingredientUuid == ingredient.uuid
 				);

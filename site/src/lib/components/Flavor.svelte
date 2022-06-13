@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { writable, type Writable } from 'svelte/store';
+	import { get, writable, type Writable } from 'svelte/store';
 
 	import type { FolderApi, TpChangeEvent } from 'tweakpane';
 	import type { Bindable } from '@tweakpane/core';
 
-	import { type Flavor, FlavorType, Direction } from '$lib/common/types';
+	import { type Payload, type Flavor, FlavorType, Direction } from '$lib/common/types';
 
 	import type { Cable } from '$lib/connections/cable';
 	import Monitor from './tweakpane/Monitor.svelte';
@@ -17,75 +17,42 @@
 	export let folder: FolderApi;
 	export let ingredientUuid: string;
 
-	const typeDescriptors: {
-		[type in FlavorType]: {
-			eventToBindable: (ev: TpChangeEvent<any>) => Bindable;
-		};
-	} = {
-		Number: {
-			eventToBindable: (ev: TpChangeEvent<number>) => {
-				return {
-					[flavor.name]: ev.value
-				};
-			}
-		},
-		Color: {
-			eventToBindable: (ev: TpChangeEvent<{ r: number; g: number; b: number }>) => {
-				return {
-					[flavor.name]: {
-						r: ev.value.r,
-						g: ev.value.g,
-						b: ev.value.b
-					}
-				};
-			}
-		},
-		Text: {
-			eventToBindable: (ev: TpChangeEvent<string>) => {
-				return { [flavor.name]: ev.value };
-			}
-		},
-		Image: {
-			eventToBindable: (ev: TpChangeEvent<string>) => {
-				return { [flavor.name]: ev.value };
-			}
+	let initialParams: Payload<FlavorType>;
+	if (inCable) {
+		initialParams = get(inCable.payload);
+	} else {
+		switch (flavor.type) {
+			case FlavorType.Color:
+				initialParams = { type: FlavorType.Color, Color: { r: 0, g: 0, b: 0 } };
+				break;
+			case FlavorType.Image:
+				initialParams = { type: FlavorType.Image, Image: '' };
+				break;
+			case FlavorType.Number:
+				initialParams = { type: FlavorType.Number, Number: 0 };
+				break;
+			case FlavorType.Text:
+				initialParams = { type: FlavorType.Text, Text: '' };
+				break;
 		}
-	};
-	const eventToBindable = typeDescriptors[flavor.type].eventToBindable;
-
-	let initialParams: Bindable = {};
-	switch (flavor.type) {
-		case FlavorType.Color:
-			initialParams = { [flavor.name]: { r: 0, g: 0, b: 0 } };
-			break;
-		case FlavorType.Image:
-			initialParams = { [flavor.name]: '' };
-
-			break;
-		case FlavorType.Number:
-			initialParams = { [flavor.name]: 0 };
-			break;
-		case FlavorType.Text:
-			initialParams = { [flavor.name]: '' };
-			break;
 	}
 
 	// need an intermediary store that recieves changes from ui
-	const paramsStore: Writable<Bindable> = writable(initialParams);
+	const payloadStore: Writable<Payload<FlavorType>> = writable(initialParams);
 
 	// update ui paramsStore with new inCable payloads
 	inCable?.payload.subscribe((newPayload) => {
-		paramsStore.update((currentParams) => {
-			currentParams[flavor.name] = newPayload;
-			return currentParams;
+		payloadStore.update((currentPayload) => {
+			currentPayload = newPayload;
+			return currentPayload;
 		});
 	});
 
 	// update outCables' payloads with new params (from Monitor/Input)
-	paramsStore.subscribe((newParams) => {
+	payloadStore.subscribe((newPayload) => {
 		outCables.forEach((cable) => {
 			cable.payload.update((currentPayload) => {
-				currentPayload = newParams[flavor.name];
+				currentPayload = newPayload;
 				return currentPayload;
 			});
 		});
@@ -93,7 +60,7 @@
 </script>
 
 {#if inCable}
-	<Monitor {folder} {paramsStore} key={flavor.name} let:monitorElement>
+	<Monitor {folder} {payloadStore} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction}
 			<TerminalRack
 				parentElement={monitorElement}
@@ -108,13 +75,7 @@
 		{/each}
 	</Monitor>
 {:else}
-	<Input
-		{folder}
-		{paramsStore}
-		key={flavor.name}
-		onChange={(store, ev) => store.set(eventToBindable(ev))}
-		let:inputElement
-	>
+	<Input {folder} {payloadStore} key={flavor.name} let:inputElement>
 		{#each flavor.directions as direction}
 			<TerminalRack
 				parentElement={inputElement}
