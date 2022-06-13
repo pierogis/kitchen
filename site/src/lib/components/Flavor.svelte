@@ -19,23 +19,20 @@
 
 	const typeDescriptors: {
 		[type in FlavorType]: {
-			key: string;
 			eventToBindable: (ev: TpChangeEvent<any>) => Bindable;
 		};
 	} = {
 		Number: {
-			key: 'number',
 			eventToBindable: (ev: TpChangeEvent<number>) => {
 				return {
-					number: ev.value
+					[flavor.name]: ev.value
 				};
 			}
 		},
 		Color: {
-			key: 'color',
 			eventToBindable: (ev: TpChangeEvent<{ r: number; g: number; b: number }>) => {
 				return {
-					color: {
+					[flavor.name]: {
 						r: ev.value.r,
 						g: ev.value.g,
 						b: ev.value.b
@@ -44,35 +41,32 @@
 			}
 		},
 		Text: {
-			key: 'text',
 			eventToBindable: (ev: TpChangeEvent<string>) => {
-				return { text: ev.value };
+				return { [flavor.name]: ev.value };
 			}
 		},
 		Image: {
-			key: 'text',
 			eventToBindable: (ev: TpChangeEvent<string>) => {
-				return { text: ev.value };
+				return { [flavor.name]: ev.value };
 			}
 		}
 	};
-	const key = typeDescriptors[flavor.type].key;
 	const eventToBindable = typeDescriptors[flavor.type].eventToBindable;
 
-	let initialParams: Bindable;
+	let initialParams: Bindable = {};
 	switch (flavor.type) {
 		case FlavorType.Color:
-			initialParams = { color: { r: 0, g: 0, b: 0 } };
+			initialParams = { [flavor.name]: { r: 0, g: 0, b: 0 } };
 			break;
 		case FlavorType.Image:
-			initialParams = { text: '' };
+			initialParams = { [flavor.name]: '' };
 
 			break;
 		case FlavorType.Number:
-			initialParams = { number: 0 };
+			initialParams = { [flavor.name]: 0 };
 			break;
 		case FlavorType.Text:
-			initialParams = { text: '' };
+			initialParams = { [flavor.name]: '' };
 			break;
 	}
 
@@ -82,7 +76,7 @@
 	// update ui paramsStore with new inCable payloads
 	inCable?.payload.subscribe((newPayload) => {
 		paramsStore.update((currentParams) => {
-			currentParams[key] = newPayload;
+			currentParams[flavor.name] = newPayload;
 			return currentParams;
 		});
 	});
@@ -91,7 +85,7 @@
 	paramsStore.subscribe((newParams) => {
 		outCables.forEach((cable) => {
 			cable.payload.update((currentPayload) => {
-				currentPayload = newParams[key];
+				currentPayload = newParams[flavor.name];
 				return currentPayload;
 			});
 		});
@@ -99,7 +93,7 @@
 </script>
 
 {#if inCable}
-	<Monitor {folder} {paramsStore} {key} let:monitorElement>
+	<Monitor {folder} {paramsStore} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction}
 			<TerminalRack
 				parentElement={monitorElement}
@@ -117,7 +111,7 @@
 	<Input
 		{folder}
 		{paramsStore}
-		{key}
+		key={flavor.name}
 		onChange={(store, ev) => store.set(eventToBindable(ev))}
 		let:inputElement
 	>
