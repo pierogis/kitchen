@@ -73,7 +73,10 @@ model Recipe {
 model Parameter {
   id          Int     @id @default(autoincrement())
   uuid        String  @unique @db.Uuid
-  payload     Json
+  number      Float?
+  text        String? @db.VarChar(511)
+  color       String? @db.VarChar(6)
+  image       String? @db.VarChar(511)
   recipeUuid  String
   recipe      Recipe  @relation("Parameter_recipe", fields: [recipeUuid], references: [uuid])
   flavorUuid  String  @unique

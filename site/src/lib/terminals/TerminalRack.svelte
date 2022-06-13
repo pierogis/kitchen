@@ -19,9 +19,9 @@
 
 	import Terminal from '$lib/terminals/Terminal.svelte';
 	import type { FlavorType } from '@prisma/client';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import type { Cable } from '$lib/connections/cable';
-	import type { Connection } from '$lib/connections';
+	import type { Connection } from '$lib/common/types';
 
 	export let direction: Direction;
 	export let container: HTMLElement | null = null;
@@ -251,8 +251,10 @@
 
 	export let parentElement: HTMLElement | null;
 
-	onMount(() => {
-		if (container !== null && parentElement !== null) {
+	onMount(async () => {
+		await tick();
+
+		if (container && parentElement) {
 			if (direction == Direction.In) {
 				parentElement.prepend(container);
 			}

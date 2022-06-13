@@ -52,7 +52,10 @@ export interface Shader {
 
 export interface Parameter {
 	uuid: string;
-	payload: any;
+	number?: number;
+	text?: string;
+	color?: string;
+	image?: string;
 	recipeUuid: string;
 	flavorUuid: string;
 	callForUuid: string;

@@ -47,7 +47,13 @@
 	<Pane let:pane title={name}>
 		{#if pane}
 			{#each flavors as flavor}
-				<FlavorComponent outCables={$cables} {flavor} folder={pane} {ingredientUuid} />
+				<FlavorComponent
+					inCable={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)}
+					outCables={$cables.filter((cable) => cable.outFlavorUuid == flavor.uuid)}
+					{flavor}
+					folder={pane}
+					{ingredientUuid}
+				/>
 			{/each}
 		{/if}
 	</Pane>

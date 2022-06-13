@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import type { Bindable } from '@tweakpane/core';
+
+	import { onMount, tick } from 'svelte';
 
 	import { get, type Writable } from 'svelte/store';
 
@@ -7,14 +9,12 @@
 
 	export let folder: FolderApi;
 
-	export let paramsStore: Writable<any>;
+	export let paramsStore: Writable<Bindable>;
 	export let key: string;
 	export let options: MonitorParams | undefined = undefined;
 
 	let params = get(paramsStore);
-
 	let fired = false;
-
 	paramsStore.subscribe((newParams) => {
 		if (fired) {
 			params = newParams;
@@ -22,16 +22,21 @@
 		fired = true;
 	});
 
-	let bladeApi = folder.addMonitor(params, key, options);
+	let monitorElement: HTMLElement;
 
-	const monitorElement = bladeApi.controller_.valueController.view.element.parentElement;
-	if (monitorElement) {
-		monitorElement.style.width = '4rem';
-		monitorElement.style.display = 'flex';
-	}
+	onMount(async () => {
+		const bladeApi = folder.addMonitor(params, key, options);
 
-	onDestroy(() => {
-		folder.remove(bladeApi);
+		const element = bladeApi.controller_.valueController.view.element.parentElement;
+		if (element) {
+			monitorElement = element;
+			monitorElement.style.width = '4rem';
+			monitorElement.style.display = 'flex';
+		}
+
+		return () => {
+			folder.remove(bladeApi);
+		};
 	});
 </script>
 

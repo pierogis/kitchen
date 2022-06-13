@@ -133,67 +133,49 @@ export const defaultRecipe: FullRecipe = {
 			recipeUuid: '0',
 			flavorUuid: '0',
 			callForUuid: '0',
-			payload: {
-				image: null,
-				height: null,
-				width: null
-			}
+			image: ''
 		},
 		{
 			uuid: '1',
 			recipeUuid: '0',
 			flavorUuid: '1',
 			callForUuid: '0',
-			payload: {
-				number: 0
-			}
+			number: 0
 		},
 		{
 			uuid: '2',
 			recipeUuid: '0',
 			flavorUuid: '2',
 			callForUuid: '0',
-			payload: {
-				number: 40
-			}
+			number: 40
 		},
 		{
 			uuid: '3',
 			recipeUuid: '0',
 			flavorUuid: '3',
 			callForUuid: '0',
-			payload: {
-				number: 180
-			}
+			number: 180
 		},
 		{
 			uuid: '4',
 			recipeUuid: '0',
 			flavorUuid: '4',
 			callForUuid: '1',
-			payload: {
-				text: ''
-			}
+			text: ''
 		},
 		{
 			uuid: '5',
 			recipeUuid: '0',
 			flavorUuid: '5',
 			callForUuid: '2',
-			payload: {
-				image: null,
-				height: null,
-				weight: null
-			}
+			image: ''
 		},
 		{
 			uuid: '6',
 			recipeUuid: '0',
 			flavorUuid: '6',
 			callForUuid: '2',
-			payload: {
-				text: ''
-			}
+			text: ''
 		}
 	],
 	shaders: []

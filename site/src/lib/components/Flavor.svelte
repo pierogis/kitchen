@@ -1,74 +1,105 @@
 <script lang="ts">
-	import { writable, type Readable, type Writable, derived, type Unsubscriber } from 'svelte/store';
+	import { writable, type Writable } from 'svelte/store';
 
-	import Input from './tweakpane/Input.svelte';
 	import type { FolderApi, TpChangeEvent } from 'tweakpane';
-	import TerminalRack from '$lib/terminals/TerminalRack.svelte';
+	import type { Bindable } from '@tweakpane/core';
 
-	import { type Flavor, type FlavorType, Direction } from '$lib/common/types';
-	import { colorOnChange } from '$lib/flavors/color';
-	import { imageOnChange } from '$lib/flavors/image';
-	import { numberOnChange } from '$lib/flavors/number';
-	import { textOnChange } from '$lib/flavors/text';
-
-	export let flavor: Flavor;
+	import { type Flavor, FlavorType, Direction } from '$lib/common/types';
 
 	import type { Cable } from '$lib/connections/cable';
 	import Monitor from './tweakpane/Monitor.svelte';
+	import Input from './tweakpane/Input.svelte';
+	import TerminalRack from '$lib/terminals/TerminalRack.svelte';
 
+	export let flavor: Flavor;
 	export let inCable: Cable | undefined = undefined;
 	export let outCables: Cable[];
-
 	export let folder: FolderApi;
 	export let ingredientUuid: string;
 
 	const typeDescriptors: {
 		[type in FlavorType]: {
 			key: string;
-			onChange: (paramsStore: Writable<any>, ev: TpChangeEvent<any>) => void;
+			eventToBindable: (ev: TpChangeEvent<any>) => Bindable;
 		};
 	} = {
 		Number: {
 			key: 'number',
-			onChange: numberOnChange
+			eventToBindable: (ev: TpChangeEvent<number>) => {
+				return {
+					number: ev.value
+				};
+			}
 		},
 		Color: {
 			key: 'color',
-			onChange: colorOnChange
+			eventToBindable: (ev: TpChangeEvent<{ r: number; g: number; b: number }>) => {
+				return {
+					color: {
+						r: ev.value.r,
+						g: ev.value.g,
+						b: ev.value.b
+					}
+				};
+			}
 		},
 		Text: {
 			key: 'text',
-			onChange: textOnChange
+			eventToBindable: (ev: TpChangeEvent<string>) => {
+				return { text: ev.value };
+			}
 		},
 		Image: {
-			key: 'image',
-			onChange: imageOnChange
+			key: 'text',
+			eventToBindable: (ev: TpChangeEvent<string>) => {
+				return { text: ev.value };
+			}
 		}
 	};
+	const key = typeDescriptors[flavor.type].key;
+	const eventToBindable = typeDescriptors[flavor.type].eventToBindable;
 
-	let paramsStore = writable(inCable?.parameters);
-	let unsub: Unsubscriber | undefined;
+	let initialParams: Bindable;
+	switch (flavor.type) {
+		case FlavorType.Color:
+			initialParams = { color: { r: 0, g: 0, b: 0 } };
+			break;
+		case FlavorType.Image:
+			initialParams = { text: '' };
 
-	$: {
-		if (unsub) {
-			unsub();
-		}
-		// needs attention
-		unsub = inCable?.payload.subscribe((newInPayload) => {
-			paramsStore.set(newInPayload);
-		});
+			break;
+		case FlavorType.Number:
+			initialParams = { number: 0 };
+			break;
+		case FlavorType.Text:
+			initialParams = { text: '' };
+			break;
 	}
 
-	paramsStore.subscribe((newParams) => {
-		outCables.map((outCable) => outCable.payload.set(newParams));
+	// need an intermediary store that recieves changes from ui
+	const paramsStore: Writable<Bindable> = writable(initialParams);
+
+	// update ui paramsStore with new inCable payloads
+	inCable?.payload.subscribe((newPayload) => {
+		paramsStore.update((currentParams) => {
+			currentParams[key] = newPayload;
+			return currentParams;
+		});
 	});
 
-	const key = typeDescriptors[flavor.type].key;
-	const onChange = typeDescriptors[flavor.type].onChange;
+	// update outCables' payloads with new params (from Monitor/Input)
+	paramsStore.subscribe((newParams) => {
+		outCables.forEach((cable) => {
+			cable.payload.update((currentPayload) => {
+				currentPayload = newParams[key];
+				return currentPayload;
+			});
+		});
+	});
 </script>
 
 {#if inCable}
-	<Monitor {folder} paramsStore={inCable.payload} {key} let:monitorElement>
+	<Monitor {folder} {paramsStore} {key} let:monitorElement>
 		{#each flavor.directions as direction}
 			<TerminalRack
 				parentElement={monitorElement}
@@ -83,7 +114,13 @@
 		{/each}
 	</Monitor>
 {:else}
-	<Input {folder} {paramsStore} {key} {onChange} let:inputElement>
+	<Input
+		{folder}
+		{paramsStore}
+		{key}
+		onChange={(store, ev) => store.set(eventToBindable(ev))}
+		let:inputElement
+	>
 		{#each flavor.directions as direction}
 			<TerminalRack
 				parentElement={inputElement}
@@ -98,64 +135,3 @@
 		{/each}
 	</Input>
 {/if}
-<!-- {:else if flavor.type == FlavorType.Image}
-	<Input
-		{folder}
-		paramsStore={writable(flavor.parameters)}
-		key="image"
-		onChange={imageOnChange}
-		options={{
-			extensions: '.jpg, .png, .gif, .mp4'
-		}}
-		let:inputElement
-	>
-		{#each flavor.directions as direction}
-			<TerminalRack
-				parentElement={inputElement}
-				bind:container={terminalRackContainers[direction][flavor.name]}
-				{ingredientUuid}
-				flavorName={flavor.name}
-				flavorType={flavor.type}
-				{direction}
-			/>
-		{/each}
-	</Input>
-{:else if flavor.type == FlavorType.Number}
-	<Input
-		{folder}
-		paramsStore={writable(flavor.parameters)}
-		key="number"
-		onChange={numberOnChange}
-		let:inputElement
-	>
-		{#each flavor.directions as direction}
-			<TerminalRack
-				parentElement={inputElement}
-				bind:container={terminalRackContainers[direction][flavor.name]}
-				{ingredientUuid}
-				flavorName={flavor.name}
-				flavorType={flavor.type}
-				{direction}
-			/>
-		{/each}
-	</Input>
-{:else if flavor.type == FlavorType.Text}
-	<Input
-		{folder}
-		paramsStore={writable(flavor.parameters)}
-		key="text"
-		onChange={textOnChange}
-		let:inputElement
-	>
-		{#each flavor.directions as direction}
-			<TerminalRack
-				parentElement={inputElement}
-				bind:container={terminalRackContainers[direction][flavor.name]}
-				{ingredientUuid}
-				flavorName={flavor.name}
-				flavorType={flavor.type}
-				{direction}
-			/>
-		{/each}
-	</Input>
-{/if} -->

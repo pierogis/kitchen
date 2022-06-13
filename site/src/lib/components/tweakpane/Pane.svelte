@@ -3,6 +3,7 @@
 	import { Pane } from 'tweakpane';
 
 	export let title: string;
+
 	let pane: Pane;
 
 	function attachPaneAction(element: HTMLElement) {
