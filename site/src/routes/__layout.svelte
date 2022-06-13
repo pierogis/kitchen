@@ -13,6 +13,12 @@
 		--button-color-focus: hsla(0, 0%, 95%, 1);
 		--button-color-hover: hsla(0, 0%, 85%, 1);
 
+		--input-color: hsla(80, 10%, 90%, 0.5);
+		--input-color-active: hsla(80, 10%, 100%, 0.5);
+		--input-color-focus: hsla(80, 10%, 95%, 0.5);
+		--input-color-hover: hsla(80, 10%, 85%, 0.5);
+		--input-color-text: hsla(80, 50%, 25%, 1);
+
 		--remove-color: hsla(0, 80%, 70%, 0.8);
 		--cable-color-number: rgba(120, 150, 190, 1);
 	}
