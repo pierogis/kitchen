@@ -14,7 +14,6 @@
 	import type { ActionDescription } from '$lib/common/actions/useActions';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 	import { calculateCenter } from '$lib/common/utils';
-	import { connections, removeConnection } from '$lib/stores/connections';
 	import { Direction } from '$lib/common/types';
 
 	import Terminal from '$lib/terminals/Terminal.svelte';

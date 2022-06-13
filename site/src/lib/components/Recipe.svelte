@@ -11,15 +11,12 @@
 	import {} from '$lib/flavors/plugins';
 
 	// store access
-	import { recipeUuid, ingredients, locations } from '$lib/stores';
-	import { addCallFor, callsFor } from '$lib/stores/callsFor';
-	import { addIngredient } from '$lib/stores/ingredients';
-	import { addLocation } from '$lib/stores/locations';
-	import { addFlavor, flavors } from '$lib/stores/flavors';
+	import { recipeUuid, ingredients, locations, flavors, callsFor } from '$lib/stores';
 
 	import CursorCircle from '$lib/components/CursorCircle.svelte';
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/components/Dock.svelte';
+	import { ActionType, handleAction, type Action } from '$lib/events';
 
 	export let focusedCallForUuid: string;
 
@@ -27,31 +24,33 @@
 		[callsFor, ingredients],
 		([currentCallsFor, currentIngredients]) =>
 			Array.from(currentCallsFor.values()).filter(
-				(callFor) =>
-					currentIngredients.get(callFor.ingredientUuid)?.parentIngredientUuid == focusedCallForUuid
+				(callFor) => callFor.parentCallForUuid == focusedCallForUuid
 			)
 	);
 
-	function createIngredient(coords: { x: number; y: number }) {
-		const newIngredient = addIngredient({
-			name: 'default',
-			parentIngredientUuid: focusedCallForUuid
-		});
-
-		const newCallFor = addCallFor({
-			recipeUuid: $recipeUuid,
-			ingredientUuid: newIngredient.uuid
-		});
-
-		addFlavor({
-			ingredientUuid: newIngredient.uuid,
-			type: FlavorType.Text,
-			name: 'text',
-			options: null,
-			directions: [Direction.Out]
-		});
-
-		addLocation({ ...coords, callForUuid: newCallFor.uuid });
+	function createIngredient(coordinates: { x: number; y: number }) {
+		const action: Action<ActionType.CreateIngredient> = {
+			type: ActionType.CreateIngredient,
+			params: {
+				ingredient: {
+					name: 'default'
+				},
+				callFor: {
+					parentCallForUuid: focusedCallForUuid,
+					recipeUuid: $recipeUuid
+				},
+				location: { ...coordinates },
+				flavors: [
+					{
+						type: FlavorType.Text,
+						name: 'text',
+						options: null,
+						directions: [Direction.Out]
+					}
+				]
+			}
+		};
+		handleAction(action);
 	}
 
 	// collapse the stores into a list of currently-in-view ingredients with flavors and location
@@ -62,14 +61,18 @@
 				// find ingredient that matches this callFor
 				const ingredient = currentIngredients.get(callFor.ingredientUuid);
 
+				// find ingredient that matches this callFor
+				if (!ingredient) {
+					throw "Couldn't find referenced ingredient";
+				}
+
 				// find location that matches this callFor
 				const location = Array.from(currentLocations.values()).find(
 					(location) => location.callForUuid == callFor.uuid
 				);
 
-				// find ingredient that matches this callFor
-				if (!ingredient || !location) {
-					throw "Couldn't find referenced ingredient or location";
+				if (!location) {
+					throw "Couldn't find referenced location";
 				}
 
 				// get the flavors that attach to this ingredient

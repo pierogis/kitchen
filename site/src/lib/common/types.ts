@@ -14,7 +14,6 @@ export interface Flavor {
 export interface Ingredient {
 	uuid: string;
 	name: string;
-	parentIngredientUuid?: string;
 }
 
 export interface Connection {
@@ -39,6 +38,7 @@ export interface CallFor {
 	uuid: string;
 	recipeUuid: string;
 	ingredientUuid: string;
+	parentCallForUuid: string;
 }
 
 export interface Shader {
