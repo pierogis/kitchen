@@ -1,54 +1,39 @@
-import type {
-	CallFor,
-	Connection,
-	Flavor,
-	FullRecipe,
-	Ingredient,
-	Location,
-	Shader,
-	Parameter
-} from '$lib/common/types';
-import { writable, type Writable } from 'svelte/store';
+import type { Connection, Flavor, FullRecipe } from '$lib/common/types';
 
-export const state: Writable<{
-	ingredients: Map<string, Ingredient>;
-	flavors: Map<string, Flavor>;
-	callsFor: Map<string, CallFor>;
-	connections: Map<string, Connection>;
-	shaders: Map<string, Shader>;
-	parameters: Map<string, Parameter>;
-	locations: Map<string, Location>;
-}> = writable({
-	ingredients: new Map(),
-	flavors: new Map(),
-	callsFor: new Map(),
-	connections: new Map(),
-	shaders: new Map(),
-	parameters: new Map(),
-	locations: new Map()
-});
-
-import { recipeUuid } from './recipe';
-import { storeCallsFor } from './callsFor';
-import { storeIngredients } from './ingredients';
-import { storeFlavors } from './flavors';
-import { storeConnections } from './connections';
-import { storeShaders } from './shaders';
-import { storeParameters } from './parameters';
-import { storeLocations } from './locations';
+import { writableState } from './state';
 
 export function storeRecipe(recipe: FullRecipe) {
-	recipeUuid.set(recipe.uuid);
+	const initialCallsFor = new Map(recipe.callsFor.map((callFor) => [callFor.uuid, callFor]));
+	const initialIngredients = new Map(
+		recipe.callsFor.map((callFor) => [callFor.ingredientUuid, callFor.ingredient])
+	);
+	const initialFlavors = new Map(
+		recipe.callsFor.reduce<[string, Flavor][]>((previous, callFor) => {
+			previous = previous.concat(callFor.ingredient.flavors.map((flavor) => [flavor.uuid, flavor]));
 
-	const initialCallsFor = storeCallsFor(recipe);
-	const initialIngredients = storeIngredients(recipe);
-	const initialFlavors = storeFlavors(recipe);
-	const initialConnections = storeConnections(recipe);
-	const initialShaders = storeShaders(recipe);
-	const initialParameters = storeParameters(recipe);
-	const initialLocations = storeLocations(recipe);
+			return previous;
+		}, [])
+	);
+	const initialConnections = new Map(
+		recipe.callsFor.reduce<[string, Connection][]>((previous, callFor) => {
+			previous = previous.concat(
+				callFor.ingredient.connections.map((connection) => [connection.uuid, connection])
+			);
 
-	state.set({
+			return previous;
+		}, [])
+	);
+	const initialShaders = new Map(recipe.shaders.map((shader) => [shader.uuid, shader]));
+	const initialParameters = new Map(
+		recipe.parameters.map((parameter) => [parameter.uuid, parameter])
+	);
+	const initialLocations = new Map(
+		recipe.callsFor.map((callFor) => [callFor.location.uuid, callFor.location])
+	);
+
+	const state = writableState({
+		recipeUuid: recipe.uuid,
+		focusedCallForUuid: recipe.mainCallForUuid,
 		ingredients: initialIngredients,
 		flavors: initialFlavors,
 		callsFor: initialCallsFor,
@@ -57,13 +42,6 @@ export function storeRecipe(recipe: FullRecipe) {
 		parameters: initialParameters,
 		locations: initialLocations
 	});
-}
 
-export { recipeUuid } from './recipe';
-export { callsFor } from './callsFor';
-export { ingredients } from './ingredients';
-export { flavors } from './flavors';
-export { connections } from './connections';
-export { shaders } from './shaders';
-export { parameters } from './parameters';
-export { locations } from './locations';
+	return state;
+}

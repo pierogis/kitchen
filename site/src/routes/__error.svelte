@@ -5,10 +5,12 @@
 
 	export const load: Load = ({ error, status }) => {
 		const message = `${status}${dev && error ? `: ${error.message}` : ''}`;
+		const stack = dev && error ? error.stack : '';
 		dev && console.error(message);
 		return {
 			props: {
-				message
+				message,
+				stack
 			}
 		};
 	};
@@ -16,6 +18,10 @@
 
 <script lang="ts">
 	export let message: string;
+	export let stack: string;
 </script>
 
-{message}
+<span>{message}</span>
+<br />
+<br />
+<span>{stack}</span>

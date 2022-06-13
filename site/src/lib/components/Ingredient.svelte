@@ -1,11 +1,13 @@
 <script lang="ts">
 	import type { Flavor } from '$lib/common/types';
-	import { cables } from '$lib/connections/cable';
 
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 	import Pane from '$lib/components/tweakpane/Pane.svelte';
 	import FlavorComponent from './Flavor.svelte';
 
+	import type { ReadableView } from '$lib/stores/view';
+
+	export let view: ReadableView;
 	export let ingredientUuid: string;
 	export let name: string;
 	export let flavors: Flavor[];
@@ -23,6 +25,8 @@
 	function handleRemove(event: MouseEvent) {}
 
 	const nodeHeaderSize = 12;
+
+	$: cables = view.cables;
 </script>
 
 <div

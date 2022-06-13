@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { calculateCenter } from '../common/utils';
-	import { dropCableStore, liveConnection } from './live-connection';
-	import { terminalHeight } from '$lib/terminals';
+	import type { LiveConnectionState } from '../stores/view/live-connection';
+	import { terminalHeight } from '$lib/stores/view/terminals';
 
 	import Cable from '$lib/components/Cable.svelte';
 	import Terminal from '$lib/terminals/Terminal.svelte';
+	import type { Readable } from 'svelte/store';
+
+	export let liveConnection: Readable<LiveConnectionState>;
+	export let dropCable: Readable<(coords: { x: number; y: number }) => void>;
 
 	// access to a store of the coords for when a cable is being dragged
 	$: dragCoordsStore = $liveConnection && $liveConnection.dragCoordsStore;
@@ -32,17 +36,17 @@
 		}, 10);
 
 		// update restaurant that cable has been dropped
-		const dropCable = (event: MouseEvent) => {
-			$dropCableStore({ x: event.pageX, y: event.pageY });
+		const onMouseUp = (event: MouseEvent) => {
+			$dropCable({ x: event.pageX, y: event.pageY });
 			// this is causing the live connection attach callback to disappear
-			window.removeEventListener('mouseup', dropCable);
+			window.removeEventListener('mouseup', onMouseUp);
 		};
-		window.addEventListener('mouseup', dropCable);
+		window.addEventListener('mouseup', onMouseUp);
 
 		return {
 			destroy() {
 				window.removeEventListener('mousemove', moveTerminal);
-				window.removeEventListener('mouseup', dropCable);
+				window.removeEventListener('mouseup', onMouseUp);
 				clearInterval(dragTerminalTimer);
 			}
 		};

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Readable } from 'svelte/store';
 
-	export let inCoords: Readable<{ x: number; y: number }>;
-	export let outCoords: Readable<{ x: number; y: number }>;
+	export let inCoords: Readable<{ x: number | undefined; y: number | undefined }>;
+	export let outCoords: Readable<{ x: number | undefined; y: number | undefined }>;
 
 	$: x1 = $inCoords.x;
 	$: y1 = $inCoords.y;

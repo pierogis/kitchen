@@ -1,42 +1,44 @@
 <script lang="ts" context="module">
 	import { defaultRecipe } from './_recipe';
+	import { storeRecipe } from '$lib/stores';
 
 	/** @type {import('./index').Load} */
 	export async function load() {
-		storeRecipe(defaultRecipe);
-
 		return {
 			props: {
-				mainCallForUuid: defaultRecipe.mainCallForUuid
+				recipe: defaultRecipe
 			}
 		};
 	}
 </script>
 
 <script lang="ts">
-	import { storeRecipe, ingredients, flavors, connections, parameters, shaders } from '$lib/stores';
-
 	import Pan from '$lib/components/Pan.svelte';
 	import Recipe from '$lib/components/Recipe.svelte';
+	import type { FullRecipe } from '$lib/common/types';
+	import { readableView } from '$lib/stores/view';
 
 	let innerWidth = 0,
 		innerHeight = 0;
 
-	export let mainCallForUuid: string;
-	let focusedCallForUuid = mainCallForUuid;
+	export let recipe: FullRecipe;
+
+	const state = storeRecipe(recipe);
+
+	const view = readableView(state);
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight on:scroll|preventDefault={() => {}} />
 
-<Recipe {focusedCallForUuid} />
+<Recipe {state} {view} />
 
 <Pan
 	width={innerWidth}
 	height={innerHeight}
-	{mainCallForUuid}
-	ingredients={$ingredients}
-	flavors={$flavors}
-	connections={$connections}
-	shaders={$shaders}
-	parameters={$parameters}
+	mainCallForUuid={recipe.mainCallForUuid}
+	ingredients={$state.ingredients}
+	flavors={$state.flavors}
+	connections={$state.connections}
+	shaders={$state.shaders}
+	parameters={$state.parameters}
 />

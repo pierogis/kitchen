@@ -2,11 +2,10 @@
 	import { get, writable, type Writable } from 'svelte/store';
 
 	import type { FolderApi, TpChangeEvent } from 'tweakpane';
-	import type { Bindable } from '@tweakpane/core';
 
 	import { type Payload, type Flavor, FlavorType, Direction } from '$lib/common/types';
 
-	import type { Cable } from '$lib/connections/cable';
+	import type { Cable } from '$lib/stores/view';
 	import Monitor from './tweakpane/Monitor.svelte';
 	import Input from './tweakpane/Input.svelte';
 	import TerminalRack from '$lib/terminals/TerminalRack.svelte';

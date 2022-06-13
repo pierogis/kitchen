@@ -1,14 +1,17 @@
 import type { Ingredient, Flavor, CallFor, Location } from '$lib/common/types';
 import { ActionType } from './';
 import { v4 as uuid } from 'uuid';
-import { state } from '$lib/stores';
+import type { WritableState } from '$lib/stores/state';
 
-export const createIngredient = (params: {
-	ingredient: Omit<Ingredient, 'uuid'>;
-	callFor: Omit<CallFor, 'uuid' | 'ingredientUuid'>;
-	location: Omit<Location, 'uuid' | 'callForUuid'>;
-	flavors: Omit<Flavor, 'uuid' | 'ingredientUuid'>[];
-}) => {
+export const createIngredient = (
+	state: WritableState,
+	params: {
+		ingredient: Omit<Ingredient, 'uuid'>;
+		callFor: Omit<CallFor, 'uuid' | 'ingredientUuid'>;
+		location: Omit<Location, 'uuid' | 'callForUuid'>;
+		flavors: Omit<Flavor, 'uuid' | 'ingredientUuid'>[];
+	}
+) => {
 	let ingredientUuid: string = uuid();
 	let callForUuid: string = uuid();
 	let locationUuid: string = uuid();
@@ -61,12 +64,15 @@ export const createIngredient = (params: {
 	};
 };
 
-let undo = (params: {
-	callForUuid: string;
-	ingredientUuid: string;
-	locationUuid: string;
-	flavorUuids: string[];
-}) => {
+let undo = (
+	state: WritableState,
+	params: {
+		callForUuid: string;
+		ingredientUuid: string;
+		locationUuid: string;
+		flavorUuids: string[];
+	}
+) => {
 	state.update((currentState) => {
 		currentState.ingredients.delete(params.ingredientUuid);
 		currentState.locations.delete(params.locationUuid);

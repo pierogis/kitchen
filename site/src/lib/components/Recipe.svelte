@@ -1,32 +1,17 @@
 <script lang="ts">
-	import { derived, type Readable } from 'svelte/store';
-	import {
-		Direction,
-		type CallFor,
-		type Ingredient,
-		type Location,
-		type Flavor,
-		FlavorType
-	} from '$lib/common/types';
+	import { Direction, FlavorType } from '$lib/common/types';
 	import {} from '$lib/flavors/plugins';
-
-	// store access
-	import { recipeUuid, ingredients, locations, flavors, callsFor } from '$lib/stores';
 
 	import CursorCircle from '$lib/components/CursorCircle.svelte';
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/components/Dock.svelte';
 	import { ActionType, handleAction, type Action } from '$lib/events';
 
-	export let focusedCallForUuid: string;
+	import type { WritableState } from '$lib/stores/state';
+	import type { ReadableView } from '$lib/stores/view';
 
-	const focusedCallsFor = derived(
-		[callsFor, ingredients],
-		([currentCallsFor, currentIngredients]) =>
-			Array.from(currentCallsFor.values()).filter(
-				(callFor) => callFor.parentCallForUuid == focusedCallForUuid
-			)
-	);
+	export let state: WritableState;
+	export let view: ReadableView;
 
 	function createIngredient(coordinates: { x: number; y: number }) {
 		const action: Action<ActionType.CreateIngredient> = {
@@ -36,8 +21,8 @@
 					name: 'default'
 				},
 				callFor: {
-					parentCallForUuid: focusedCallForUuid,
-					recipeUuid: $recipeUuid
+					parentCallForUuid: $state.focusedCallForUuid,
+					recipeUuid: $state.recipeUuid
 				},
 				location: { ...coordinates },
 				flavors: [
@@ -53,48 +38,12 @@
 		handleAction(action);
 	}
 
-	// collapse the stores into a list of currently-in-view ingredients with flavors and location
-	const nodes: Readable<(Ingredient & { flavors: Flavor[]; location: Location })[]> = derived(
-		[focusedCallsFor, ingredients, flavors, locations],
-		([currentFocusedCallsFor, currentIngredients, currentFlavors, currentLocations]) => {
-			return Array.from(currentFocusedCallsFor.values()).map((callFor) => {
-				// find ingredient that matches this callFor
-				const ingredient = currentIngredients.get(callFor.ingredientUuid);
-
-				// find ingredient that matches this callFor
-				if (!ingredient) {
-					throw "Couldn't find referenced ingredient";
-				}
-
-				// find location that matches this callFor
-				const location = Array.from(currentLocations.values()).find(
-					(location) => location.callForUuid == callFor.uuid
-				);
-
-				if (!location) {
-					throw "Couldn't find referenced location";
-				}
-
-				// get the flavors that attach to this ingredient
-				const ingredientFlavors = Array.from(currentFlavors.values()).filter(
-					(flavor) => flavor.ingredientUuid == ingredient.uuid
-				);
-
-				return { ...ingredient, flavors: ingredientFlavors, location };
-			});
-		}
-	);
-
-	// used for the side docks
-	const focusedFlavors = derived([flavors], ([currentFlavors]) => {
-		return Array.from(currentFlavors.values()).filter(
-			(flavor) => flavor.ingredientUuid == focusedCallForUuid
-		);
-	});
+	$: nodes = view.nodes;
 </script>
 
 {#each $nodes as node}
 	<IngredientComponent
+		{view}
 		ingredientUuid={node.uuid}
 		name={node.name}
 		flavors={node.flavors}
