@@ -1,14 +1,20 @@
 <script lang="ts">
-	import { calculateCenter } from '../common/utils';
-	import type { LiveConnectionState } from '../state/stores/view/live-connection';
+	import type { Readable } from 'svelte/store';
+	import { getContext } from 'svelte';
+
+	import { calculateCenter } from '$lib/common/utils';
+	import type { LiveConnectionState } from '$lib/state/stores/view/live-connection';
 	import { terminalHeight } from '$lib/state/stores/view/terminals';
+
+	import type { ReadableView } from '$lib/state/stores/view';
 
 	import Cable from '$lib/components/Cable.svelte';
 	import Terminal from '$lib/terminals/Terminal.svelte';
-	import type { Readable } from 'svelte/store';
 
 	export let liveConnection: Readable<LiveConnectionState>;
 	export let dropCable: Readable<(coords: { x: number; y: number }) => void>;
+
+	const view: ReadableView = getContext('view');
 
 	// access to a store of the coords for when a cable is being dragged
 	$: dragCoordsStore = $liveConnection && $liveConnection.dragCoordsStore;
@@ -16,8 +22,8 @@
 	function dragTerminalAction(element: HTMLElement) {
 		let dragTerminalTimer: NodeJS.Timer;
 
-		element.style.left = $dragCoordsStore.x + 'px';
-		element.style.top = $dragCoordsStore.y + 'px';
+		element.style.left = view.dragCoords.x + 'px';
+		element.style.top = view.dragCoords.y + 'px';
 
 		const moveTerminal = (event: MouseEvent) => {
 			event.preventDefault();
@@ -29,7 +35,7 @@
 		dragTerminalTimer = setInterval(() => {
 			const rect = element.getBoundingClientRect();
 			const center = calculateCenter(rect);
-			dragCoordsStore.set({
+			view.dragCoords.set({
 				x: center.x,
 				y: center.y
 			});

@@ -1,7 +1,9 @@
 import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
 import { terminalHeight, type TerminalCenter } from '$lib/state/stores/view/terminals';
 import { checkPointWithinBox } from '$lib/common/utils';
-import { Direction, type Flavor, type FlavorType, type Connection } from '$lib/common/types';
+import { Direction, type FlavorType, type Connection } from '$lib/common/types';
+import { ActionType } from '$lib/state/actions';
+import type { ActionableState } from '../state';
 
 export type LiveConnectionState = {
 	// only react if this a compatible terminal
@@ -17,79 +19,85 @@ export type LiveConnectionState = {
 	attach: (targetFlavorUuid: string, existingConnectionUuid?: string) => void;
 } | null;
 
-// object describing the live cable for target terminals
-// including callback should a new connection happen in ui
-export const liveConnection: Writable<LiveConnectionState> = writable(null);
+function createLiveConnection(state: ActionableState) {
+	// object describing the live cable for target terminals
+	// including callback should a new connection happen in ui
+	const liveConnection: Writable<LiveConnectionState> = writable(null);
 
-export function anchorLiveConnection(
-	connectionUuid: string,
-	parentIngredientUuid: string,
-	anchorFlavorUuid: string,
-	anchorDirection: Direction,
-	dragDirection: Direction,
-	location: { x: number | undefined; y: number | undefined }
-) {
-	let anchorFlavor: Flavor = flavors[anchorFlavorUuid];
+	function anchorLiveConnection(
+		connectionUuid: string,
+		parentIngredientUuid: string,
+		anchorFlavorUuid: string,
+		anchorDirection: Direction,
+		dragDirection: Direction,
+		location: { x: number | undefined; y: number | undefined }
+	) {
+		let anchorFlavor = get(state.flavors).get(anchorFlavorUuid);
 
-	let attach: (targetFlavorUuid: string, existingConnectionUuid?: string) => void;
-	// when a terminal gets a mouseup, add a new connection depending on the in/out
-	if (anchorDirection == Direction.In) {
-		attach = (targetFlavorUuid: string, existingConnectionUuid?: string) => {
-			// if this terminal is already connected, just update the connection's state to the new
-			// node uuid, parameter name,
-			const connectionState: Connection = {
-				uuid: connectionUuid,
-				parentIngredientUuid,
-				inFlavorUuid: anchorFlavorUuid,
-				outFlavorUuid: targetFlavorUuid
-			};
+		if (anchorFlavor) {
+			let attach: (targetFlavorUuid: string, existingConnectionUuid?: string) => void;
+			// when a terminal gets a mouseup, add a new connection depending on the in/out
+			if (anchorDirection == Direction.In) {
+				attach = (targetFlavorUuid: string, existingConnectionUuid?: string) => {
+					// if this terminal is already connected, just update the connection's state to the new
+					// node uuid, parameter name,
+					const connectionState: Connection = {
+						uuid: connectionUuid,
+						parentIngredientUuid,
+						inFlavorUuid: anchorFlavorUuid,
+						outFlavorUuid: targetFlavorUuid
+					};
 
-			if (existingConnectionUuid) {
-				connectionState.uuid = existingConnectionUuid;
-				updateConnection(connectionState);
+					if (existingConnectionUuid) {
+						connectionState.uuid = existingConnectionUuid;
+						state.dispatch(ActionType.UpdateConnection, connectionState);
+					} else {
+						state.dispatch(ActionType.CreateConnection, connectionState);
+					}
+
+					// need to delete live connection here
+					liveConnection.set(null);
+				};
 			} else {
-				addConnection(connectionState);
+				attach = (targetFlavorUuid: string, existingConnectionUuid?: string) => {
+					const connectionState: Connection = {
+						uuid: connectionUuid,
+						parentIngredientUuid,
+						inFlavorUuid: targetFlavorUuid,
+						outFlavorUuid: anchorFlavorUuid
+					};
+
+					if (existingConnectionUuid) {
+						connectionState.uuid = existingConnectionUuid;
+
+						state.dispatch(ActionType.UpdateConnection, connectionState);
+					} else {
+						state.dispatch(ActionType.CreateConnection, connectionState);
+					}
+
+					liveConnection.set(null);
+				};
 			}
 
-			// need to delete live connection here
-			liveConnection.set(null);
-		};
-	} else {
-		attach = (targetFlavorUuid: string, existingConnectionUuid?: string) => {
-			const connectionState: Connection = {
-				uuid: connectionUuid,
+			liveConnection.set({
+				connectionUuid,
 				parentIngredientUuid,
-				inFlavorUuid: targetFlavorUuid,
-				outFlavorUuid: anchorFlavorUuid
-			};
-
-			if (existingConnectionUuid) {
-				connectionState.uuid = existingConnectionUuid;
-
-				updateConnection(connectionState);
-			} else {
-				addConnection(connectionState);
-			}
-
-			liveConnection.set(null);
-		};
+				anchorFlavorUuid,
+				flavorType: anchorFlavor.type,
+				anchorDirection,
+				dragDirection,
+				dragCoordsStore: writable(location),
+				anchorCoordsStore: writable({ x: undefined, y: undefined }),
+				attach: attach
+			});
+		}
 	}
 
-	liveConnection.set({
-		connectionUuid,
-		parentIngredientUuid,
-		anchorFlavorUuid,
-		flavorType: anchorFlavor.type,
-		anchorDirection,
-		dragDirection,
-		dragCoordsStore: writable(location),
-		anchorCoordsStore: writable({ x: undefined, y: undefined }),
-		attach: attach
-	});
+	return liveConnection;
 }
 
-export function readableDropCable(
-	liveConnection: Readable<LiveConnectionState>,
+export function createDropCable(
+	liveConnection: Writable<LiveConnectionState>,
 	terminalCenters: Readable<TerminalCenter[]>
 ) {
 	const dropCableStore = derived(

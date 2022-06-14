@@ -13,12 +13,14 @@ import type { ActionableState } from './state';
 
 // view
 
+export type Coordinates = { x: number | undefined; y: number | undefined };
+
 export interface Cable {
 	connectionUuid: string;
 	inFlavorUuid: string;
 	outFlavorUuid: string;
-	inCoords: Writable<{ x: number | undefined; y: number | undefined }>;
-	outCoords: Writable<{ x: number | undefined; y: number | undefined }>;
+	inCoords: Writable<Coordinates>;
+	outCoords: Writable<Coordinates>;
 	payload: Writable<Payload<FlavorType>>;
 }
 
@@ -33,6 +35,7 @@ export interface View {
 	cables: Cable[];
 	nodes: Node[];
 	dockedFlavors: Flavor[];
+	dragCoords: Writable<Coordinates>;
 }
 
 export type ReadableView = {
@@ -123,6 +126,7 @@ export function readableView(state: ActionableState): ReadableView {
 	return {
 		cables,
 		nodes,
-		dockedFlavors
+		dockedFlavors,
+		dragCoords
 	};
 }

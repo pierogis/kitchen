@@ -1,5 +1,6 @@
 import type { Pane } from 'tweakpane';
-import { registerImagePlugin } from './image';
+
+function registerImagePlugin(pane: Pane) {}
 
 export function registerPlugins(pane: Pane) {
 	registerImagePlugin(pane);
