@@ -5,13 +5,14 @@
 	import CursorCircle from '$lib/components/CursorCircle.svelte';
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/components/Dock.svelte';
-	import { ActionType, handleAction, type Action } from '$lib/events';
+	import { ActionType, type Action } from '$lib/state/actions';
 
-	import type { WritableState } from '$lib/stores/state';
-	import type { ReadableView } from '$lib/stores/view';
+	import type { ActionableState } from '$lib/state/stores/state';
+	import type { ReadableView } from '$lib/state/stores/view';
+	import { getContext } from 'svelte';
 
-	export let state: WritableState;
-	export let view: ReadableView;
+	const state: ActionableState = getContext('state');
+	const view: ReadableView = getContext('view');
 
 	function createIngredient(coordinates: { x: number; y: number }) {
 		const action: Action<ActionType.CreateIngredient> = {
@@ -35,7 +36,8 @@
 				]
 			}
 		};
-		handleAction(action);
+
+		state.dispatch(action);
 	}
 
 	$: nodes = view.nodes;
@@ -43,11 +45,10 @@
 
 {#each $nodes as node}
 	<IngredientComponent
-		{view}
-		ingredientUuid={node.uuid}
-		name={node.name}
+		ingredient={node.ingredient}
 		flavors={node.flavors}
-		coords={node.location}
+		callFor={node.callFor}
+		location={node.location}
 	/>
 {/each}
 

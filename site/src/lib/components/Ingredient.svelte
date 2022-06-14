@@ -1,28 +1,43 @@
 <script lang="ts">
-	import type { Flavor } from '$lib/common/types';
+	import type { CallFor, Flavor, Ingredient, Location } from '$lib/common/types';
 
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 	import Pane from '$lib/components/tweakpane/Pane.svelte';
 	import FlavorComponent from './Flavor.svelte';
 
-	import type { ReadableView } from '$lib/stores/view';
+	import type { ReadableView } from '$lib/state/stores/view';
+	import type { ActionableState } from '$lib/state/stores/state';
+	import { getContext } from 'svelte';
+	import { ActionType } from '$lib/state/actions';
 
-	export let view: ReadableView;
-	export let ingredientUuid: string;
-	export let name: string;
+	const state: ActionableState = getContext('state');
+	const view: ReadableView = getContext('view');
+
+	export let ingredient: Ingredient;
 	export let flavors: Flavor[];
-	export let coords: { x: number; y: number };
+	export let callFor: CallFor;
+	export let location: Location;
 
 	let grabTarget: HTMLElement;
 	let dragging = false;
 
 	function centerOnInitialLocationAction(element: HTMLElement) {
 		const midpoint = element.getBoundingClientRect().width / 2;
-		element.style.left = coords.x - midpoint + 'px';
+		element.style.left = location.x - midpoint + 'px';
 	}
 
 	// delete node on close button
-	function handleRemove(event: MouseEvent) {}
+	function handleRemove(event: MouseEvent) {
+		state.dispatch({
+			type: ActionType.DeleteIngredient,
+			params: {
+				ingredient,
+				flavors,
+				callFor,
+				location
+			}
+		});
+	}
 
 	const nodeHeaderSize = 12;
 
@@ -31,7 +46,7 @@
 
 <div
 	class="node no-select"
-	style="top: {coords.y - nodeHeaderSize / 2}px; --node-header-size: {nodeHeaderSize}px"
+	style="top: {location.y - nodeHeaderSize / 2}px; --node-header-size: {nodeHeaderSize}px"
 	use:centerOnInitialLocationAction
 	use:draggableAction={grabTarget}
 >
@@ -43,7 +58,7 @@
 
 		<div class="remove" on:click={handleRemove} />
 	</div>
-	<Pane let:pane title={name}>
+	<Pane let:pane title={ingredient.name}>
 		{#if pane}
 			{#each flavors as flavor}
 				<FlavorComponent
@@ -51,7 +66,7 @@
 					outCables={$cables.filter((cable) => cable.outFlavorUuid == flavor.uuid)}
 					{flavor}
 					folder={pane}
-					{ingredientUuid}
+					ingredientUuid={ingredient.uuid}
 				/>
 			{/each}
 		{/if}

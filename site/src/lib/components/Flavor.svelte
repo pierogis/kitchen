@@ -5,7 +5,7 @@
 
 	import { type Payload, type Flavor, FlavorType, Direction } from '$lib/common/types';
 
-	import type { Cable } from '$lib/stores/view';
+	import type { Cable } from '$lib/state/stores/view';
 	import Monitor from './tweakpane/Monitor.svelte';
 	import Input from './tweakpane/Input.svelte';
 	import TerminalRack from '$lib/terminals/TerminalRack.svelte';

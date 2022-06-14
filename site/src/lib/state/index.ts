@@ -1,6 +1,8 @@
 import type { Connection, Flavor, FullRecipe } from '$lib/common/types';
+import { ActionType } from './actions';
+import { createIngredient, deleteIngredient } from './actions/ingredient';
 
-import { writableState } from './state';
+import { actionableState } from './stores/state';
 
 export function storeRecipe(recipe: FullRecipe) {
 	const initialCallsFor = new Map(recipe.callsFor.map((callFor) => [callFor.uuid, callFor]));
@@ -31,7 +33,7 @@ export function storeRecipe(recipe: FullRecipe) {
 		recipe.callsFor.map((callFor) => [callFor.location.uuid, callFor.location])
 	);
 
-	const state = writableState({
+	const state = actionableState({
 		recipeUuid: recipe.uuid,
 		focusedCallForUuid: recipe.mainCallForUuid,
 		ingredients: initialIngredients,
@@ -42,6 +44,9 @@ export function storeRecipe(recipe: FullRecipe) {
 		parameters: initialParameters,
 		locations: initialLocations
 	});
+
+	state.register(ActionType.CreateIngredient, createIngredient);
+	state.register(ActionType.DeleteIngredient, deleteIngredient);
 
 	return state;
 }

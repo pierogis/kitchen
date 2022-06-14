@@ -5,12 +5,12 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
 
-	import { terminalHeight } from '$lib/stores/view/terminals';
+	import { terminalHeight } from '$lib/state/stores/view/terminals';
 	import {
 		anchorLiveConnection,
 		type LiveConnectionState,
 		liveConnection
-	} from '$lib/stores/view/live-connection';
+	} from '$lib/state/stores/view/live-connection';
 	import type { ActionDescription } from '$lib/common/actions/useActions';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 	import { calculateCenter } from '$lib/common/utils';
@@ -19,7 +19,7 @@
 	import Terminal from '$lib/terminals/Terminal.svelte';
 	import type { FlavorType } from '@prisma/client';
 	import { onMount, tick } from 'svelte';
-	import type { Cable } from '$lib/stores/view';
+	import type { Cable } from '$lib/state/stores/view';
 	import type { Connection } from '$lib/common/types';
 
 	export let direction: Direction;

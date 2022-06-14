@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	import { defaultRecipe } from './_recipe';
-	import { storeRecipe } from '$lib/stores';
+	import { storeRecipe } from '$lib/state';
 
 	/** @type {import('./index').Load} */
 	export async function load() {
@@ -16,7 +16,8 @@
 	import Pan from '$lib/components/Pan.svelte';
 	import Recipe from '$lib/components/Recipe.svelte';
 	import type { FullRecipe } from '$lib/common/types';
-	import { readableView } from '$lib/stores/view';
+	import { readableView } from '$lib/state/stores/view';
+	import { setContext } from 'svelte';
 
 	let innerWidth = 0,
 		innerHeight = 0;
@@ -24,13 +25,15 @@
 	export let recipe: FullRecipe;
 
 	const state = storeRecipe(recipe);
-
 	const view = readableView(state);
+
+	setContext('state', state);
+	setContext('view', view);
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight on:scroll|preventDefault={() => {}} />
 
-<Recipe {state} {view} />
+<Recipe />
 
 <Pan
 	width={innerWidth}

@@ -38,7 +38,7 @@ export interface CallFor {
 	uuid: string;
 	recipeUuid: string;
 	ingredientUuid: string;
-	parentCallForUuid: string;
+	parentCallForUuid?: string;
 }
 
 export interface Shader {

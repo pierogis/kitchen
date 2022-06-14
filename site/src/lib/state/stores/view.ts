@@ -1,6 +1,7 @@
 import { derived, writable, type Writable, type Readable } from 'svelte/store';
 
 import type {
+	CallFor,
 	Flavor,
 	FlavorType,
 	Ingredient,
@@ -8,7 +9,7 @@ import type {
 	Payload,
 	Location
 } from '$lib/common/types';
-import type { State, WritableState } from './state';
+import type { ActionableState } from './state';
 
 // view
 
@@ -21,7 +22,12 @@ export interface Cable {
 	payload: Writable<Payload<FlavorType>>;
 }
 
-export type Node = Ingredient & { flavors: Flavor[]; location: Location };
+export type Node = {
+	ingredient: Ingredient;
+	flavors: Flavor[];
+	location: Location;
+	callFor: CallFor;
+};
 
 export interface View {
 	cables: Cable[];
@@ -33,33 +39,35 @@ export type ReadableView = {
 	[key in keyof View]: Readable<View[key]>;
 };
 
-export function readableView(state: WritableState): ReadableView {
-	const cables: Readable<Cable[]> = derived([state], ([currentState]) =>
-		Array.from(currentState.connections.values()).map((connection) => {
-			// get the flavor corresponding to the connection's outputting, "source" flavor ->
-			const outFlavor = currentState.ingredients.get(connection.outFlavorUuid);
-			if (outFlavor) {
-				// get the parameter for this
-				const outParameter: Parameter | undefined = Array.from(
-					currentState.parameters.values()
-				).find((parameter) => parameter.flavorUuid == outFlavor.uuid);
+export function readableView(state: ActionableState): ReadableView {
+	const cables: Readable<Cable[]> = derived(
+		[state.ingredients, state.connections, state.parameters],
+		([currentIngredients, currentConnections, currentParameters]) =>
+			Array.from(currentConnections.values()).map((connection) => {
+				// get the flavor corresponding to the connection's outputting, "source" flavor ->
+				const outFlavor = currentIngredients.get(connection.outFlavorUuid);
+				if (outFlavor) {
+					// get the parameter for this
+					const outParameter: Parameter | undefined = Array.from(currentParameters.values()).find(
+						(parameter) => parameter.flavorUuid == outFlavor.uuid
+					);
 
-				if (outParameter) {
-					return {
-						connectionUuid: connection.uuid,
-						inFlavorUuid: connection.inFlavorUuid,
-						outFlavorUuid: connection.outFlavorUuid,
-						inCoords: writable({ x: undefined, y: undefined }),
-						outCoords: writable({ x: undefined, y: undefined }),
-						payload: writable(outParameter.payload)
-					};
+					if (outParameter) {
+						return {
+							connectionUuid: connection.uuid,
+							inFlavorUuid: connection.inFlavorUuid,
+							outFlavorUuid: connection.outFlavorUuid,
+							inCoords: writable({ x: undefined, y: undefined }),
+							outCoords: writable({ x: undefined, y: undefined }),
+							payload: writable(outParameter.payload)
+						};
+					} else {
+						throw `outParameter for flavor ${outFlavor.uuid} not found`;
+					}
 				} else {
-					throw `outParameter for flavor ${outFlavor.uuid} not found`;
+					throw `outFlavor ${connection.outFlavorUuid} for connection ${connection.uuid} not found`;
 				}
-			} else {
-				throw `outFlavor ${connection.outFlavorUuid} for connection ${connection.uuid} not found`;
-			}
-		})
+			})
 	);
 
 	const focusedCallsFor = derived(
@@ -71,7 +79,7 @@ export function readableView(state: WritableState): ReadableView {
 	);
 
 	// collapse the stores into a list of currently-in-view ingredients with flavors and location
-	const nodes: Readable<(Ingredient & { flavors: Flavor[]; location: Location })[]> = derived(
+	const nodes: Readable<Node[]> = derived(
 		[focusedCallsFor, state.ingredients, state.flavors, state.locations],
 		([currentFocusedCallsFor, currentIngredients, currentFlavors, currentLocations]) => {
 			return Array.from(currentFocusedCallsFor.values()).map((callFor) => {
@@ -97,7 +105,7 @@ export function readableView(state: WritableState): ReadableView {
 					(flavor) => flavor.ingredientUuid == ingredient.uuid
 				);
 
-				return { ...ingredient, flavors: ingredientFlavors, location };
+				return { ingredient, flavors: ingredientFlavors, location, callFor };
 			});
 		}
 	);

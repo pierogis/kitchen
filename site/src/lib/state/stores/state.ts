@@ -7,7 +7,10 @@ import type {
 	Shader,
 	Location
 } from '$lib/common/types';
+import type { Action, ActionHandler, ActionType } from '$lib/state/actions';
 import { writable, type Readable, derived, type Writable } from 'svelte/store';
+import { dispatcher } from '../dispatcher';
+import { readableView } from './view';
 
 export interface State {
 	recipeUuid: string;
@@ -21,17 +24,25 @@ export interface State {
 	locations: Map<string, Location>;
 }
 
-export type WritableState = {
+export type ActionableState = {
 	[key in keyof State]: Readable<State[key]>;
-} & Writable<State>;
+} & Readable<State> & {
+		register: <T extends ActionType, U extends ActionType>(
+			type: T,
+			handler: ActionHandler<T, U>
+		) => number;
+		dispatch: <T extends ActionType>(action: Action<T>) => void;
+	};
 
-export function writableState(value: any): WritableState {
+export function actionableState(value: State): ActionableState {
 	const store = writable(value);
+	const actions = dispatcher(store);
 
 	return {
-		set: store.set,
-		update: store.update,
 		subscribe: store.subscribe,
+
+		register: actions.register,
+		dispatch: actions.dispatch,
 
 		recipeUuid: derived(store, (currentState) => {
 			return currentState.recipeUuid;

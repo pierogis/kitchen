@@ -1,7 +1,7 @@
 import { derived, writable, type Writable } from 'svelte/store';
 
 import { Direction } from '$lib/common/types';
-import type { WritableState } from '$lib/stores/state';
+import type { WritableState } from '$lib/state/stores/state';
 
 export const terminalHeight = 10;
 
@@ -12,7 +12,7 @@ export type TerminalCenter = {
 	coords: Writable<{ x: number | undefined; y: number | undefined }>;
 };
 
-function asd(state: WritableState) {
+function terminals(state: WritableState) {
 	const terminalCenters = derived(
 		[state.ingredients, state.connections],
 		([currentIngredients, currentConnections]) => {

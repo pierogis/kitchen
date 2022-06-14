@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { calculateCenter } from '../common/utils';
-	import type { LiveConnectionState } from '../stores/view/live-connection';
-	import { terminalHeight } from '$lib/stores/view/terminals';
+	import type { LiveConnectionState } from '../state/stores/view/live-connection';
+	import { terminalHeight } from '$lib/state/stores/view/terminals';
 
 	import Cable from '$lib/components/Cable.svelte';
 	import Terminal from '$lib/terminals/Terminal.svelte';

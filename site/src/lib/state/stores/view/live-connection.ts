@@ -1,5 +1,5 @@
 import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
-import { terminalHeight, type TerminalCenter } from '$lib/stores/view/terminals';
+import { terminalHeight, type TerminalCenter } from '$lib/state/stores/view/terminals';
 import { checkPointWithinBox } from '$lib/common/utils';
 import { Direction, type Flavor, type FlavorType, type Connection } from '$lib/common/types';
 
