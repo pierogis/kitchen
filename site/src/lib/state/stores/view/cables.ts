@@ -32,7 +32,7 @@ export function createCables(
 	const cables: Readable<Cable[]> = derived(
 		[focusedConnections, state.parameters, state.flavors, liveConnection],
 		([currentFocusedConnections, currentParameters, currentFlavors, currentLiveConnection]) => {
-			let cables: Cable[] = currentFocusedConnections.map((connection) => {
+			const cables: Cable[] = currentFocusedConnections.map((connection) => {
 				// get the parameter corresponding to the connection's outputting, "source" flavor ->
 				const outParameter = Array.from(currentParameters.values()).find(
 					(parameter) => parameter.flavorUuid == connection.outFlavorUuid

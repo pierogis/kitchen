@@ -5,9 +5,9 @@ import type { Writable } from 'svelte/store';
 
 export function dispatcher(recipeState: Writable<FlatRecipe>) {
 	let undoActions: Action<ActionType>[][] = [];
-	let redoActions: Action<ActionType>[][] = [];
+	const redoActions: Action<ActionType>[][] = [];
 
-	let lastId: number = 1;
+	let lastId = 1;
 	const handlers: {
 		[key: string]: {
 			type: ActionType;
@@ -18,15 +18,15 @@ export function dispatcher(recipeState: Writable<FlatRecipe>) {
 	function handleAction<T extends ActionType>(action: Action<T>) {
 		const newUndoActions: Action<ActionType>[] = [];
 		const currentActionHandlers: ActionHandler<ActionType, ActionType>[] = [];
-		for (let id in handlers) {
+		for (const id in handlers) {
 			if (handlers[id].type == action.type) {
 				currentActionHandlers.push(handlers[id].handler);
 			}
 		}
 		if (currentActionHandlers.length > 0) {
 			recipeState.update((currentState) => {
-				for (let handler of currentActionHandlers) {
-					let { state: updatedState, undoAction } = handler(currentState, action.params);
+				for (const handler of currentActionHandlers) {
+					const { state: updatedState, undoAction } = handler(currentState, action.params);
 					currentState = updatedState;
 					newUndoActions.push(undoAction);
 				}

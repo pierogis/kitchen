@@ -89,8 +89,8 @@ export function drawOnTexture(
 	program: WebGLProgram,
 	shaderParameters: Map<string, Parameter>
 ) {
-	let vertices: number[] = [-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0];
-	let vertex_buffer = gl.createBuffer();
+	const vertices: number[] = [-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0];
+	const vertex_buffer = gl.createBuffer();
 	const view = new Float32Array(vertices);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
@@ -99,13 +99,13 @@ export function drawOnTexture(
 	gl.useProgram(program);
 
 	// Attach the position vector as an attribute for the GL gl.
-	let position = gl.getAttribLocation(program, 'a_position');
+	const position = gl.getAttribLocation(program, 'a_position');
 	gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(position);
 
 	for (const [parameterName, _parameter] of shaderParameters) {
 		// Attach the color as a uniform for the GL gl.
-		let uniform = gl.getUniformLocation(program, `u_${parameterName}`);
+		const uniform = gl.getUniformLocation(program, `u_${parameterName}`);
 		// parameter.payload
 		// switch on parameter.type to determine uniform3f, texture, etc
 		gl.uniform3f(uniform, 255, 223, 211);
@@ -244,7 +244,7 @@ export function draw(
 	// }
 
 	// get the main ingredient that we are cooking
-	let mainIngredient = ingredients.get(mainIngredientUuid);
+	const mainIngredient = ingredients.get(mainIngredientUuid);
 
 	if (mainIngredient) {
 		// find image out flavors on the main ingredient
@@ -254,7 +254,7 @@ export function draw(
 				Direction.Out in flavor.directions &&
 				flavor.ingredientUuid == mainIngredientUuid
 			) {
-				let texture = createTexture(gl);
+				const texture = createTexture(gl);
 				calculateFlavor(gl, flavor.uuid, connections, knownParameters, shaders, flavors, programs);
 
 				drawCanvasFramebuffer(gl, texture);
