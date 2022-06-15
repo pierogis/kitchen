@@ -1,7 +1,7 @@
 import { get, writable, type Writable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
-import { Direction, type Flavor } from '$lib/common/types';
+import { Direction, FlavorType, type Flavor } from '$lib/common/types';
 
 import type { Coordinates } from '.';
 import type { Cable } from './cables';
@@ -15,6 +15,7 @@ export type Terminal = {
 	connectionUuid: string;
 	coordinates: Writable<Coordinates | undefined>;
 	cabled: boolean;
+	flavorType: FlavorType;
 };
 
 // terminals
@@ -67,7 +68,8 @@ export function createTerminals(
 		direction: Direction.Out,
 		connectionUuid: uuid(),
 		coordinates: writable(),
-		cabled: false
+		cabled: false,
+		flavorType: flavor.type
 	});
 
 	// maintain terminal for a disconnected flavor
@@ -78,7 +80,8 @@ export function createTerminals(
 			direction: currentLiveConnection.dragDirection,
 			connectionUuid: currentLiveConnection.connectionUuid,
 			coordinates: writable(),
-			cabled: false
+			cabled: false,
+			flavorType: currentLiveConnection.flavorType
 		});
 	}
 

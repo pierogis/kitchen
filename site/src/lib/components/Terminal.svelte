@@ -73,11 +73,42 @@
 			}
 		};
 	}
+
+	function dragTerminalAction(element: HTMLElement, live: boolean) {
+		let unsub: () => void;
+		if (live) {
+			unsub = viewState.cursorCoordinates.subscribe((currentCursorCoordinates) => {
+				element.style.left = currentCursorCoordinates.x + 'px';
+				element.style.top = currentCursorCoordinates.y + 'px';
+			});
+
+			console.log('drag');
+		}
+
+		// update that cable has been dropped
+		// const onMouseUp = (event: MouseEvent) => {
+		// 	$dropCable({ x: event.pageX, y: event.pageY });
+		// 	// this is causing the live connection attach callback to disappear
+		// 	window.removeEventListener('mouseup', onMouseUp);
+		// };
+		// window.addEventListener('mouseup', onMouseUp);
+
+		return {
+			update(newLive: boolean) {
+				if (unsub) unsub();
+				live = newLive;
+			},
+			destroy() {
+				if (unsub) unsub();
+			}
+		};
+	}
 </script>
 
 <div
 	use:updateCoordsAction
 	use:novelGrabAction
+	use:dragTerminalAction={live}
 	class="terminal"
 	class:out={terminal.direction == Direction.Out}
 	class:in={terminal.direction == Direction.In}

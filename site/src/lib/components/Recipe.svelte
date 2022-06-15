@@ -17,13 +17,13 @@
 	import CableComponent from './Cable.svelte';
 	import LiveTerminal from './LiveTerminal.svelte';
 
-	import type { LiveConnectionState } from '$lib/state/stores/view/liveConnection';
-	import type { Coordinates } from '$lib/state/stores/view';
+	import type { Coordinates, Terminal } from '$lib/state/stores/view';
 
 	const recipeState: RecipeState = getContext('recipe');
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
-	export let liveConnection: LiveConnectionState;
+	export let liveTerminal: Readable<Terminal | undefined>;
+
 	export let cursorCoordinates: Readable<Coordinates>;
 
 	function createIngredient(coordinates: { x: number; y: number }) {
@@ -51,28 +51,6 @@
 
 		recipeState.dispatch(action);
 	}
-
-	const liveTerminal = derived(
-		[cables, liveConnection],
-		([currentCables, currentLiveConnection]) => {
-			if (currentLiveConnection) {
-				const liveCable = currentCables.find((cable) => {
-					cable.connectionUuid == currentLiveConnection.connectionUuid;
-				});
-				if (liveCable) {
-					return {
-						dragDirection: currentLiveConnection.dragDirection,
-						flavorType: currentLiveConnection.flavorType,
-						cableCoordinates:
-							currentLiveConnection.dragDirection == Direction.In
-								? liveCable.inCoordinates
-								: liveCable.outCoordinates,
-						connectionUuid: currentLiveConnection.connectionUuid
-					};
-				}
-			}
-		}
-	);
 </script>
 
 {#each $nodes as node (node.callFor.uuid)}
@@ -91,13 +69,13 @@
 {#if $liveTerminal}
 	<LiveTerminal
 		terminal={{
-			coordinates: $liveTerminal.cableCoordinates,
+			coordinates: $liveTerminal.coordinates,
 			flavorUuid: undefined,
-			direction: $liveTerminal.dragDirection,
+			direction: $liveTerminal.direction,
 			cabled: true,
-			connectionUuid: $liveTerminal.connectionUuid
+			connectionUuid: $liveTerminal.connectionUuid,
+			flavorType: $liveTerminal.flavorType
 		}}
-		flavorType={$liveTerminal.flavorType}
 		{cursorCoordinates}
 	/>
 {/if}

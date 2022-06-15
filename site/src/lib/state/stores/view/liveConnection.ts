@@ -71,12 +71,15 @@ export function createLiveConnection(
 		anchorDirection: Direction,
 		dragDirection: Direction
 	) {
+		// find flavor that has gotten a novel grab
 		const anchorFlavor = get(recipeState.flavors).get(anchorFlavorUuid);
 		if (anchorFlavor) {
+			// find parameters of flavor, if any
 			const anchorPayload = Array.from(get(recipeState.parameters).values()).find(
 				(parameter) => parameter.flavorUuid == anchorFlavor?.uuid
 			);
 
+			// set store with data on this new connection
 			store.set({
 				connectionUuid: connectionUuid,
 				flavorType: anchorFlavor.type,

@@ -29,14 +29,23 @@
 
 	setContext('recipe', recipeState);
 	setContext('view', viewState);
+
+	const handleMouseMove = (ev: MouseEvent) => {
+		viewState.cursorCoordinates.set({ x: ev.clientX, y: ev.clientY });
+	};
 </script>
 
-<svelte:window bind:innerWidth bind:innerHeight on:scroll|preventDefault={() => {}} />
+<svelte:window
+	bind:innerWidth
+	bind:innerHeight
+	on:scroll|preventDefault={() => {}}
+	on:mousemove={handleMouseMove}
+/>
 
 <Recipe
 	nodes={viewState.nodes}
 	cables={viewState.cables}
-	liveConnection={viewState.liveConnection}
+	liveTerminal={viewState.liveTerminal}
 	cursorCoordinates={viewState.cursorCoordinates}
 />
 

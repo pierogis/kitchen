@@ -1,10 +1,11 @@
 import { derived, writable, type Writable, type Readable } from 'svelte/store';
 
-import type { Flavor } from '$lib/common/types';
+import { Direction, type Flavor } from '$lib/common/types';
 import type { RecipeState } from '$lib/state/stores/recipe';
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
 import { createCables, type Cable } from './cables';
 import { createNodes, type Node } from './nodes';
+import type { Terminal } from './terminals';
 
 export type Coordinates = { x: number; y: number };
 
@@ -14,6 +15,7 @@ export interface ViewState {
 	dockedFlavors: Readable<Flavor[]>;
 	cursorCoordinates: Writable<Coordinates>;
 	liveConnection: LiveConnectionState;
+	liveTerminal: Readable<Terminal | undefined>;
 }
 
 export function readableViewState(recipeState: RecipeState): ViewState {
@@ -66,16 +68,36 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	);
 
-	// const dragCoords = derived(
-	// 	liveConnection,
-	// 	(currentLiveConnection) => currentLiveConnection?.dragCoordsStore
-	// );
+	const liveTerminal: Readable<Terminal | undefined> = derived(
+		[cables, liveConnection],
+		([currentCables, currentLiveConnection]) => {
+			if (currentLiveConnection) {
+				const liveCable = currentCables.find(
+					(cable) => cable.connectionUuid == currentLiveConnection.connectionUuid
+				);
+
+				if (liveCable) {
+					return {
+						direction: currentLiveConnection.dragDirection,
+						flavorType: currentLiveConnection.flavorType,
+						coordinates:
+							currentLiveConnection.dragDirection == Direction.In
+								? liveCable.inCoordinates
+								: liveCable.outCoordinates,
+						connectionUuid: currentLiveConnection.connectionUuid,
+						cabled: true
+					};
+				}
+			}
+		}
+	);
 
 	return {
 		cables,
 		nodes,
 		dockedFlavors,
 		cursorCoordinates,
-		liveConnection
+		liveConnection,
+		liveTerminal
 	};
 }

@@ -66,7 +66,7 @@ export function createCables(
 			});
 
 			if (currentLiveConnection) {
-				cables.push({
+				const liveCable: Cable = {
 					connectionUuid: currentLiveConnection.connectionUuid,
 					flavorType: currentLiveConnection.flavorType,
 					inFlavorUuid:
@@ -80,7 +80,8 @@ export function createCables(
 					inCoordinates: writable(undefined),
 					outCoordinates: writable(undefined),
 					payload: writable({ type: currentLiveConnection.flavorType })
-				});
+				};
+				cables.push(liveCable);
 			}
 
 			return cables;
