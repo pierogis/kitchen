@@ -1,4 +1,4 @@
-import { get, writable, type Readable, type Writable } from 'svelte/store';
+import { get, writable, type Writable } from 'svelte/store';
 
 export type WritableArray<T> = Writable<T[]> & {
 	push: (value: T) => void;

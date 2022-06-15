@@ -1,26 +1,24 @@
 import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
 
-import { checkPointWithinBox } from '$lib/common/utils';
 import { Direction, type FlavorType, type Ingredient, type Payload } from '$lib/common/types';
 import { ActionType } from '$lib/state/actions';
 
 import type { RecipeState } from '$lib/state/stores/recipe';
-import type { Coordinates } from '.';
-import type { Cable } from './cables';
+import type { Terminal } from '.';
 
-export type LiveConnectionState = Readable<
-	| {
-			connectionUuid: string;
-			anchorDirection: Direction;
-			dragDirection: Direction;
-			flavorType: FlavorType;
-			anchorFlavorUuid: string;
-			disconnectedFlavorUuid: string | undefined;
-			payload: Payload<FlavorType> | undefined;
-			connect: (targetFlavorUuid: string, existingConnectionUuid?: string) => void;
-	  }
-	| undefined
-> & {
+export type LiveConnection = {
+	connectionUuid: string;
+	anchorDirection: Direction;
+	dragDirection: Direction;
+	flavorType: FlavorType;
+	anchorFlavorUuid: string;
+	disconnectedFlavorUuid: string | undefined;
+	payload: Payload<FlavorType> | undefined;
+	connect: (targetFlavorUuid: string, existingConnectionUuid?: string) => void;
+	drop: () => void;
+};
+
+export type LiveConnectionState = Readable<LiveConnection | undefined> & {
 	// call this when releasing the live terminal, if this live cable is compatible
 	anchor: (
 		connectionUuid: string,
@@ -28,41 +26,21 @@ export type LiveConnectionState = Readable<
 		anchorDirection: Direction,
 		dragDirection: Direction
 	) => void;
-	disconnect: (cable: Cable, grabbedDirection: Direction) => void;
+	disconnect: (terminal: Terminal) => void;
 };
 
 export function createLiveConnection(
 	recipeState: RecipeState,
-	focusedIngredient: Readable<Ingredient>,
-	cursorCoordinates: Readable<Coordinates | undefined>
+	focusedIngredient: Readable<Ingredient>
 ): LiveConnectionState {
 	// object describing the live cable for target terminals
 	// including callback should a new connection happen in ui
 
-	const store: Writable<
-		| {
-				connectionUuid: string;
-				anchorDirection: Direction;
-				dragDirection: Direction;
-				flavorType: FlavorType;
-				anchorFlavorUuid: string;
-				disconnectedFlavorUuid: string | undefined;
-				payload: Payload<FlavorType> | undefined;
-				connect: (targetFlavorUuid: string, existingConnectionUuid?: string) => void;
-		  }
-		| undefined
-	> = writable();
+	const store: Writable<LiveConnection | undefined> = writable();
 
 	const currentFocusedIngredientUuid = derived(
 		focusedIngredient,
 		(currentFocusedIngredient) => currentFocusedIngredient.uuid
-	);
-
-	const dragCoordinates: Readable<Coordinates | undefined> = derived(
-		[cursorCoordinates],
-		([currentCursorCoordinates]) => {
-			return currentCursorCoordinates;
-		}
 	);
 
 	function anchor(
@@ -71,6 +49,11 @@ export function createLiveConnection(
 		anchorDirection: Direction,
 		dragDirection: Direction
 	) {
+		const liveConnection = get(store);
+
+		if (liveConnection) {
+			throw 'There is already a live connection';
+		}
 		// find flavor that has gotten a novel grab
 		const anchorFlavor = get(recipeState.flavors).get(anchorFlavorUuid);
 		if (anchorFlavor) {
@@ -90,29 +73,34 @@ export function createLiveConnection(
 				disconnectedFlavorUuid: undefined,
 
 				payload: anchorPayload?.payload,
+				drop,
 				connect
 			});
 		}
 	}
 
-	function disconnect(cable: Cable, grabbedDirection: Direction) {
-		const anchorFlavorUuid =
-			grabbedDirection == Direction.In ? cable.outFlavorUuid : cable.inFlavorUuid;
-		if (anchorFlavorUuid) {
-			store.set({
-				connectionUuid: cable.connectionUuid,
-				flavorType: cable.flavorType,
-				anchorDirection: grabbedDirection == Direction.In ? Direction.Out : Direction.In,
-				dragDirection: grabbedDirection,
+	function disconnect(terminal: Terminal) {
+		const liveConnection = get(store);
 
-				anchorFlavorUuid,
+		if (liveConnection) {
+			throw 'There is already a live connection';
+		}
+		if (terminal.flavorUuid) {
+			store.set({
+				connectionUuid: terminal.connectionUuid,
+				flavorType: terminal.flavorType,
+				anchorDirection: terminal.direction,
+				dragDirection: terminal.direction == Direction.In ? Direction.Out : Direction.In,
+
+				anchorFlavorUuid: terminal.flavorUuid,
 				disconnectedFlavorUuid: undefined,
 
 				payload: undefined,
+				drop,
 				connect
 			});
 		} else {
-			throw `Cable ${cable.connectionUuid} does not have anchorFlavorUuid`;
+			throw `Cable ${terminal.connectionUuid} does not have anchorFlavorUuid`;
 		}
 	}
 
@@ -132,7 +120,7 @@ export function createLiveConnection(
 			recipeState.dispatch({
 				type: actionType,
 				params: {
-					connectionUuid: liveConnection.connectionUuid,
+					connectionUuid,
 					parentIngredientUuid: get(currentFocusedIngredientUuid),
 					inFlavorUuid:
 						liveConnection.anchorDirection == Direction.In
@@ -146,6 +134,18 @@ export function createLiveConnection(
 			});
 
 			store.set(undefined);
+		} else {
+			throw 'There is no live connection';
+		}
+	}
+
+	function drop() {
+		const liveConnection = get(store);
+
+		if (liveConnection) {
+			store.set(undefined);
+		} else {
+			throw 'There is no live connection';
 		}
 	}
 

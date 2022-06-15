@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { derived, get, type Readable } from 'svelte/store';
+	import { get, type Readable } from 'svelte/store';
 
 	import { Direction, FlavorType } from '$lib/common/types';
 	import { ActionType, type Action } from '$lib/state/actions';
@@ -17,14 +17,12 @@
 	import CableComponent from './Cable.svelte';
 	import LiveTerminal from './LiveTerminal.svelte';
 
-	import type { Coordinates, Terminal } from '$lib/state/stores/view';
+	import type { Terminal } from '$lib/state/stores/view';
 
 	const recipeState: RecipeState = getContext('recipe');
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
 	export let liveTerminal: Readable<Terminal | undefined>;
-
-	export let cursorCoordinates: Readable<Coordinates>;
 
 	function createIngredient(coordinates: { x: number; y: number }) {
 		const action: Action<ActionType.CreateIngredient> = {
@@ -76,7 +74,6 @@
 			connectionUuid: $liveTerminal.connectionUuid,
 			flavorType: $liveTerminal.flavorType
 		}}
-		{cursorCoordinates}
 	/>
 {/if}
 

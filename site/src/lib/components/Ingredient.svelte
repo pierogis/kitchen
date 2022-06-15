@@ -29,7 +29,7 @@
 	}
 
 	// delete node on close button
-	function handleRemove(event: MouseEvent) {
+	function handleRemove(_event: MouseEvent) {
 		recipeState.dispatch({
 			type: ActionType.DeleteIngredient,
 			params: {

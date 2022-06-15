@@ -1,10 +1,10 @@
-export function draggableAction(element: HTMLElement, handle?) {
+export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
 	let pos1 = 0,
 		pos2 = 0,
 		pos3 = 0,
 		pos4 = 0;
 
-	let grabTarget;
+	let grabTarget: HTMLElement;
 
 	if (handle) {
 		grabTarget = handle;

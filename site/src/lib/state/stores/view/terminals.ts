@@ -29,7 +29,7 @@ export function createTerminals(
 	liveConnection: LiveConnectionState
 ): Terminal[] {
 	let inTerminalUsed = false;
-	const terminals = cables.flatMap((cable) => {
+	const terminals: Terminal[] = cables.flatMap((cable) => {
 		const terminals = [];
 		if (cable.inFlavorUuid == flavor.uuid) {
 			inTerminalUsed = true;
@@ -38,7 +38,8 @@ export function createTerminals(
 				direction: Direction.In,
 				connectionUuid: cable.connectionUuid,
 				coordinates: cable.inCoordinates,
-				cabled: true
+				cabled: true,
+				flavorType: flavor.type
 			});
 		} else if (cable.outFlavorUuid == flavor.uuid) {
 			terminals.push({
@@ -46,7 +47,8 @@ export function createTerminals(
 				direction: Direction.Out,
 				connectionUuid: cable.connectionUuid,
 				coordinates: cable.outCoordinates,
-				cabled: true
+				cabled: true,
+				flavorType: flavor.type
 			});
 		}
 
@@ -60,7 +62,8 @@ export function createTerminals(
 			direction: Direction.In,
 			connectionUuid: uuid(),
 			coordinates: writable(),
-			cabled: false
+			cabled: false,
+			flavorType: flavor.type
 		});
 	}
 	terminals.push({

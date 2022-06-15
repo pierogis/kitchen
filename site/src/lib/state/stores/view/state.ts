@@ -50,7 +50,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 
 	const cursorCoordinates = writable({ x: 0, y: 0 });
 
-	const liveConnection = createLiveConnection(recipeState, focusedIngredient, cursorCoordinates);
+	const liveConnection = createLiveConnection(recipeState, focusedIngredient);
 
 	// create representations of connections in the current view
 	const cables = createCables(recipeState, focusedIngredient, liveConnection);

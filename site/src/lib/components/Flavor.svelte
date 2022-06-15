@@ -2,7 +2,7 @@
 	import { get, writable, type Writable } from 'svelte/store';
 	import { getContext } from 'svelte';
 
-	import type { FolderApi, TpChangeEvent } from 'tweakpane';
+	import type { FolderApi } from 'tweakpane';
 
 	import { type Payload, type Flavor, FlavorType, Direction } from '$lib/common/types';
 
@@ -86,9 +86,6 @@
 			<TerminalRack
 				parentElement={monitorElement}
 				terminals={direction == Direction.In ? inTerminals : outTerminals}
-				flavorUuid={flavor.uuid}
-				flavorName={flavor.name}
-				flavorType={flavor.type}
 				{direction}
 			/>
 		{/each}
@@ -99,9 +96,6 @@
 			<TerminalRack
 				parentElement={inputElement}
 				terminals={direction == Direction.In ? inTerminals : outTerminals}
-				flavorUuid={flavor.uuid}
-				flavorName={flavor.name}
-				flavorType={flavor.type}
 				{direction}
 			/>
 		{/each}

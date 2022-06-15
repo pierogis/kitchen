@@ -42,12 +42,7 @@
 	on:mousemove={handleMouseMove}
 />
 
-<Recipe
-	nodes={viewState.nodes}
-	cables={viewState.cables}
-	liveTerminal={viewState.liveTerminal}
-	cursorCoordinates={viewState.cursorCoordinates}
-/>
+<Recipe nodes={viewState.nodes} cables={viewState.cables} liveTerminal={viewState.liveTerminal} />
 
 <Pan
 	width={innerWidth}

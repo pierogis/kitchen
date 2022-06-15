@@ -19,7 +19,7 @@ export function useActions(node: HTMLElement | SVGElement, actions: ActionDescri
 	} | void)[] = [];
 
 	if (actions) {
-		actions.forEach((action: ActionDescription<any>, i: number) => {
+		actions.forEach((action: ActionDescription<any>) => {
 			if (action.params) {
 				actionHandles.push(action.action(node as HTMLElement & SVGElement, action.params));
 			} else {
@@ -41,7 +41,7 @@ export function useActions(node: HTMLElement | SVGElement, actions: ActionDescri
 
 				actionHandles = [];
 
-				newActions.forEach((action: ActionDescription<any>, i: number) => {
+				newActions.forEach((action: ActionDescription<any>) => {
 					if (action.params) {
 						actionHandles.push(action.action(node as HTMLElement & SVGElement, action.params));
 					} else {

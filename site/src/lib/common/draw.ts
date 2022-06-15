@@ -103,7 +103,7 @@ export function drawOnTexture(
 	gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(position);
 
-	for (const [parameterName, parameter] of shaderParameters) {
+	for (const [parameterName, _parameter] of shaderParameters) {
 		// Attach the color as a uniform for the GL gl.
 		let uniform = gl.getUniformLocation(program, `u_${parameterName}`);
 		// parameter.payload

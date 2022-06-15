@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 
-	import { Direction, FlavorType } from '$lib/common/types';
+	import { Direction } from '$lib/common/types';
 	import { calculateCenter } from '$lib/common/utils';
 
-	import type { ViewState } from '$lib/state/stores/view';
+	import type { Coordinates, LiveConnection, ViewState } from '$lib/state/stores/view';
 	import { viewStateContextKey } from '$lib/state';
 	import type { Terminal } from '$lib/state/stores/view/terminals';
+	import { get, writable } from 'svelte/store';
+	import { tweened, type Tweened } from 'svelte/motion';
 
 	export let terminal: Terminal;
-
-	export let flavorType: FlavorType;
 
 	export let live = false;
 	export let expanded: boolean;
@@ -45,70 +45,162 @@
 
 	// grabbing novel terminal should start relaying the coords of the terminal
 	// and add event listeners for release
-	function novelGrabAction(element: HTMLElement) {
-		const handleMouseUp = (event: MouseEvent) => {
-			window.removeEventListener('mouseup', handleMouseUp);
-			element.style.cursor = '';
-		};
-
-		const handleNovelGrab = (event: MouseEvent) => {
+	function grabAction(
+		element: HTMLElement,
+		params: { cabled: boolean; liveConnection: LiveConnection | undefined }
+	) {
+		const handleMouseDown = (event: MouseEvent) => {
 			if (event.button == 0 && terminal.flavorUuid) {
 				const dragDirection = terminal.direction == Direction.In ? Direction.Out : Direction.In;
-				viewState.liveConnection.anchor(
-					terminal.connectionUuid,
-					terminal.flavorUuid,
-					terminal.direction,
-					dragDirection
-				);
-				window.addEventListener('mouseup', handleMouseUp);
+				if (params.cabled) {
+					viewState.liveConnection.disconnect(terminal);
+				} else {
+					viewState.liveConnection.anchor(
+						terminal.connectionUuid,
+						terminal.flavorUuid,
+						terminal.direction,
+						dragDirection
+					);
+				}
+
 				element.style.cursor = 'grabbing';
 			}
 		};
 
-		element.addEventListener('mousedown', handleNovelGrab);
-
-		return {
-			destroy() {
-				element.removeEventListener('mousedown', handleNovelGrab);
-			}
-		};
-	}
-
-	function dragTerminalAction(element: HTMLElement, live: boolean) {
-		let unsub: () => void;
-		if (live) {
-			unsub = viewState.cursorCoordinates.subscribe((currentCursorCoordinates) => {
-				element.style.left = currentCursorCoordinates.x + 'px';
-				element.style.top = currentCursorCoordinates.y + 'px';
-			});
-
-			console.log('drag');
+		if (!params.liveConnection) {
+			element.addEventListener('mousedown', handleMouseDown);
 		}
 
-		// update that cable has been dropped
-		// const onMouseUp = (event: MouseEvent) => {
-		// 	$dropCable({ x: event.pageX, y: event.pageY });
-		// 	// this is causing the live connection attach callback to disappear
-		// 	window.removeEventListener('mouseup', onMouseUp);
-		// };
-		// window.addEventListener('mouseup', onMouseUp);
-
 		return {
-			update(newLive: boolean) {
-				if (unsub) unsub();
-				live = newLive;
+			update(newParams: { cabled: boolean; liveConnection: LiveConnection | undefined }) {
+				params = newParams;
+				if (params.liveConnection) {
+					element.removeEventListener('mousedown', handleMouseDown);
+				} else {
+					element.addEventListener('mousedown', handleMouseDown);
+				}
 			},
 			destroy() {
-				if (unsub) unsub();
+				element.removeEventListener('mousedown', handleMouseDown);
 			}
 		};
 	}
+
+	const tweenDuration = 150;
+
+	const tween: Tweened<Coordinates> = tweened(get(terminal.coordinates), {
+		duration: tweenDuration
+	});
+	const followCursor = writable(live);
+
+	function dragTerminalAction(element: HTMLElement, followCursor: boolean) {
+		let cursorUnsub: (() => void) | null = null;
+		const handleFollowOrder = () => {
+			if (followCursor) {
+				if (cursorUnsub) cursorUnsub();
+				cursorUnsub = viewState.cursorCoordinates.subscribe((currentCursorCoordinates) => {
+					tween.set(currentCursorCoordinates);
+				});
+			} else {
+				cursorUnsub = null;
+			}
+		};
+
+		let tweenUnsub = tween.subscribe((currentTween) => {
+			if (currentTween) {
+				element.style.left = currentTween.x + 'px';
+				element.style.top = currentTween.y + 'px';
+			}
+		});
+
+		handleFollowOrder();
+
+		return {
+			update(newFollowCursor: boolean) {
+				followCursor = newFollowCursor;
+
+				handleFollowOrder();
+			},
+			destroy() {
+				if (cursorUnsub) cursorUnsub();
+				if (tweenUnsub) tweenUnsub();
+			}
+		};
+	}
+
+	function dropTerminalAction(
+		element: HTMLElement,
+		params: { terminal: Terminal; liveConnection: LiveConnection | undefined }
+	) {
+		const handleMouseDown = (event: MouseEvent) => {
+			// ensure left click
+			if (event.button == 0) {
+				element.style.cursor = '';
+
+				if (params.liveConnection) {
+					// for live terminal
+					if (live || !params.terminal.flavorUuid) {
+						// drop the terminal and slinky back to anchor
+						$followCursor = false;
+						const liveCable = get(viewState.cables).find(
+							(cable) => cable.connectionUuid == params.liveConnection?.connectionUuid
+						);
+
+						if (liveCable) {
+							const anchorCoordinates = get(
+								params.liveConnection.anchorDirection == Direction.In
+									? liveCable.inCoordinates
+									: liveCable.outCoordinates
+							);
+							if (anchorCoordinates) {
+								// set tween controlling position in
+								tween.set(anchorCoordinates);
+							}
+						}
+
+						setTimeout(() => {
+							if (params.liveConnection) {
+								params.liveConnection.drop();
+							}
+							$followCursor = true;
+						}, tweenDuration);
+					} else {
+						params.liveConnection.connect(
+							params.terminal.flavorUuid,
+							params.terminal.cabled ? terminal.connectionUuid : undefined
+						);
+					}
+				}
+			}
+		};
+
+		if (params.liveConnection) {
+			element.addEventListener('mousedown', handleMouseDown);
+		}
+
+		return {
+			update(newParams: { terminal: Terminal; liveConnection: LiveConnection | undefined }) {
+				params = newParams;
+				if (params.liveConnection) {
+					element.addEventListener('mousedown', handleMouseDown);
+				} else {
+					element.removeEventListener('mousedown', handleMouseDown);
+				}
+			},
+			destroy() {
+				element.removeEventListener('mousedown', handleMouseDown);
+			}
+		};
+	}
+
+	$: liveConnection = get(viewState.liveConnection);
 </script>
 
 <div
 	use:updateCoordsAction
-	use:novelGrabAction
-	use:dragTerminalAction={live}
+	use:grabAction={{ cabled: terminal.cabled, liveConnection }}
+	use:dragTerminalAction={$followCursor}
+	use:dropTerminalAction={{ terminal, liveConnection }}
 	class="terminal"
 	class:out={terminal.direction == Direction.Out}
 	class:in={terminal.direction == Direction.In}

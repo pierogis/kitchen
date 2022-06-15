@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Coordinates } from '$lib/state/stores/view';
-
 	import { derived, type Readable } from 'svelte/store';
+
+	import type { Coordinates } from '$lib/state/stores/view';
 
 	export let inCoordinates: Readable<Coordinates | undefined>;
 	export let outCoordinates: Readable<Coordinates | undefined>;
@@ -78,7 +78,7 @@
 
 	const pathString = derived(pathDescription, (currentPathDescription) => {
 		if (currentPathDescription) {
-			const { startY, endY, width, height } = currentPathDescription;
+			const { startY, endY, width, height } = { ...currentPathDescription };
 
 			// making bezier with 4 points (start, [0, height/2], [width, height/2], end)
 			return `M ${0} ${startY} C ${0} ${height / 2}, ${width} ${height / 2}, ${width} ${endY}`;
