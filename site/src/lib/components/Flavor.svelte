@@ -15,17 +15,15 @@
 	export let flavor: Flavor;
 	export let inCable: Cable | undefined = undefined;
 	export let outCables: Cable[];
-	export let terminals: Readable<Terminal[]>;
+	export let terminals: Terminal[];
 
-	const splitTerminals = derived(terminals, (currentTerminals) => {
-		let inTerminals: Terminal[] = [];
-		let outTerminals: Terminal[] = [];
-		currentTerminals.forEach((terminal) =>
+	let inTerminals: Terminal[] = [];
+	let outTerminals: Terminal[] = [];
+	$: {
+		terminals.forEach((terminal) =>
 			terminal.direction == Direction.In ? inTerminals.push(terminal) : outTerminals.push(terminal)
 		);
-		return { inTerminals, outTerminals };
-	});
-	let { inTerminals, outTerminals } = $splitTerminals;
+	}
 
 	export let folder: FolderApi;
 

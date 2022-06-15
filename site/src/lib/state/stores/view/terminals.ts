@@ -1,8 +1,6 @@
-import { derived, writable, type Writable, type Readable } from 'svelte/store';
+import type { Writable } from 'svelte/store';
 
 import { Direction, type Flavor } from '$lib/common/types';
-import type { RecipeState } from '$lib/state/stores/recipe';
-import type { Node } from '$lib/state/stores/view/nodes';
 import type { Cable } from '$lib/state/stores/view/cables';
 import type { Coordinates } from '../view';
 
@@ -20,31 +18,29 @@ export type Terminal = {
 // based on visible cables (via connections) and flavors (terminals not filled by cable)
 
 // does it make sense to make this Map<string, Terminal[]> (key by flavor uuid) or Terminal[]
-export function createTerminals(flavor: Flavor, cables: Readable<Cable[]>): Readable<Terminal[]> {
+export function createTerminals(flavor: Flavor, cables: Cable[]): Terminal[] {
 	let inTerminalUsed = false;
-	const terminals = derived(cables, (currentCables) =>
-		currentCables.flatMap((cable) => {
-			const terminals = [];
-			if (cable.inFlavorUuid == flavor.uuid) {
-				inTerminalUsed = true;
-				terminals.push({
-					flavorUuid: flavor.uuid,
-					direction: Direction.In,
-					connectionUuid: cable.connectionUuid,
-					coordinates: cable.inCoordinates
-				});
-			} else {
-				terminals.push({
-					flavorUuid: flavor.uuid,
-					direction: Direction.Out,
-					connectionUuid: cable.connectionUuid,
-					coordinates: cable.outCoordinates
-				});
-			}
+	const terminals = cables.flatMap((cable) => {
+		const terminals = [];
+		if (cable.inFlavorUuid == flavor.uuid) {
+			inTerminalUsed = true;
+			terminals.push({
+				flavorUuid: flavor.uuid,
+				direction: Direction.In,
+				connectionUuid: cable.connectionUuid,
+				coordinates: cable.inCoordinates
+			});
+		} else {
+			terminals.push({
+				flavorUuid: flavor.uuid,
+				direction: Direction.Out,
+				connectionUuid: cable.connectionUuid,
+				coordinates: cable.outCoordinates
+			});
+		}
 
-			return terminals;
-		})
-	);
+		return terminals;
+	});
 
 	return terminals;
 }

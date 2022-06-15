@@ -3,11 +3,13 @@
 - [ ] recipe
   - [ ] terminals
   - [ ] connections
-  - [ ] update "master" state
+  - [x] update "master" state
     - [ ] ex: cables store broadcasts changes to its payloads
-    - [ ] createIngredient needs to addIngredient, addCallFor, etc. at the same time
-      - [ ] update large state object or create uuids and add to location first
-      - [ ] event dispatch situation
+    - [x] createIngredient needs to addIngredient, addCallFor, etc. at the same time
+      - [x] update large state object or create uuids and add to location first
+      - [x] event dispatch situation
   - [ ] image input
+  - [ ] fix ingredient delete
+  - [ ] split `createIngredient` into multiple actions (for each added thing)
 - [ ] pan
   - [ ] cooking images in progress

@@ -5,8 +5,6 @@ import type { RecipeState } from './recipe';
 import { createLiveConnection, type LiveConnection } from './view/live-connection';
 import { createCables, type Cable } from './view/cables';
 import { createNodes, type Node } from './view/nodes';
-import { flatDerived } from '$lib/common/stores/flatDerived';
-import type { Terminal } from './view/terminals';
 
 export type Coordinates = { x: number; y: number };
 
@@ -22,10 +20,12 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	// get all callsFor that are part of the "recipe" for the focused callFor
 	const focusedCallsFor = derived(
 		[recipeState.callsFor, recipeState.focusedCallForUuid],
-		([currentCallsFor, currentFocusedCallForUuid]) =>
-			Array.from(currentCallsFor.values()).filter(
+		([currentCallsFor, currentFocusedCallForUuid]) => {
+			console.log(currentCallsFor);
+			return Array.from(currentCallsFor.values()).filter(
 				(callFor) => callFor.parentCallForUuid == currentFocusedCallForUuid
-			)
+			);
+		}
 	);
 
 	// get the ingredient that is currently focused
@@ -64,17 +64,22 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	);
 
 	// collapse nodes into list of all of their terminals
-	const allTerminals = flatDerived<Terminal>(
-		derived(nodes, (currentNodes) =>
-			currentNodes.map((node) =>
-				flatDerived<Terminal>(
-					derived(node.flavors, (currentFlavors) =>
-						currentFlavors.map((flavor) => flavor.terminals)
-					)
-				)
-			)
-		)
+	const allTerminals = derived(nodes, (currentNodes) =>
+		currentNodes.flatMap((node) => node.flavors.flatMap((flavor) => flavor.terminals))
 	);
+
+	// NESTED STORES VERSION
+	// const allTerminals = flatDerived<Terminal>(
+	// 	derived(nodes, (currentNodes) =>
+	// 		currentNodes.map((node) =>
+	// 			flatDerived<Terminal>(
+	// 				derived(node.flavors, (currentFlavors) =>
+	// 					currentFlavors.map((flavor) => flavor.terminals)
+	// 				)
+	// 			)
+	// 		)
+	// 	)
+	// );
 
 	const cursorCoordinates = writable({ x: 0, y: 0 });
 

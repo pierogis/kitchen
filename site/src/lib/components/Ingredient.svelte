@@ -16,17 +16,17 @@
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 	const viewState: ViewState = getContext(viewStateContextKey);
 
-	export let ingredient: Readable<Ingredient>;
-	export let flavors: Readable<(Flavor & { terminals: Readable<Terminal[]> })[]>;
+	export let ingredient: Ingredient;
+	export let flavors: (Flavor & { terminals: Terminal[] })[];
 	export let callFor: CallFor;
-	export let location: Readable<Location>;
+	export let location: Location;
 
 	let grabTarget: HTMLElement;
 	let dragging = false;
 
 	function centerOnInitialLocationAction(element: HTMLElement) {
 		const midpoint = element.getBoundingClientRect().width / 2;
-		element.style.left = $location.x - midpoint + 'px';
+		element.style.left = location.x - midpoint + 'px';
 	}
 
 	// delete node on close button
@@ -34,10 +34,10 @@
 		recipeState.dispatch({
 			type: ActionType.DeleteIngredient,
 			params: {
-				ingredient: $ingredient,
-				flavors: $flavors,
+				ingredient: ingredient,
+				flavors: flavors,
 				callFor,
-				location: $location
+				location: location
 			}
 		});
 	}
@@ -49,7 +49,7 @@
 
 <div
 	class="node no-select"
-	style="top: {$location.y - nodeHeaderSize / 2}px; --node-header-size: {nodeHeaderSize}px"
+	style="top: {location.y - nodeHeaderSize / 2}px; --node-header-size: {nodeHeaderSize}px"
 	use:centerOnInitialLocationAction
 	use:draggableAction={grabTarget}
 >
@@ -61,9 +61,9 @@
 
 		<div class="remove" on:click={handleRemove} />
 	</div>
-	<Pane let:pane title={$ingredient.name}>
+	<Pane let:pane title={ingredient.name}>
 		{#if pane}
-			{#each $flavors as flavor}
+			{#each flavors as flavor}
 				<FlavorComponent
 					inCable={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)}
 					outCables={$cables.filter((cable) => cable.outFlavorUuid == flavor.uuid)}
