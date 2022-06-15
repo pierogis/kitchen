@@ -1,5 +1,6 @@
 import type { Connection, Flavor, FullRecipe } from '$lib/common/types';
 import { ActionType } from './actions';
+import { createConnection, deleteConnection } from './handlers/connections';
 import { createIngredient, deleteIngredient } from './handlers/ingredients';
 
 import { createRecipeState } from './stores/recipe';
@@ -47,6 +48,8 @@ export function storeRecipe(recipe: FullRecipe) {
 
 	recipeState.register(ActionType.CreateIngredient, createIngredient);
 	recipeState.register(ActionType.DeleteIngredient, deleteIngredient);
+	recipeState.register(ActionType.CreateConnection, createConnection);
+	recipeState.register(ActionType.DeleteConnection, deleteConnection);
 
 	return recipeState;
 }

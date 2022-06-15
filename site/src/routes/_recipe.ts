@@ -88,7 +88,7 @@ export const defaultRecipe: FullRecipe = {
 				uuid: '1',
 				callForUuid: '1',
 				x: 200,
-				y: 400
+				y: 200
 			}
 		},
 		{
@@ -123,7 +123,7 @@ export const defaultRecipe: FullRecipe = {
 				uuid: '2',
 				callForUuid: '2',
 				x: 400,
-				y: 400
+				y: 200
 			}
 		}
 	],

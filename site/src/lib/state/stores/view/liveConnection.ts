@@ -117,10 +117,8 @@ export function createLiveConnection(
 				actionType = ActionType.CreateConnection;
 			}
 
-			console.log();
-
 			const params: ActionParams<ActionType.CreateConnection> = {
-				connectionUuid,
+				uuid: connectionUuid,
 				parentIngredientUuid: get(currentFocusedIngredientUuid),
 				inFlavorUuid:
 					liveConnection.anchorDirection == Direction.In
@@ -159,50 +157,3 @@ export function createLiveConnection(
 		disconnect
 	};
 }
-
-// export function createDropCable(
-// 	liveConnection: Writable<LiveConnection>,
-// 	terminalCenters: Readable<TerminalCenter[]>
-// ) {
-// 	const dropCableStore = derived(
-// 		[liveConnection, terminalCenters],
-// 		([currentLiveConnection, currentTerminalCenters]) => {
-// 			// this subscription fires before the element is deleted
-// 			return (coords: { x: number; y: number }) => {
-// 				if (currentLiveConnection) {
-// 					const targetTerminals = currentTerminalCenters.filter(
-// 						(ingredientTerminalCenter) =>
-// 							currentLiveConnection.flavorType == ingredientTerminalCenter.flavorType &&
-// 							currentLiveConnection.dragDirection == ingredientTerminalCenter.direction &&
-// 							!(currentLiveConnection.anchorFlavorUuid == ingredientTerminalCenter.flavorUuid)
-// 					);
-
-// 					const nearTerminalDistance = 4;
-// 					// expanding the rect
-// 					const targetTerminal = targetTerminals.find((terminalCenter) => {
-// 						const terminalCoords = get(terminalCenter.coords);
-
-// 						if (terminalCoords.x && terminalCoords.y) {
-// 							const left = terminalCoords.x - (terminalHeight / 2 + nearTerminalDistance);
-// 							const top = terminalCoords.y - (terminalHeight / 2 + nearTerminalDistance);
-// 							const right = terminalCoords.x + (terminalHeight / 2 + nearTerminalDistance);
-// 							const bottom = terminalCoords.y + (terminalHeight / 2 + nearTerminalDistance);
-
-// 							return checkPointWithinBox(
-// 								{ x: coords.x, y: coords.y },
-// 								{ top: top, bottom: bottom, left: left, right: right }
-// 							);
-// 						}
-// 					});
-
-// 					// use the callback from the liveConnection store
-// 					if (targetTerminal) {
-// 						currentLiveConnection.attach(targetTerminal.flavorUuid, targetTerminal.connectionUuid);
-// 					} else {
-// 						liveConnection.set(null);
-// 					}
-// 				}
-// 			};
-// 		}
-// 	);
-// }

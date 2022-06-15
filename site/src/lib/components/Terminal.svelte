@@ -2,12 +2,12 @@
 	import { getContext } from 'svelte';
 
 	import { Direction } from '$lib/common/types';
-	import { calculateCenter } from '$lib/common/utils';
+	import { calculateCenter, checkPointWithinBox } from '$lib/common/utils';
 
 	import type { Coordinates, LiveConnection, ViewState } from '$lib/state/stores/view';
 	import { viewStateContextKey } from '$lib/state';
 	import type { Terminal } from '$lib/state/stores/view/terminals';
-	import { get, writable } from 'svelte/store';
+	import { derived, get, writable, type Writable } from 'svelte/store';
 	import { tweened, type Tweened } from 'svelte/motion';
 
 	export let terminal: Terminal;
@@ -20,7 +20,10 @@
 	const viewState: ViewState = getContext(viewStateContextKey);
 
 	// export let actionDescriptions: ActionDescription<any>[];
-	function updateCoordsAction(element: HTMLElement) {
+	function updateCoordsAction(
+		element: HTMLElement,
+		coordinates: Writable<Coordinates | undefined>
+	) {
 		let updateRect = () => {
 			// calculate the rect and dispatch to the callback
 			let rect: DOMRect = element.getBoundingClientRect();
@@ -28,7 +31,7 @@
 			rect.x += window.pageXOffset;
 			rect.y += window.pageYOffset;
 			let center = calculateCenter(rect);
-			terminal.coordinates.set({
+			coordinates.set({
 				x: center.x,
 				y: center.y
 			});
@@ -37,15 +40,17 @@
 		let rectUpdateInterval = setInterval(updateRect, 10);
 
 		return {
+			update(newCoordinates: Writable<Coordinates>) {
+				coordinates = newCoordinates;
+			},
 			destroy() {
 				clearInterval(rectUpdateInterval);
 			}
 		};
 	}
 
-	// grabbing novel terminal should start relaying the coords of the terminal
-	// and add event listeners for release
-	function grabAction(
+	// grabbing a terminal should start relaying the coords of the terminal and update state
+	function grabTerminalAction(
 		element: HTMLElement,
 		params: { cabled: boolean; liveConnection: LiveConnection | undefined }
 	) {
@@ -130,22 +135,24 @@
 
 	function dropTerminalAction(
 		element: HTMLElement,
-		params: { terminal: Terminal; liveConnection: LiveConnection | undefined }
+		params: {
+			coordinates: Writable<Coordinates | undefined>;
+			liveConnection: LiveConnection | undefined;
+		}
 	) {
-		const handleMouseDown = (event: MouseEvent) => {
+		let handleMouseDown = (event: MouseEvent) => {
 			// ensure left click
 			if (event.button == 0) {
 				element.style.cursor = '';
 
 				if (params.liveConnection) {
 					// for live terminal
-					if (live || !params.terminal.flavorUuid) {
+					if (live || !terminal.flavorUuid) {
 						// drop the terminal and slinky back to anchor
 						$followCursor = false;
 						const liveCable = get(viewState.cables).find(
 							(cable) => cable.connectionUuid == params.liveConnection?.connectionUuid
 						);
-
 						if (liveCable) {
 							const anchorCoordinates = get(
 								params.liveConnection.anchorDirection == Direction.In
@@ -165,21 +172,46 @@
 							$followCursor = true;
 						}, tweenDuration);
 					} else {
-						params.liveConnection.connect(
-							params.terminal.flavorUuid,
-							params.terminal.cabled ? terminal.connectionUuid : undefined
-						);
+						const nearTerminalDistance = 4;
+						// expanding the rect
+
+						const terminalCoordinates = get(terminal.coordinates);
+
+						if (terminalCoordinates) {
+							const left = terminalCoordinates.x - (terminalHeight / 2 + nearTerminalDistance);
+							const top = terminalCoordinates.y - (terminalHeight / 2 + nearTerminalDistance);
+							const right = terminalCoordinates.x + (terminalHeight / 2 + nearTerminalDistance);
+							const bottom = terminalCoordinates.y + (terminalHeight / 2 + nearTerminalDistance);
+
+							if (
+								checkPointWithinBox(
+									{ x: event.clientX, y: event.clientY },
+									{ top: top, bottom: bottom, left: left, right: right }
+								)
+							) {
+								if (terminal.flavorUuid) {
+									params.liveConnection.connect(
+										terminal.flavorUuid,
+										terminal.cabled ? terminal.connectionUuid : undefined
+									);
+								}
+							}
+						}
 					}
 				}
 			}
 		};
 
-		if (params.liveConnection) {
+		if (liveConnection) {
 			element.addEventListener('mousedown', handleMouseDown);
 		}
 
 		return {
-			update(newParams: { terminal: Terminal; liveConnection: LiveConnection | undefined }) {
+			update(newParams: {
+				coordinates: Writable<Coordinates | undefined>;
+				liveConnection: LiveConnection | undefined;
+			}) {
+				element.removeEventListener('mousedown', handleMouseDown);
 				params = newParams;
 				if (params.liveConnection) {
 					element.addEventListener('mousedown', handleMouseDown);
@@ -193,14 +225,17 @@
 		};
 	}
 
-	$: liveConnection = get(viewState.liveConnection);
+	const liveConnection = derived(
+		viewState.liveConnection,
+		(currentLiveConnection) => currentLiveConnection
+	);
 </script>
 
 <div
-	use:updateCoordsAction
-	use:grabAction={{ cabled: terminal.cabled, liveConnection }}
+	use:updateCoordsAction={terminal.coordinates}
+	use:grabTerminalAction={{ cabled: terminal.cabled, liveConnection: $liveConnection }}
 	use:dragTerminalAction={$followCursor}
-	use:dropTerminalAction={{ terminal, liveConnection }}
+	use:dropTerminalAction={{ coordinates: terminal.coordinates, liveConnection: $liveConnection }}
 	class="terminal"
 	class:out={terminal.direction == Direction.Out}
 	class:in={terminal.direction == Direction.In}

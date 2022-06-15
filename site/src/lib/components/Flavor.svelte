@@ -92,7 +92,7 @@
 	</Monitor>
 {:else}
 	<Input {folder} {payloadStore} key={flavor.name} let:inputElement>
-		{#each flavor.directions as direction}
+		{#each flavor.directions as direction (direction)}
 			<TerminalRack
 				parentElement={inputElement}
 				terminals={direction == Direction.In ? inTerminals : outTerminals}

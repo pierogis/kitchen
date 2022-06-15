@@ -5,7 +5,7 @@ import { Direction, FlavorType, type Flavor } from '$lib/common/types';
 
 import type { Coordinates } from '.';
 import type { Cable } from './cables';
-import type { LiveConnectionState } from './liveConnection';
+import type { LiveConnection, LiveConnectionState } from './liveConnection';
 
 export const terminalHeight = 10;
 
