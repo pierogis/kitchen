@@ -1,7 +1,7 @@
 import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
 
 import { Direction, type FlavorType, type Ingredient, type Payload } from '$lib/common/types';
-import { ActionType } from '$lib/state/actions';
+import { ActionType, type ActionParams } from '$lib/state/actions';
 
 import type { RecipeState } from '$lib/state/stores/recipe';
 import type { Terminal } from '.';
@@ -117,20 +117,24 @@ export function createLiveConnection(
 				actionType = ActionType.CreateConnection;
 			}
 
+			console.log();
+
+			const params: ActionParams<ActionType.CreateConnection> = {
+				connectionUuid,
+				parentIngredientUuid: get(currentFocusedIngredientUuid),
+				inFlavorUuid:
+					liveConnection.anchorDirection == Direction.In
+						? liveConnection.anchorFlavorUuid
+						: targetFlavorUuid,
+				outFlavorUuid:
+					liveConnection.anchorDirection == Direction.In
+						? targetFlavorUuid
+						: liveConnection.anchorFlavorUuid
+			};
+
 			recipeState.dispatch({
 				type: actionType,
-				params: {
-					connectionUuid,
-					parentIngredientUuid: get(currentFocusedIngredientUuid),
-					inFlavorUuid:
-						liveConnection.anchorDirection == Direction.In
-							? liveConnection.anchorFlavorUuid
-							: targetFlavorUuid,
-					outFlavorUuid:
-						liveConnection.anchorDirection == Direction.In
-							? targetFlavorUuid
-							: liveConnection.anchorFlavorUuid
-				}
+				params
 			});
 
 			store.set(undefined);

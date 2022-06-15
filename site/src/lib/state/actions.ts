@@ -1,9 +1,12 @@
-import type { CallFor, Flavor, Ingredient, Location } from '$lib/common/types';
+import type { CallFor, Connection, Flavor, Ingredient, Location } from '$lib/common/types';
 import type { FlatRecipe } from './stores/recipe';
 
 export enum ActionType {
 	CreateIngredient,
-	DeleteIngredient
+	DeleteIngredient,
+	CreateConnection,
+	UpdateConnection,
+	DeleteConnection
 }
 
 type ActionParamsMapper = {
@@ -21,6 +24,11 @@ type ActionParamsMapper = {
 		callFor: CallFor;
 		location: Location;
 		flavors: Flavor[];
+	};
+	[ActionType.CreateConnection]: Connection;
+	[ActionType.UpdateConnection]: Connection;
+	[ActionType.DeleteConnection]: {
+		connectionUuid: string;
 	};
 };
 

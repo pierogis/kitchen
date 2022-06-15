@@ -1,6 +1,6 @@
 import type { Connection, Flavor, FullRecipe } from '$lib/common/types';
 import { ActionType } from './actions';
-import { createIngredient, deleteIngredient } from './handlers/ingredient';
+import { createIngredient, deleteIngredient } from './handlers/ingredients';
 
 import { createRecipeState } from './stores/recipe';
 
