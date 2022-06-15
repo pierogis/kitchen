@@ -46,7 +46,7 @@
 	$: nodes = viewState.nodes;
 </script>
 
-{#each $nodes as node}
+{#each $nodes as node (node.callFor.uuid)}
 	<IngredientComponent
 		ingredient={node.ingredient}
 		flavors={node.flavors}

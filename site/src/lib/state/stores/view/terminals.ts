@@ -12,6 +12,7 @@ export type Terminal = {
 	direction: Direction;
 	connectionUuid: string | undefined;
 	coordinates: Writable<Coordinates | undefined>;
+	cabled: boolean;
 };
 
 // terminals
@@ -29,14 +30,16 @@ export function createTerminals(flavor: Flavor, cables: Cable[]): Terminal[] {
 				flavorUuid: flavor.uuid,
 				direction: Direction.In,
 				connectionUuid: cable.connectionUuid,
-				coordinates: cable.inCoordinates
+				coordinates: cable.inCoordinates,
+				cabled: true
 			});
 		} else {
 			terminals.push({
 				flavorUuid: flavor.uuid,
 				direction: Direction.Out,
 				connectionUuid: cable.connectionUuid,
-				coordinates: cable.outCoordinates
+				coordinates: cable.outCoordinates,
+				cabled: true
 			});
 		}
 
@@ -49,14 +52,16 @@ export function createTerminals(flavor: Flavor, cables: Cable[]): Terminal[] {
 			flavorUuid: flavor.uuid,
 			direction: Direction.In,
 			connectionUuid: uuid(),
-			coordinates: writable()
+			coordinates: writable(),
+			cabled: false
 		});
 	}
 	terminals.push({
 		flavorUuid: flavor.uuid,
 		direction: Direction.Out,
 		connectionUuid: uuid(),
-		coordinates: writable()
+		coordinates: writable(),
+		cabled: false
 	});
 
 	return terminals;

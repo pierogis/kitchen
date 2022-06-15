@@ -279,10 +279,10 @@
 		style:--rack-height={rackHeight + 'px'}
 		style:--pane-offset={paneOffset + 'px'}
 	>
-		{#each terminals as terminal}
+		{#each terminals as terminal (terminal.connectionUuid)}
 			<TerminalComponent
 				coordinates={terminal.coordinates}
-				cabled={true}
+				cabled={terminal.cabled}
 				{direction}
 				{expanded}
 				{terminalHeight}

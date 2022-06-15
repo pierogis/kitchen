@@ -63,7 +63,7 @@
 	</div>
 	<Pane let:pane title={ingredient.name}>
 		{#if pane}
-			{#each flavors as flavor}
+			{#each flavors as flavor (flavor.uuid)}
 				<FlavorComponent
 					inCable={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)}
 					outCables={$cables.filter((cable) => cable.outFlavorUuid == flavor.uuid)}

@@ -20,6 +20,8 @@
 	let inTerminals: Terminal[] = [];
 	let outTerminals: Terminal[] = [];
 	$: {
+		inTerminals = [];
+		outTerminals = [];
 		terminals.forEach((terminal) =>
 			terminal.direction == Direction.In ? inTerminals.push(terminal) : outTerminals.push(terminal)
 		);
@@ -71,7 +73,7 @@
 
 {#if inCable}
 	<Monitor {folder} {payloadStore} key={flavor.name} let:monitorElement>
-		{#each flavor.directions as direction}
+		{#each flavor.directions as direction (direction)}
 			<TerminalRack
 				parentElement={monitorElement}
 				terminals={direction == Direction.In ? inTerminals : outTerminals}
