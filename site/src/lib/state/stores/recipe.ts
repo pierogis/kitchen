@@ -10,9 +10,8 @@ import type {
 import type { Action, ActionHandler, ActionType } from '$lib/state/actions';
 import { writable, type Readable, derived, type Writable } from 'svelte/store';
 import { dispatcher } from '../dispatcher';
-import { readableView } from './view';
 
-export interface State {
+export interface FlatRecipe {
 	recipeUuid: string;
 	focusedCallForUuid: string;
 	ingredients: Map<string, Ingredient>;
@@ -24,9 +23,9 @@ export interface State {
 	locations: Map<string, Location>;
 }
 
-export type ActionableState = {
-	[key in keyof State]: Readable<State[key]>;
-} & Readable<State> & {
+export type RecipeState = {
+	[key in keyof FlatRecipe]: Readable<FlatRecipe[key]>;
+} & Readable<FlatRecipe> & {
 		register: <T extends ActionType, U extends ActionType>(
 			type: T,
 			handler: ActionHandler<T, U>
@@ -34,8 +33,8 @@ export type ActionableState = {
 		dispatch: <T extends ActionType>(action: Action<T>) => void;
 	};
 
-export function actionableState(value: State): ActionableState {
-	const store = writable(value);
+export function createRecipeState(recipe: FlatRecipe): RecipeState {
+	const store = writable(recipe);
 	const actions = dispatcher(store);
 
 	return {

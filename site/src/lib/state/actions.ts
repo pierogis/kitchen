@@ -1,7 +1,5 @@
 import type { CallFor, Flavor, Ingredient, Location } from '$lib/common/types';
-import type { Writable } from 'svelte/store';
-import type { State } from '../stores/state';
-import { createIngredient, deleteIngredient } from './ingredient';
+import type { FlatRecipe } from './stores/recipe';
 
 export enum ActionType {
 	CreateIngredient,
@@ -34,6 +32,6 @@ export interface Action<T extends ActionType> {
 }
 
 export type ActionHandler<E extends ActionType, U extends ActionType> = (
-	state: State,
+	state: FlatRecipe,
 	params: ActionParams<E>
-) => { state: State; undoAction: Action<U> };
+) => { state: FlatRecipe; undoAction: Action<U> };

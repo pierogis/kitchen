@@ -1,52 +1,55 @@
 <script lang="ts">
-	import type { CallFor, Flavor, Ingredient, Location } from '$lib/common/types';
+	import type { CallFor, Direction, Flavor, Ingredient, Location } from '$lib/common/types';
 
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 	import Pane from '$lib/components/tweakpane/Pane.svelte';
 	import FlavorComponent from './Flavor.svelte';
 
-	import type { ReadableView } from '$lib/state/stores/view';
-	import type { ActionableState } from '$lib/state/stores/state';
+	import type { RecipeState } from '$lib/state/stores/recipe';
 	import { getContext } from 'svelte';
 	import { ActionType } from '$lib/state/actions';
+	import type { Terminal } from '$lib/state/stores/view/terminals';
+	import type { ViewState } from '$lib/state/stores/view';
+	import { recipeStateContextKey, viewStateContextKey } from '$lib/state';
+	import type { Readable } from 'svelte/store';
 
-	const state: ActionableState = getContext('state');
-	const view: ReadableView = getContext('view');
+	const recipeState: RecipeState = getContext(recipeStateContextKey);
+	const viewState: ViewState = getContext(viewStateContextKey);
 
-	export let ingredient: Ingredient;
-	export let flavors: Flavor[];
+	export let ingredient: Readable<Ingredient>;
+	export let flavors: Readable<(Flavor & { terminals: Readable<Terminal[]> })[]>;
 	export let callFor: CallFor;
-	export let location: Location;
+	export let location: Readable<Location>;
 
 	let grabTarget: HTMLElement;
 	let dragging = false;
 
 	function centerOnInitialLocationAction(element: HTMLElement) {
 		const midpoint = element.getBoundingClientRect().width / 2;
-		element.style.left = location.x - midpoint + 'px';
+		element.style.left = $location.x - midpoint + 'px';
 	}
 
 	// delete node on close button
 	function handleRemove(event: MouseEvent) {
-		state.dispatch({
+		recipeState.dispatch({
 			type: ActionType.DeleteIngredient,
 			params: {
-				ingredient,
-				flavors,
+				ingredient: $ingredient,
+				flavors: $flavors,
 				callFor,
-				location
+				location: $location
 			}
 		});
 	}
 
 	const nodeHeaderSize = 12;
 
-	$: cables = view.cables;
+	$: cables = viewState.cables;
 </script>
 
 <div
 	class="node no-select"
-	style="top: {location.y - nodeHeaderSize / 2}px; --node-header-size: {nodeHeaderSize}px"
+	style="top: {$location.y - nodeHeaderSize / 2}px; --node-header-size: {nodeHeaderSize}px"
 	use:centerOnInitialLocationAction
 	use:draggableAction={grabTarget}
 >
@@ -58,15 +61,15 @@
 
 		<div class="remove" on:click={handleRemove} />
 	</div>
-	<Pane let:pane title={ingredient.name}>
+	<Pane let:pane title={$ingredient.name}>
 		{#if pane}
-			{#each flavors as flavor}
+			{#each $flavors as flavor}
 				<FlavorComponent
 					inCable={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)}
 					outCables={$cables.filter((cable) => cable.outFlavorUuid == flavor.uuid)}
+					terminals={flavor.terminals}
 					{flavor}
 					folder={pane}
-					ingredientUuid={ingredient.uuid}
 				/>
 			{/each}
 		{/if}

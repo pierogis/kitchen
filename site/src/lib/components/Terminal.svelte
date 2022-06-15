@@ -1,12 +1,11 @@
 <script lang="ts">
 	import type { Writable } from 'svelte/store';
 
-	import { type ActionDescription, useActions } from '$lib/common/actions/useActions';
-
 	import type { Direction } from '$lib/common/types';
 	import { calculateCenter } from '$lib/common/utils';
+	import type { Coordinates } from '$lib/state/stores/view';
 
-	export let coords: Writable<{ x: number | undefined; y: number | undefined }>;
+	export let coordinates: Writable<Coordinates | undefined>;
 	export let direction: Direction;
 	export let expanded: boolean;
 	export let terminalHeight: number;
@@ -22,7 +21,7 @@
 			rect.x += window.pageXOffset;
 			rect.y += window.pageYOffset;
 			let center = calculateCenter(rect);
-			coords.set({
+			coordinates.set({
 				x: center.x,
 				y: center.y
 			});

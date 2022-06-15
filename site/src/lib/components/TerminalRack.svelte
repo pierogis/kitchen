@@ -6,32 +6,29 @@
 	import { writable } from 'svelte/store';
 
 	import { terminalHeight } from '$lib/state/stores/view/terminals';
-	import {
-		anchorLiveConnection,
-		type LiveConnectionState,
-		liveConnection
-	} from '$lib/state/stores/view/live-connection';
 	import type { ActionDescription } from '$lib/common/actions/useActions';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 	import { calculateCenter } from '$lib/common/utils';
 	import { Direction } from '$lib/common/types';
 
-	import Terminal from '$lib/terminals/Terminal.svelte';
+	import type { Terminal } from '$lib/state/stores/view/terminals';
+	import TerminalComponent from '$lib/components/Terminal.svelte';
 	import type { FlavorType } from '@prisma/client';
-	import { onMount, tick } from 'svelte';
-	import type { Cable } from '$lib/state/stores/view';
+	import { getContext, onMount, tick } from 'svelte';
+	import type { Cable } from '$lib/state/stores/view/cables';
 	import type { Connection } from '$lib/common/types';
+	import { viewStateContextKey } from '$lib/state';
+	import type { ViewState } from '$lib/state/stores/view';
 
 	export let direction: Direction;
 	export let container: HTMLElement | null = null;
 
 	let near = false;
 
-	export let ingredientUuid: string;
 	export let flavorUuid: string;
 	export let flavorName: string;
 	export let flavorType: FlavorType;
-	export let cables: Cable[];
+	export let terminals: Terminal[];
 
 	const nearTerminalRackDistance = 12;
 	const rackHeight = 20;
@@ -86,6 +83,8 @@
 
 	let usingNovelTerminal = false;
 
+	const viewState: ViewState = getContext(viewStateContextKey);
+
 	// grabbing novel terminal should start relaying the coords of the terminal
 	// and add event listeners for release
 	function handleNovelGrabAction(element: HTMLElement, params: { connectionUuid: string }) {
@@ -98,7 +97,7 @@
 		const handleNovelGrab = (event: MouseEvent) => {
 			if (event.button == 0) {
 				const dragDirection = direction == Direction.In ? Direction.Out : Direction.In;
-				anchorLiveConnection(
+				viewState.liveConnection.anchor(
 					params.connectionUuid,
 					ingredientUuid,
 					flavorUuid,
@@ -150,9 +149,9 @@
 				const anchorFlavorUuid =
 					anchorDirection == Direction.In ? connection.inFlavorUuid : connection.outFlavorUuid;
 
-				removeConnection(connection.uuid);
+				state.removeConnection(connection.uuid);
 
-				anchorLiveConnection(
+				viewState.liveConnection.anchor(
 					params.connection.uuid,
 					ingredientUuid,
 					anchorFlavorUuid,
@@ -238,15 +237,12 @@
 	// 	}
 	// }
 
-	export let showNovelTerminal: boolean;
-
-	let terminals = cables.length + (showNovelTerminal ? 1 : 0);
-
 	// if expanded, take a width dependent on the number of terminals
 	// 1 more terminal than there are connections
 	$: rackWidth = !expanded
 		? 4
-		: ((rackHeight - terminalHeight) / 2) * (terminals + 1) + terminalHeight * terminals;
+		: ((rackHeight - terminalHeight) / 2) * (terminals.length + 1) +
+		  terminalHeight * terminals.length;
 
 	export let parentElement: HTMLElement | null;
 
@@ -285,24 +281,15 @@
 		style:--rack-height={rackHeight + 'px'}
 		style:--pane-offset={paneOffset + 'px'}
 	>
-		{#each cables as cable}
-			<Terminal
-				coords={direction == Direction.In ? cable.inCoords : cable.outCoords}
+		{#each terminals as terminal}
+			<TerminalComponent
+				coordinates={terminal.coordinates}
 				cabled={true}
 				{direction}
 				{expanded}
 				{terminalHeight}
 			/>
 		{/each}
-		{#if showNovelTerminal}
-			<Terminal
-				coords={writable({ x: undefined, y: undefined })}
-				cabled={false}
-				{direction}
-				{expanded}
-				{terminalHeight}
-			/>
-		{/if}
 	</div>
 </div>
 

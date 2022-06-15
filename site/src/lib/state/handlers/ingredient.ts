@@ -1,5 +1,5 @@
 import type { Flavor } from '$lib/common/types';
-import { ActionType, type ActionHandler } from '.';
+import { ActionType, type ActionHandler } from '$lib/state/actions';
 import { v4 as uuid } from 'uuid';
 
 export const createIngredient: ActionHandler<

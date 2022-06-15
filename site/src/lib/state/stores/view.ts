@@ -1,132 +1,100 @@
-import { derived, writable, type Writable, type Readable } from 'svelte/store';
+import { derived, writable, type Writable, type Readable, get, readable } from 'svelte/store';
 
-import type {
-	CallFor,
-	Flavor,
-	FlavorType,
-	Ingredient,
-	Parameter,
-	Payload,
-	Location
-} from '$lib/common/types';
-import type { ActionableState } from './state';
+import type { Flavor } from '$lib/common/types';
+import type { RecipeState } from './recipe';
+import { createLiveConnection, type LiveConnection } from './view/live-connection';
+import { createCables, type Cable } from './view/cables';
+import { createNodes, type Node } from './view/nodes';
+import { flatDerived } from '$lib/common/stores/flatDerived';
+import type { Terminal } from './view/terminals';
 
-// view
+export type Coordinates = { x: number; y: number };
 
-export type Coordinates = { x: number | undefined; y: number | undefined };
-
-export interface Cable {
-	connectionUuid: string;
-	inFlavorUuid: string;
-	outFlavorUuid: string;
-	inCoords: Writable<Coordinates>;
-	outCoords: Writable<Coordinates>;
-	payload: Writable<Payload<FlavorType>>;
+export interface ViewState {
+	cables: Readable<Cable[]>;
+	nodes: Readable<Node[]>;
+	dockedFlavors: Readable<Flavor[]>;
+	cursorCoordinates: Writable<Coordinates>;
+	liveConnection: LiveConnection;
 }
 
-export type Node = {
-	ingredient: Ingredient;
-	flavors: Flavor[];
-	location: Location;
-	callFor: CallFor;
-};
-
-export interface View {
-	cables: Cable[];
-	nodes: Node[];
-	dockedFlavors: Flavor[];
-	dragCoords: Writable<Coordinates>;
-}
-
-export type ReadableView = {
-	[key in keyof View]: Readable<View[key]>;
-};
-
-export function readableView(state: ActionableState): ReadableView {
-	const cables: Readable<Cable[]> = derived(
-		[state.ingredients, state.connections, state.parameters],
-		([currentIngredients, currentConnections, currentParameters]) =>
-			Array.from(currentConnections.values()).map((connection) => {
-				// get the flavor corresponding to the connection's outputting, "source" flavor ->
-				const outFlavor = currentIngredients.get(connection.outFlavorUuid);
-				if (outFlavor) {
-					// get the parameter for this
-					const outParameter: Parameter | undefined = Array.from(currentParameters.values()).find(
-						(parameter) => parameter.flavorUuid == outFlavor.uuid
-					);
-
-					if (outParameter) {
-						return {
-							connectionUuid: connection.uuid,
-							inFlavorUuid: connection.inFlavorUuid,
-							outFlavorUuid: connection.outFlavorUuid,
-							inCoords: writable({ x: undefined, y: undefined }),
-							outCoords: writable({ x: undefined, y: undefined }),
-							payload: writable(outParameter.payload)
-						};
-					} else {
-						throw `outParameter for flavor ${outFlavor.uuid} not found`;
-					}
-				} else {
-					throw `outFlavor ${connection.outFlavorUuid} for connection ${connection.uuid} not found`;
-				}
-			})
-	);
-
+export function readableViewState(recipeState: RecipeState): ViewState {
+	// get all callsFor that are part of the "recipe" for the focused callFor
 	const focusedCallsFor = derived(
-		[state.callsFor, state.ingredients, state.focusedCallForUuid],
-		([currentCallsFor, currentIngredients, currentFocusedCallForUuid]) =>
+		[recipeState.callsFor, recipeState.focusedCallForUuid],
+		([currentCallsFor, currentFocusedCallForUuid]) =>
 			Array.from(currentCallsFor.values()).filter(
 				(callFor) => callFor.parentCallForUuid == currentFocusedCallForUuid
 			)
 	);
 
-	// collapse the stores into a list of currently-in-view ingredients with flavors and location
-	const nodes: Readable<Node[]> = derived(
-		[focusedCallsFor, state.ingredients, state.flavors, state.locations],
-		([currentFocusedCallsFor, currentIngredients, currentFlavors, currentLocations]) => {
-			return Array.from(currentFocusedCallsFor.values()).map((callFor) => {
-				// find ingredient that matches this callFor
-				const ingredient = currentIngredients.get(callFor.ingredientUuid);
-
-				// find ingredient that matches this callFor
-				if (!ingredient) {
-					throw "Couldn't find referenced ingredient";
+	// get the ingredient that is currently focused
+	const focusedIngredient = derived(
+		[recipeState.callsFor, recipeState.ingredients, recipeState.focusedCallForUuid],
+		([currentCallsFor, currentIngredients, currentFocusedCallForUuid]) => {
+			const focusedCallFor = currentCallsFor.get(currentFocusedCallForUuid);
+			if (focusedCallFor) {
+				const ingredient = currentIngredients.get(focusedCallFor.ingredientUuid);
+				if (ingredient) {
+					// return the focused ingredient
+					return ingredient;
+				} else {
+					throw `Ingredient ${currentFocusedCallForUuid} not found`;
 				}
-
-				// find location that matches this callFor
-				const location = Array.from(currentLocations.values()).find(
-					(location) => location.callForUuid == callFor.uuid
-				);
-
-				if (!location) {
-					throw "Couldn't find referenced location";
-				}
-
-				// get the flavors that attach to this ingredient
-				const ingredientFlavors = Array.from(currentFlavors.values()).filter(
-					(flavor) => flavor.ingredientUuid == ingredient.uuid
-				);
-
-				return { ingredient, flavors: ingredientFlavors, location, callFor };
-			});
+			} else {
+				throw `CallFor ${currentFocusedCallForUuid} not found`;
+			}
 		}
 	);
 
-	// used for the side docks
+	// create representations of connections in the current view
+	const cables = createCables(recipeState, focusedIngredient);
+
+	// callsFor/ingredients/nodes in the current view and their components
+	const nodes = createNodes(recipeState, focusedCallsFor, cables);
+
+	// flavors belonging to the focused ingredient
 	const dockedFlavors = derived(
-		[state.flavors, state.focusedCallForUuid],
-		([currentFlavors, currentFocusedCallForUuid]) => {
+		[recipeState.flavors, focusedIngredient],
+		([currentFlavors, currentFocusedIngredient]) => {
 			return Array.from(currentFlavors.values()).filter(
-				(flavor) => flavor.ingredientUuid == currentFocusedCallForUuid
+				(flavor) => flavor.ingredientUuid == currentFocusedIngredient.uuid
 			);
 		}
 	);
+
+	// collapse nodes into list of all of their terminals
+	const allTerminals = flatDerived<Terminal>(
+		derived(nodes, (currentNodes) =>
+			currentNodes.map((node) =>
+				flatDerived<Terminal>(
+					derived(node.flavors, (currentFlavors) =>
+						currentFlavors.map((flavor) => flavor.terminals)
+					)
+				)
+			)
+		)
+	);
+
+	const cursorCoordinates = writable({ x: 0, y: 0 });
+
+	const liveConnection = createLiveConnection(
+		recipeState,
+		focusedIngredient,
+		allTerminals,
+		cursorCoordinates
+	);
+
+	// const dragCoords = derived(
+	// 	liveConnection,
+	// 	(currentLiveConnection) => currentLiveConnection?.dragCoordsStore
+	// );
 
 	return {
 		cables,
 		nodes,
 		dockedFlavors,
-		dragCoords
+		cursorCoordinates,
+		liveConnection
 	};
 }

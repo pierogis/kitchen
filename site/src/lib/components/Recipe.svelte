@@ -1,18 +1,21 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
+	import { get } from 'svelte/store';
+
 	import { Direction, FlavorType } from '$lib/common/types';
+	import { ActionType, type Action } from '$lib/state/actions';
+
+	import type { RecipeState } from '$lib/state/stores/recipe';
+	import type { ViewState } from '$lib/state/stores/view';
+
 	import {} from '$lib/flavors/plugins';
 
 	import CursorCircle from '$lib/components/CursorCircle.svelte';
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/components/Dock.svelte';
-	import { ActionType, type Action } from '$lib/state/actions';
 
-	import type { ActionableState } from '$lib/state/stores/state';
-	import type { ReadableView } from '$lib/state/stores/view';
-	import { getContext } from 'svelte';
-
-	const state: ActionableState = getContext('state');
-	const view: ReadableView = getContext('view');
+	const recipeState: RecipeState = getContext('recipe');
+	const viewState: ViewState = getContext('view');
 
 	function createIngredient(coordinates: { x: number; y: number }) {
 		const action: Action<ActionType.CreateIngredient> = {
@@ -22,8 +25,8 @@
 					name: 'default'
 				},
 				callFor: {
-					parentCallForUuid: $state.focusedCallForUuid,
-					recipeUuid: $state.recipeUuid
+					parentCallForUuid: get(recipeState.focusedCallForUuid),
+					recipeUuid: get(recipeState.recipeUuid)
 				},
 				location: { ...coordinates },
 				flavors: [
@@ -37,10 +40,10 @@
 			}
 		};
 
-		state.dispatch(action);
+		recipeState.dispatch(action);
 	}
 
-	$: nodes = view.nodes;
+	$: nodes = viewState.nodes;
 </script>
 
 {#each $nodes as node}

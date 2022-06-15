@@ -1,20 +1,33 @@
 <script lang="ts">
-	import { get, writable, type Writable } from 'svelte/store';
+	import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
 
 	import type { FolderApi, TpChangeEvent } from 'tweakpane';
 
 	import { type Payload, type Flavor, FlavorType, Direction } from '$lib/common/types';
 
-	import type { Cable } from '$lib/state/stores/view';
+	import type { Cable } from '$lib/state/stores/view/cables';
+	import type { Terminal } from '$lib/state/stores/view/terminals';
+
 	import Monitor from './tweakpane/Monitor.svelte';
 	import Input from './tweakpane/Input.svelte';
-	import TerminalRack from '$lib/terminals/TerminalRack.svelte';
+	import TerminalRack from '$lib/components/TerminalRack.svelte';
 
 	export let flavor: Flavor;
 	export let inCable: Cable | undefined = undefined;
 	export let outCables: Cable[];
+	export let terminals: Readable<Terminal[]>;
+
+	const splitTerminals = derived(terminals, (currentTerminals) => {
+		let inTerminals: Terminal[] = [];
+		let outTerminals: Terminal[] = [];
+		currentTerminals.forEach((terminal) =>
+			terminal.direction == Direction.In ? inTerminals.push(terminal) : outTerminals.push(terminal)
+		);
+		return { inTerminals, outTerminals };
+	});
+	let { inTerminals, outTerminals } = $splitTerminals;
+
 	export let folder: FolderApi;
-	export let ingredientUuid: string;
 
 	let initialParams: Payload<FlavorType>;
 	if (inCable) {
@@ -63,12 +76,10 @@
 		{#each flavor.directions as direction}
 			<TerminalRack
 				parentElement={monitorElement}
-				cables={direction == Direction.In ? [inCable] : outCables}
-				{ingredientUuid}
+				terminals={direction == Direction.In ? inTerminals : outTerminals}
 				flavorUuid={flavor.uuid}
 				flavorName={flavor.name}
 				flavorType={flavor.type}
-				showNovelTerminal={direction == Direction.In && inCable != null}
 				{direction}
 			/>
 		{/each}
@@ -78,12 +89,10 @@
 		{#each flavor.directions as direction}
 			<TerminalRack
 				parentElement={inputElement}
-				cables={direction == Direction.In ? [] : outCables}
-				{ingredientUuid}
+				terminals={direction == Direction.In ? inTerminals : outTerminals}
 				flavorUuid={flavor.uuid}
 				flavorName={flavor.name}
 				flavorType={flavor.type}
-				showNovelTerminal={direction == Direction.In && $inCable != null}
 				{direction}
 			/>
 		{/each}

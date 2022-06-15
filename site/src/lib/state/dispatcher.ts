@@ -1,9 +1,9 @@
 import type { ActionType, Action, ActionHandler } from './actions';
 
-import type { State } from '$lib/state/stores/state';
+import type { FlatRecipe } from '$lib/state/stores/recipe';
 import type { Writable } from 'svelte/store';
 
-export function dispatcher(state: Writable<State>) {
+export function dispatcher(recipeState: Writable<FlatRecipe>) {
 	let undoActions: Action<ActionType>[][] = [];
 	let redoActions: Action<ActionType>[][] = [];
 
@@ -24,7 +24,7 @@ export function dispatcher(state: Writable<State>) {
 			}
 		}
 		if (currentActionHandlers.length > 0) {
-			state.update((currentState) => {
+			recipeState.update((currentState) => {
 				for (let handler of currentActionHandlers) {
 					let { state: updatedState, undoAction } = handler(currentState, action.params);
 					currentState = updatedState;

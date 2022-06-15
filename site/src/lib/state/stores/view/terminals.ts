@@ -1,82 +1,50 @@
-import { derived, writable, type Writable } from 'svelte/store';
+import { derived, writable, type Writable, type Readable } from 'svelte/store';
 
-import { Direction } from '$lib/common/types';
-import type { WritableState } from '$lib/state/stores/state';
+import { Direction, type Flavor } from '$lib/common/types';
+import type { RecipeState } from '$lib/state/stores/recipe';
+import type { Node } from '$lib/state/stores/view/nodes';
+import type { Cable } from '$lib/state/stores/view/cables';
+import type { Coordinates } from '../view';
 
 export const terminalHeight = 10;
 
-export type TerminalCenter = {
+export type Terminal = {
 	flavorUuid: string;
 	direction: Direction;
 	connectionUuid: string | undefined;
-	coords: Writable<{ x: number | undefined; y: number | undefined }>;
+	coordinates: Writable<Coordinates | undefined>;
 };
 
-function terminals(state: WritableState) {
-	const terminalCenters = derived(
-		[state.ingredients, state.connections],
-		([currentIngredients, currentConnections]) => {
-			const connectionCenters: TerminalCenter[] = [];
+// terminals
+// flavors need to know their terminals
+// based on visible cables (via connections) and flavors (terminals not filled by cable)
 
-			Object.entries(currentConnections).forEach(([connectionUuid, connection]) => {
-				// the context is keyed by ingredientUuid as a string
-				// using an object key requires matching the reference
-				// maybe pass down through props
-				const inFlavorUuid = connection.inFlavorUuid;
-				// do the same for out
-				const outFlavorUuid = connection.outFlavorUuid;
-
-				// add to the callbacks set for the given connection's "in" parameter name
-				// this corresponds to the in (left) terminal on parameters
-
-				// using a store to ultimately notify terminals of a new callback to use when
-				// they providing updates on their bounding rect
-				// use the out callback
-				connectionCenters.push({
-					flavorUuid: inFlavorUuid,
+// does it make sense to make this Map<string, Terminal[]> (key by flavor uuid) or Terminal[]
+export function createTerminals(flavor: Flavor, cables: Readable<Cable[]>): Readable<Terminal[]> {
+	let inTerminalUsed = false;
+	const terminals = derived(cables, (currentCables) =>
+		currentCables.flatMap((cable) => {
+			const terminals = [];
+			if (cable.inFlavorUuid == flavor.uuid) {
+				inTerminalUsed = true;
+				terminals.push({
+					flavorUuid: flavor.uuid,
 					direction: Direction.In,
-					connectionUuid: connectionUuid,
-					coords: writable({ x: undefined, y: undefined })
+					connectionUuid: cable.connectionUuid,
+					coordinates: cable.inCoordinates
 				});
-				connectionCenters.push({
-					flavorUuid: outFlavorUuid,
+			} else {
+				terminals.push({
+					flavorUuid: flavor.uuid,
 					direction: Direction.Out,
-					connectionUuid: connectionUuid,
-					coords: writable({ x: undefined, y: undefined })
+					connectionUuid: cable.connectionUuid,
+					coordinates: cable.outCoordinates
 				});
-			});
+			}
 
-			const novelCenters: TerminalCenter[] = [];
-			Array.from(currentIngredients.values()).forEach((ingredient) => {
-				ingredient.flavors.forEach((flavor) => {
-					if (
-						!connectionCenters.find((center) => {
-							return center.direction == Direction.In && center.flavorUuid == flavor.uuid;
-						})
-					) {
-						const novelCenter: TerminalCenter = {
-							direction: Direction.In,
-							flavorUuid: flavor.uuid,
-							connectionUuid: undefined,
-							coords: writable({ x: undefined, y: undefined })
-						};
-						novelCenters.push(novelCenter);
-					}
-				});
-				Object.entries(node.racks.Out).forEach(([flavorName, outRack]) => {
-					const novelCenter = {
-						direction: Direction.Out,
-						connectionUuid: null,
-						flavorUuid: flavor.uuid,
-						coords: writable({ x: undefined, y: undefined })
-					};
-					novelCenters.push(novelCenter);
-				});
-			});
-
-			return connectionCenters.concat(novelCenters);
-		}
+			return terminals;
+		})
 	);
 
-	return terminalCenters;
+	return terminals;
 }
