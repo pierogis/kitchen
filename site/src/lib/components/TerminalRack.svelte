@@ -282,6 +282,7 @@
 		{#each terminals as terminal (terminal.connectionUuid)}
 			<TerminalComponent
 				coordinates={terminal.coordinates}
+				{flavorType}
 				cabled={terminal.cabled}
 				{direction}
 				{expanded}

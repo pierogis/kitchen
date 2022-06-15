@@ -11,5 +11,6 @@
   - [ ] image input
   - [ ] fix ingredient delete
   - [ ] split `createIngredient` into multiple actions (for each added thing)
+  - [ ] add liveConnection to terminals derived
 - [ ] pan
   - [ ] cooking images in progress

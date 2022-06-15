@@ -1,15 +1,23 @@
 import { derived, writable, type Readable, type Writable } from 'svelte/store';
 
-import type { Flavor, FlavorType, Ingredient, Parameter, Payload } from '$lib/common/types';
+import {
+	Direction,
+	type Flavor,
+	type FlavorType,
+	type Ingredient,
+	type Parameter,
+	type Payload
+} from '$lib/common/types';
 
 import type { RecipeState } from '../recipe';
 import type { Coordinates } from '../view';
+import type { LiveConnectionState } from './live-connection';
 
 export interface Cable {
 	connectionUuid: string;
 	flavorType: FlavorType;
-	inFlavorUuid: string;
-	outFlavorUuid: string;
+	inFlavorUuid: string | undefined;
+	outFlavorUuid: string | undefined;
 	inCoordinates: Writable<Coordinates | undefined>;
 	outCoordinates: Writable<Coordinates | undefined>;
 	payload: Writable<Payload<FlavorType>>;
@@ -17,7 +25,8 @@ export interface Cable {
 
 export function createCables(
 	state: RecipeState,
-	focusedIngredient: Readable<Ingredient>
+	focusedIngredient: Readable<Ingredient>,
+	liveConnection: LiveConnectionState
 ): Readable<Cable[]> {
 	const focusedConnections = derived(
 		[focusedIngredient, state.connections],
@@ -28,19 +37,15 @@ export function createCables(
 	);
 
 	const cables: Readable<Cable[]> = derived(
-		[focusedConnections, state.parameters, state.flavors],
-		([currentFocusedConnections, currentParameters, currentFlavors]) => {
-			return currentFocusedConnections.map((connection) => {
+		[focusedConnections, state.parameters, state.flavors, liveConnection],
+		([currentFocusedConnections, currentParameters, currentFlavors, currentLiveConnection]) => {
+			let cables: Cable[] = currentFocusedConnections.map((connection) => {
 				// get the parameter corresponding to the connection's outputting, "source" flavor ->
-				const outParameter: Parameter | undefined = Array.from(currentParameters.values()).find(
+				const outParameter = Array.from(currentParameters.values()).find(
 					(parameter) => parameter.flavorUuid == connection.outFlavorUuid
 				);
 
-				if (!outParameter) {
-					throw `outParameter for flavor ${connection.outFlavorUuid} not found`;
-				}
-
-				const inFlavor: Flavor | undefined = Array.from(currentFlavors.values()).find(
+				const inFlavor = Array.from(currentFlavors.values()).find(
 					(flavor) => flavor.uuid == connection.inFlavorUuid
 				);
 
@@ -48,7 +53,7 @@ export function createCables(
 					throw `inFlavor ${connection.inFlavorUuid} for connection ${connection.uuid} not found`;
 				}
 
-				const outFlavor: Flavor | undefined = Array.from(currentFlavors.values()).find(
+				const outFlavor = Array.from(currentFlavors.values()).find(
 					(flavor) => flavor.uuid == connection.outFlavorUuid
 				);
 
@@ -63,9 +68,29 @@ export function createCables(
 					outFlavorUuid: connection.outFlavorUuid,
 					inCoordinates: writable(undefined),
 					outCoordinates: writable(undefined),
-					payload: writable(outParameter.payload)
+					payload: writable({ ...outParameter?.payload, type: outFlavor.type })
 				};
 			});
+
+			if (currentLiveConnection) {
+				cables.push({
+					connectionUuid: currentLiveConnection.connectionUuid,
+					flavorType: currentLiveConnection.flavorType,
+					inFlavorUuid:
+						currentLiveConnection.anchorDirection == Direction.In
+							? currentLiveConnection.anchorFlavorUuid
+							: undefined,
+					outFlavorUuid:
+						currentLiveConnection.anchorDirection == Direction.Out
+							? currentLiveConnection.anchorFlavorUuid
+							: undefined,
+					inCoordinates: writable(undefined),
+					outCoordinates: writable(undefined),
+					payload: writable({ type: currentLiveConnection.flavorType })
+				});
+			}
+
+			return cables;
 		}
 	);
 

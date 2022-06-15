@@ -2,7 +2,7 @@ import { derived, writable, type Writable, type Readable, get, readable } from '
 
 import type { Flavor } from '$lib/common/types';
 import type { RecipeState } from './recipe';
-import { createLiveConnection, type LiveConnection } from './view/live-connection';
+import { createLiveConnection, type LiveConnectionState } from './view/live-connection';
 import { createCables, type Cable } from './view/cables';
 import { createNodes, type Node } from './view/nodes';
 
@@ -13,7 +13,7 @@ export interface ViewState {
 	nodes: Readable<Node[]>;
 	dockedFlavors: Readable<Flavor[]>;
 	cursorCoordinates: Writable<Coordinates>;
-	liveConnection: LiveConnection;
+	liveConnection: LiveConnectionState;
 }
 
 export function readableViewState(recipeState: RecipeState): ViewState {
@@ -21,7 +21,6 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const focusedCallsFor = derived(
 		[recipeState.callsFor, recipeState.focusedCallForUuid],
 		([currentCallsFor, currentFocusedCallForUuid]) => {
-			console.log(currentCallsFor);
 			return Array.from(currentCallsFor.values()).filter(
 				(callFor) => callFor.parentCallForUuid == currentFocusedCallForUuid
 			);
@@ -47,11 +46,15 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	);
 
+	const cursorCoordinates = writable({ x: 0, y: 0 });
+
+	const liveConnection = createLiveConnection(recipeState, focusedIngredient, cursorCoordinates);
+
 	// create representations of connections in the current view
-	const cables = createCables(recipeState, focusedIngredient);
+	const cables = createCables(recipeState, focusedIngredient, liveConnection);
 
 	// callsFor/ingredients/nodes in the current view and their components
-	const nodes = createNodes(recipeState, focusedCallsFor, cables);
+	const nodes = createNodes(recipeState, focusedCallsFor);
 
 	// flavors belonging to the focused ingredient
 	const dockedFlavors = derived(
@@ -61,33 +64,6 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 				(flavor) => flavor.ingredientUuid == currentFocusedIngredient.uuid
 			);
 		}
-	);
-
-	// collapse nodes into list of all of their terminals
-	const allTerminals = derived(nodes, (currentNodes) =>
-		currentNodes.flatMap((node) => node.flavors.flatMap((flavor) => flavor.terminals))
-	);
-
-	// NESTED STORES VERSION
-	// const allTerminals = flatDerived<Terminal>(
-	// 	derived(nodes, (currentNodes) =>
-	// 		currentNodes.map((node) =>
-	// 			flatDerived<Terminal>(
-	// 				derived(node.flavors, (currentFlavors) =>
-	// 					currentFlavors.map((flavor) => flavor.terminals)
-	// 				)
-	// 			)
-	// 		)
-	// 	)
-	// );
-
-	const cursorCoordinates = writable({ x: 0, y: 0 });
-
-	const liveConnection = createLiveConnection(
-		recipeState,
-		focusedIngredient,
-		allTerminals,
-		cursorCoordinates
 	);
 
 	// const dragCoords = derived(

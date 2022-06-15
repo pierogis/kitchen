@@ -1,21 +1,30 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { get } from 'svelte/store';
+	import { derived, get, type Readable } from 'svelte/store';
 
 	import { Direction, FlavorType } from '$lib/common/types';
 	import { ActionType, type Action } from '$lib/state/actions';
 
 	import type { RecipeState } from '$lib/state/stores/recipe';
-	import type { ViewState } from '$lib/state/stores/view';
+	import type { Node } from '$lib/state/stores/view/nodes';
+	import type { Cable } from '$lib/state/stores/view/cables';
 
 	import {} from '$lib/flavors/plugins';
 
 	import CursorCircle from '$lib/components/CursorCircle.svelte';
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/components/Dock.svelte';
+	import CableComponent from './Cable.svelte';
+	import LiveTerminal from './LiveTerminal.svelte';
+
+	import type { LiveConnectionState } from '$lib/state/stores/view/live-connection';
+	import type { Coordinates } from '$lib/state/stores/view';
 
 	const recipeState: RecipeState = getContext('recipe');
-	const viewState: ViewState = getContext('view');
+	export let nodes: Readable<Node[]>;
+	export let cables: Readable<Cable[]>;
+	export let liveConnection: LiveConnectionState;
+	export let cursorCoordinates: Readable<Coordinates>;
 
 	function createIngredient(coordinates: { x: number; y: number }) {
 		const action: Action<ActionType.CreateIngredient> = {
@@ -43,7 +52,26 @@
 		recipeState.dispatch(action);
 	}
 
-	$: nodes = viewState.nodes;
+	const liveTerminal = derived(
+		[cables, liveConnection],
+		([currentCables, currentLiveConnection]) => {
+			if (currentLiveConnection) {
+				const liveCable = currentCables.find((cable) => {
+					cable.connectionUuid == currentLiveConnection.connectionUuid;
+				});
+				if (liveCable) {
+					return {
+						dragDirection: currentLiveConnection.dragDirection,
+						flavorType: currentLiveConnection.flavorType,
+						cableCoordinates:
+							currentLiveConnection.dragDirection == Direction.In
+								? liveCable.inCoordinates
+								: liveCable.outCoordinates
+					};
+				}
+			}
+		}
+	);
 </script>
 
 {#each $nodes as node (node.callFor.uuid)}
@@ -54,6 +82,19 @@
 		location={node.location}
 	/>
 {/each}
+
+{#each $cables as cable (cable.connectionUuid)}
+	<CableComponent inCoordinates={cable.inCoordinates} outCoordinates={cable.outCoordinates} />
+{/each}
+
+{#if $liveTerminal}
+	<LiveTerminal
+		dragDirection={$liveTerminal.dragDirection}
+		flavorType={$liveTerminal.flavorType}
+		cableCoordinates={$liveTerminal.cableCoordinates}
+		{cursorCoordinates}
+	/>
+{/if}
 
 <Dock direction={Direction.In} />
 <Dock direction={Direction.Out} />

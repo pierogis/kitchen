@@ -2,34 +2,22 @@ import type { CallFor, Flavor, Ingredient, Location } from '$lib/common/types';
 import { derived, type Readable } from 'svelte/store';
 
 import type { RecipeState } from '../recipe';
-import type { ViewState } from '../view';
-import type { Cable } from './cables';
-import { type Terminal, createTerminals } from './terminals';
 
 export type Node = {
 	ingredient: Ingredient;
-	flavors: (Flavor & {
-		terminals: Terminal[];
-	})[];
+	flavors: Flavor[];
 	location: Location;
 	callFor: CallFor;
 };
 
 export function createNodes(
 	recipeState: RecipeState,
-	focusedCallsFor: Readable<CallFor[]>,
-	cables: Readable<Cable[]>
+	focusedCallsFor: Readable<CallFor[]>
 ): Readable<Node[]> {
 	// collapse the store maps into a list of currently-in-view ingredients with flavors and location
 	const nodes: Readable<Node[]> = derived(
-		[focusedCallsFor, recipeState.ingredients, recipeState.locations, recipeState.flavors, cables],
-		([
-			currentFocusedCallsFor,
-			currentIngredients,
-			currentLocations,
-			currentFlavors,
-			currentCables
-		]) => {
+		[focusedCallsFor, recipeState.ingredients, recipeState.locations, recipeState.flavors],
+		([currentFocusedCallsFor, currentIngredients, currentLocations, currentFlavors]) => {
 			return Array.from(currentFocusedCallsFor.values()).map((callFor) => {
 				// find ingredient that matches this callFor
 				const ingredient = currentIngredients.get(callFor.ingredientUuid);
@@ -48,14 +36,9 @@ export function createNodes(
 				}
 
 				// get the flavors that attach to this ingredient
-				const flavors = Array.from(currentFlavors.values())
-					.filter((flavor) => flavor.ingredientUuid == ingredient.uuid)
-					.map((flavor) => {
-						return {
-							...flavor,
-							terminals: createTerminals(flavor, currentCables)
-						};
-					});
+				const flavors = Array.from(currentFlavors.values()).filter(
+					(flavor) => flavor.ingredientUuid == ingredient.uuid
+				);
 				return { ingredient, flavors, location, callFor };
 			});
 		}

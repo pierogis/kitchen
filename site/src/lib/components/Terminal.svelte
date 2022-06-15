@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Writable } from 'svelte/store';
+	import { getContext } from 'svelte';
 
-	import { Direction } from '$lib/common/types';
+	import { Direction, FlavorType } from '$lib/common/types';
 	import { calculateCenter } from '$lib/common/utils';
 	import type { Coordinates } from '$lib/state/stores/view';
 
@@ -10,6 +11,7 @@
 	export let expanded: boolean;
 	export let terminalHeight: number;
 	export let cabled: boolean;
+	export let flavorType: FlavorType;
 	export let live = false;
 
 	// export let actionDescriptions: ActionDescription<any>[];

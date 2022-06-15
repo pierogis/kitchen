@@ -17,7 +17,7 @@
 	const viewState: ViewState = getContext(viewStateContextKey);
 
 	export let ingredient: Ingredient;
-	export let flavors: (Flavor & { terminals: Terminal[] })[];
+	export let flavors: Flavor[];
 	export let callFor: CallFor;
 	export let location: Location;
 
@@ -67,7 +67,6 @@
 				<FlavorComponent
 					inCable={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)}
 					outCables={$cables.filter((cable) => cable.outFlavorUuid == flavor.uuid)}
-					terminals={flavor.terminals}
 					{flavor}
 					folder={pane}
 				/>

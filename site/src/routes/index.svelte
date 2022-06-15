@@ -33,7 +33,12 @@
 
 <svelte:window bind:innerWidth bind:innerHeight on:scroll|preventDefault={() => {}} />
 
-<Recipe />
+<Recipe
+	nodes={viewState.nodes}
+	cables={viewState.cables}
+	liveConnection={viewState.liveConnection}
+	cursorCoordinates={viewState.cursorCoordinates}
+/>
 
 <Pan
 	width={innerWidth}

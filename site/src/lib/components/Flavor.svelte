@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
+	import { getContext } from 'svelte';
 
 	import type { FolderApi, TpChangeEvent } from 'tweakpane';
 
 	import { type Payload, type Flavor, FlavorType, Direction } from '$lib/common/types';
 
+	import type { ViewState } from '$lib/state/stores/view';
+	import { viewStateContextKey } from '$lib/state';
 	import type { Cable } from '$lib/state/stores/view/cables';
-	import type { Terminal } from '$lib/state/stores/view/terminals';
+	import { createTerminals, type Terminal } from '$lib/state/stores/view/terminals';
 
 	import Monitor from './tweakpane/Monitor.svelte';
 	import Input from './tweakpane/Input.svelte';
@@ -15,7 +18,14 @@
 	export let flavor: Flavor;
 	export let inCable: Cable | undefined = undefined;
 	export let outCables: Cable[];
-	export let terminals: Terminal[];
+
+	const viewState: ViewState = getContext(viewStateContextKey);
+
+	$: terminals = createTerminals(
+		flavor,
+		[...(inCable ? [inCable] : []), ...outCables],
+		viewState.liveConnection
+	);
 
 	let inTerminals: Terminal[] = [];
 	let outTerminals: Terminal[] = [];

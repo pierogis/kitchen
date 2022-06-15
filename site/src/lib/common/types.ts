@@ -67,7 +67,7 @@ type FlavorTypesPayloadMapper = {
 };
 
 export type Payload<T> = T extends FlavorType
-	? { [key in T]: FlavorTypesPayloadMapper[T] } & {
+	? Partial<{ [key in T]: FlavorTypesPayloadMapper[T] }> & {
 			type: T;
 	  }
 	: never;
