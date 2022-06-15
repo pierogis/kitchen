@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Writable } from 'svelte/store';
 
-	import type { Direction } from '$lib/common/types';
+	import { Direction } from '$lib/common/types';
 	import { calculateCenter } from '$lib/common/utils';
 	import type { Coordinates } from '$lib/state/stores/view';
 
@@ -39,7 +39,9 @@
 
 <div
 	use:updateCoordsAction
-	class="terminal {direction}"
+	class="terminal"
+	class:out={direction == Direction.Out}
+	class:in={direction == Direction.In}
 	class:expanded
 	class:cabled
 	class:live

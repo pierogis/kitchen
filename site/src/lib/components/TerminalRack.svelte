@@ -15,7 +15,7 @@
 	import TerminalComponent from '$lib/components/Terminal.svelte';
 	import type { FlavorType } from '@prisma/client';
 	import { getContext, onMount, tick } from 'svelte';
-	import type { Cable } from '$lib/state/stores/view/cables';
+
 	import type { Connection } from '$lib/common/types';
 	import { viewStateContextKey } from '$lib/state';
 	import type { ViewState } from '$lib/state/stores/view';
@@ -148,8 +148,6 @@
 
 				const anchorFlavorUuid =
 					anchorDirection == Direction.In ? connection.inFlavorUuid : connection.outFlavorUuid;
-
-				state.removeConnection(connection.uuid);
 
 				viewState.liveConnection.anchor(
 					params.connection.uuid,
