@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, onDestroy } from 'svelte';
 
 	import { Direction } from '$lib/common/types';
 	import { calculateCenter, checkPointWithinBox } from '$lib/common/utils';

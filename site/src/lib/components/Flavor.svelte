@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { get, writable, type Writable } from 'svelte/store';
+	import { get, writable, type Readable, type Writable } from 'svelte/store';
 	import { getContext } from 'svelte';
 
 	import type { FolderApi } from 'tweakpane';
@@ -15,26 +15,19 @@
 	import TerminalRack from '$lib/components/TerminalRack.svelte';
 
 	export let flavor: Flavor;
-	export let inCable: Cable | undefined = undefined;
-	export let outCables: Cable[];
+	export let cables: Readable<Cable[]>;
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 
-	$: terminals = createTerminals(
-		flavor,
-		[...(inCable ? [inCable] : []), ...outCables],
-		viewState.liveConnection
+	const terminals = createTerminals(flavor, cables, viewState.liveConnection);
+
+	let inTerminals: Terminal[] = $terminals.filter((terminal) => terminal.direction == Direction.In);
+	let outTerminals: Terminal[] = $terminals.filter(
+		(terminal) => terminal.direction == Direction.Out
 	);
 
-	let inTerminals: Terminal[] = [];
-	let outTerminals: Terminal[] = [];
-	$: {
-		inTerminals = [];
-		outTerminals = [];
-		terminals.forEach((terminal) =>
-			terminal.direction == Direction.In ? inTerminals.push(terminal) : outTerminals.push(terminal)
-		);
-	}
+	let inCable = $cables.find((cable) => cable.inFlavorUuid == flavor.uuid);
+	let outCables = $cables.filter((cable) => cable.outFlavorUuid == flavor.uuid);
 
 	export let folder: FolderApi;
 
@@ -83,21 +76,13 @@
 {#if inCable}
 	<Monitor {folder} {payloadStore} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction (direction)}
-			<TerminalRack
-				parentElement={monitorElement}
-				terminals={direction == Direction.In ? inTerminals : outTerminals}
-				{direction}
-			/>
+			<TerminalRack parentElement={monitorElement} terminals={inTerminals} {direction} />
 		{/each}
 	</Monitor>
 {:else}
 	<Input {folder} {payloadStore} key={flavor.name} let:inputElement>
 		{#each flavor.directions as direction (direction)}
-			<TerminalRack
-				parentElement={inputElement}
-				terminals={direction == Direction.In ? inTerminals : outTerminals}
-				{direction}
-			/>
+			<TerminalRack parentElement={inputElement} terminals={outTerminals} {direction} />
 		{/each}
 	</Input>
 {/if}

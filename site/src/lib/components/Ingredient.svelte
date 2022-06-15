@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import { derived } from 'svelte/store';
 
 	import type { CallFor, Flavor, Ingredient, Location } from '$lib/common/types';
 	import { draggableAction } from '$lib/common/actions/draggableAction';
@@ -64,8 +65,11 @@
 		{#if pane}
 			{#each flavors as flavor, i (i)}
 				<FlavorComponent
-					inCable={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)}
-					outCables={$cables.filter((cable) => cable.outFlavorUuid == flavor.uuid)}
+					cables={derived(cables, (currentCables) =>
+						currentCables.filter(
+							(cable) => cable.outFlavorUuid == flavor.uuid || cable.inFlavorUuid == flavor.uuid
+						)
+					)}
 					{flavor}
 					folder={pane}
 				/>
