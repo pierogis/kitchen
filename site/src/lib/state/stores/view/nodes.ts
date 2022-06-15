@@ -1,7 +1,7 @@
 import type { CallFor, Flavor, Ingredient, Location } from '$lib/common/types';
 import { derived, type Readable } from 'svelte/store';
 
-import type { RecipeState } from '../recipe';
+import type { RecipeState } from '$lib/state/stores/recipe';
 
 export type Node = {
 	ingredient: Ingredient;

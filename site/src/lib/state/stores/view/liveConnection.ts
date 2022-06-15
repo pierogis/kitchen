@@ -4,9 +4,8 @@ import { checkPointWithinBox } from '$lib/common/utils';
 import { Direction, type FlavorType, type Ingredient, type Payload } from '$lib/common/types';
 import { ActionType } from '$lib/state/actions';
 
-import type { RecipeState } from '../recipe';
-import type { Coordinates } from '../view';
-import type { terminalHeight, Terminal } from '../view/terminals';
+import type { RecipeState } from '$lib/state/stores/recipe';
+import type { Coordinates } from '.';
 import type { Cable } from './cables';
 
 export type LiveConnectionState = Readable<
@@ -25,7 +24,6 @@ export type LiveConnectionState = Readable<
 	// call this when releasing the live terminal, if this live cable is compatible
 	anchor: (
 		connectionUuid: string,
-		parentIngredientUuid: string,
 		anchorFlavorUuid: string,
 		anchorDirection: Direction,
 		dragDirection: Direction
@@ -69,9 +67,9 @@ export function createLiveConnection(
 
 	function anchor(
 		connectionUuid: string,
-		parentIngredientUuid: string,
 		anchorFlavorUuid: string,
-		anchorDirection: Direction
+		anchorDirection: Direction,
+		dragDirection: Direction
 	) {
 		const anchorFlavor = get(recipeState.flavors).get(anchorFlavorUuid);
 		if (anchorFlavor) {
@@ -83,7 +81,7 @@ export function createLiveConnection(
 				connectionUuid: connectionUuid,
 				flavorType: anchorFlavor.type,
 				anchorDirection,
-				dragDirection: anchorDirection == Direction.In ? Direction.Out : Direction.In,
+				dragDirection,
 
 				anchorFlavorUuid: anchorFlavorUuid,
 				disconnectedFlavorUuid: undefined,

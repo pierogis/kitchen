@@ -1,17 +1,18 @@
 import { get, writable, type Writable } from 'svelte/store';
+import { v4 as uuid } from 'uuid';
 
 import { Direction, type Flavor } from '$lib/common/types';
-import type { Cable } from '$lib/state/stores/view/cables';
-import type { Coordinates } from '../view';
-import { v4 as uuid } from 'uuid';
-import type { LiveConnectionState } from './live-connection';
+
+import type { Coordinates } from '.';
+import type { Cable } from './cables';
+import type { LiveConnectionState } from './liveConnection';
 
 export const terminalHeight = 10;
 
 export type Terminal = {
-	flavorUuid: string;
+	flavorUuid?: string;
 	direction: Direction;
-	connectionUuid: string | undefined;
+	connectionUuid: string;
 	coordinates: Writable<Coordinates | undefined>;
 	cabled: boolean;
 };

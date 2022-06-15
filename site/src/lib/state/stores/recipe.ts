@@ -8,8 +8,8 @@ import type {
 	Location
 } from '$lib/common/types';
 import type { Action, ActionHandler, ActionType } from '$lib/state/actions';
-import { writable, type Readable, derived, type Writable } from 'svelte/store';
-import { dispatcher } from '../dispatcher';
+import { writable, type Readable, derived } from 'svelte/store';
+import { dispatcher } from '$lib/state/dispatcher';
 
 export interface FlatRecipe {
 	recipeUuid: string;

@@ -1,10 +1,10 @@
-import { derived, writable, type Writable, type Readable, get, readable } from 'svelte/store';
+import { derived, writable, type Writable, type Readable } from 'svelte/store';
 
 import type { Flavor } from '$lib/common/types';
-import type { RecipeState } from './recipe';
-import { createLiveConnection, type LiveConnectionState } from './view/live-connection';
-import { createCables, type Cable } from './view/cables';
-import { createNodes, type Node } from './view/nodes';
+import type { RecipeState } from '$lib/state/stores/recipe';
+import { createLiveConnection, type LiveConnectionState } from './liveConnection';
+import { createCables, type Cable } from './cables';
+import { createNodes, type Node } from './nodes';
 
 export type Coordinates = { x: number; y: number };
 

@@ -4,14 +4,14 @@
 	import { calculateCenter } from '$lib/common/utils';
 	import { terminalHeight } from '$lib/state/stores/view/terminals';
 
-	import type { Coordinates } from '$lib/state/stores/view';
+	import type { Coordinates, Terminal } from '$lib/state/stores/view';
 
-	import Terminal from '$lib/components/Terminal.svelte';
+	import TerminalComponent from '$lib/components/Terminal.svelte';
 	import type { Direction, FlavorType } from '$lib/common/types';
 
-	export let dragDirection: Direction;
 	export let flavorType: FlavorType;
-	export let cableCoordinates: Writable<Coordinates | undefined>;
+
+	export let terminal: Terminal;
 	export let cursorCoordinates: Readable<Coordinates>;
 
 	// export let dropCable: Readable<(coords: { x: number; y: number }) => void>;
@@ -40,12 +40,4 @@
 	// use view.liveConnection to
 </script>
 
-<Terminal
-	coordinates={cableCoordinates}
-	{flavorType}
-	direction={dragDirection}
-	expanded={true}
-	cabled={true}
-	live={true}
-	{terminalHeight}
-/>
+<TerminalComponent {terminal} {flavorType} expanded={true} live={true} {terminalHeight} />

@@ -1,14 +1,11 @@
 <script lang="ts">
-	import { FlavorType, type Payload } from '$lib/common/types';
-
-	import type { BladeApi, InputBindingController } from '@tweakpane/core';
-
 	import { onMount } from 'svelte';
-
 	import type { Writable } from 'svelte/store';
 
+	import type { BladeApi, InputBindingController } from '@tweakpane/core';
 	import type { FolderApi, InputParams } from 'tweakpane';
-	import Flavor from '../Flavor.svelte';
+
+	import { FlavorType, type Payload } from '$lib/common/types';
 
 	export let folder: FolderApi;
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
+	import { get, writable, type Writable } from 'svelte/store';
 	import { getContext } from 'svelte';
 
 	import type { FolderApi, TpChangeEvent } from 'tweakpane';
@@ -8,8 +8,7 @@
 
 	import type { ViewState } from '$lib/state/stores/view';
 	import { viewStateContextKey } from '$lib/state';
-	import type { Cable } from '$lib/state/stores/view/cables';
-	import { createTerminals, type Terminal } from '$lib/state/stores/view/terminals';
+	import { type Cable, createTerminals, type Terminal } from '$lib/state/stores/view';
 
 	import Monitor from './tweakpane/Monitor.svelte';
 	import Input from './tweakpane/Input.svelte';

@@ -1,17 +1,10 @@
 import { derived, writable, type Readable, type Writable } from 'svelte/store';
 
-import {
-	Direction,
-	type Flavor,
-	type FlavorType,
-	type Ingredient,
-	type Parameter,
-	type Payload
-} from '$lib/common/types';
+import { Direction, type FlavorType, type Ingredient, type Payload } from '$lib/common/types';
 
-import type { RecipeState } from '../recipe';
-import type { Coordinates } from '../view';
-import type { LiveConnectionState } from './live-connection';
+import type { RecipeState } from '$lib/state/stores/recipe';
+import type { Coordinates } from '.';
+import type { LiveConnectionState } from './liveConnection';
 
 export interface Cable {
 	connectionUuid: string;

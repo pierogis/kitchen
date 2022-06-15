@@ -1,17 +1,16 @@
 <script lang="ts">
-	import type { CallFor, Direction, Flavor, Ingredient, Location } from '$lib/common/types';
-
-	import { draggableAction } from '$lib/common/actions/draggableAction';
-	import Pane from '$lib/components/tweakpane/Pane.svelte';
-	import FlavorComponent from './Flavor.svelte';
-
-	import type { RecipeState } from '$lib/state/stores/recipe';
 	import { getContext } from 'svelte';
-	import { ActionType } from '$lib/state/actions';
-	import type { Terminal } from '$lib/state/stores/view/terminals';
-	import type { ViewState } from '$lib/state/stores/view';
+
+	import type { CallFor, Flavor, Ingredient, Location } from '$lib/common/types';
+	import { draggableAction } from '$lib/common/actions/draggableAction';
+
 	import { recipeStateContextKey, viewStateContextKey } from '$lib/state';
-	import type { Readable } from 'svelte/store';
+	import { ActionType } from '$lib/state/actions';
+	import type { RecipeState } from '$lib/state/stores/recipe';
+	import type { ViewState } from '$lib/state/stores/view';
+
+	import Pane from './tweakpane/Pane.svelte';
+	import FlavorComponent from './Flavor.svelte';
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 	const viewState: ViewState = getContext(viewStateContextKey);

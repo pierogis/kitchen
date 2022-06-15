@@ -85,47 +85,6 @@
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 
-	// grabbing novel terminal should start relaying the coords of the terminal
-	// and add event listeners for release
-	function handleNovelGrabAction(element: HTMLElement, params: { connectionUuid: string }) {
-		const handleMouseUp = (event: MouseEvent) => {
-			usingNovelTerminal = false;
-			window.removeEventListener('mouseup', handleMouseUp);
-			element.style.cursor = '';
-		};
-
-		const handleNovelGrab = (event: MouseEvent) => {
-			if (event.button == 0) {
-				const dragDirection = direction == Direction.In ? Direction.Out : Direction.In;
-				viewState.liveConnection.anchor(
-					params.connectionUuid,
-					ingredientUuid,
-					flavorUuid,
-					direction,
-					dragDirection,
-					{
-						x: event.x,
-						y: event.y
-					}
-				);
-				usingNovelTerminal = true;
-				window.addEventListener('mouseup', handleMouseUp);
-				element.style.cursor = 'grabbing';
-			}
-		};
-
-		element.addEventListener('mousedown', handleNovelGrab);
-
-		return {
-			update(newParams: { connectionUuid: string }) {
-				params = newParams;
-			},
-			destroy() {
-				element.removeEventListener('mousedown', handleNovelGrab);
-			}
-		};
-	}
-
 	function handleDisconnectGrabAction(element: HTMLElement, params: { connection: Connection }) {
 		let handleMouseUp = () => {
 			element.style.cursor = '';
@@ -151,11 +110,9 @@
 
 				viewState.liveConnection.anchor(
 					params.connection.uuid,
-					ingredientUuid,
 					anchorFlavorUuid,
 					anchorDirection,
-					direction,
-					location
+					direction
 				);
 
 				element.style.cursor = 'grabbing';
@@ -280,14 +237,7 @@
 		style:--pane-offset={paneOffset + 'px'}
 	>
 		{#each terminals as terminal (terminal.connectionUuid)}
-			<TerminalComponent
-				coordinates={terminal.coordinates}
-				{flavorType}
-				cabled={terminal.cabled}
-				{direction}
-				{expanded}
-				{terminalHeight}
-			/>
+			<TerminalComponent {terminal} {flavorType} {expanded} {terminalHeight} />
 		{/each}
 	</div>
 </div>

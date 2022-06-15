@@ -17,7 +17,7 @@
 	import CableComponent from './Cable.svelte';
 	import LiveTerminal from './LiveTerminal.svelte';
 
-	import type { LiveConnectionState } from '$lib/state/stores/view/live-connection';
+	import type { LiveConnectionState } from '$lib/state/stores/view/liveConnection';
 	import type { Coordinates } from '$lib/state/stores/view';
 
 	const recipeState: RecipeState = getContext('recipe');
@@ -66,7 +66,8 @@
 						cableCoordinates:
 							currentLiveConnection.dragDirection == Direction.In
 								? liveCable.inCoordinates
-								: liveCable.outCoordinates
+								: liveCable.outCoordinates,
+						connectionUuid: currentLiveConnection.connectionUuid
 					};
 				}
 			}
@@ -89,9 +90,14 @@
 
 {#if $liveTerminal}
 	<LiveTerminal
-		dragDirection={$liveTerminal.dragDirection}
+		terminal={{
+			coordinates: $liveTerminal.cableCoordinates,
+			flavorUuid: undefined,
+			direction: $liveTerminal.dragDirection,
+			cabled: true,
+			connectionUuid: $liveTerminal.connectionUuid
+		}}
 		flavorType={$liveTerminal.flavorType}
-		cableCoordinates={$liveTerminal.cableCoordinates}
 		{cursorCoordinates}
 	/>
 {/if}

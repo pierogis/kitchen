@@ -1,18 +1,23 @@
 <script lang="ts">
-	import type { Writable } from 'svelte/store';
 	import { getContext } from 'svelte';
 
 	import { Direction, FlavorType } from '$lib/common/types';
 	import { calculateCenter } from '$lib/common/utils';
-	import type { Coordinates } from '$lib/state/stores/view';
 
-	export let coordinates: Writable<Coordinates | undefined>;
-	export let direction: Direction;
-	export let expanded: boolean;
-	export let terminalHeight: number;
-	export let cabled: boolean;
+	import type { ViewState } from '$lib/state/stores/view';
+	import { viewStateContextKey } from '$lib/state';
+	import type { Terminal } from '$lib/state/stores/view/terminals';
+
+	export let terminal: Terminal;
+
 	export let flavorType: FlavorType;
+
 	export let live = false;
+	export let expanded: boolean;
+
+	export let terminalHeight: number;
+
+	const viewState: ViewState = getContext(viewStateContextKey);
 
 	// export let actionDescriptions: ActionDescription<any>[];
 	function updateCoordsAction(element: HTMLElement) {
@@ -23,7 +28,7 @@
 			rect.x += window.pageXOffset;
 			rect.y += window.pageYOffset;
 			let center = calculateCenter(rect);
-			coordinates.set({
+			terminal.coordinates.set({
 				x: center.x,
 				y: center.y
 			});
@@ -37,15 +42,47 @@
 			}
 		};
 	}
+
+	// grabbing novel terminal should start relaying the coords of the terminal
+	// and add event listeners for release
+	function novelGrabAction(element: HTMLElement) {
+		const handleMouseUp = (event: MouseEvent) => {
+			window.removeEventListener('mouseup', handleMouseUp);
+			element.style.cursor = '';
+		};
+
+		const handleNovelGrab = (event: MouseEvent) => {
+			if (event.button == 0 && terminal.flavorUuid) {
+				const dragDirection = terminal.direction == Direction.In ? Direction.Out : Direction.In;
+				viewState.liveConnection.anchor(
+					terminal.connectionUuid,
+					terminal.flavorUuid,
+					terminal.direction,
+					dragDirection
+				);
+				window.addEventListener('mouseup', handleMouseUp);
+				element.style.cursor = 'grabbing';
+			}
+		};
+
+		element.addEventListener('mousedown', handleNovelGrab);
+
+		return {
+			destroy() {
+				element.removeEventListener('mousedown', handleNovelGrab);
+			}
+		};
+	}
 </script>
 
 <div
 	use:updateCoordsAction
+	use:novelGrabAction
 	class="terminal"
-	class:out={direction == Direction.Out}
-	class:in={direction == Direction.In}
+	class:out={terminal.direction == Direction.Out}
+	class:in={terminal.direction == Direction.In}
 	class:expanded
-	class:cabled
+	class:cabled={terminal.cabled}
 	class:live
 	style:--terminal-height="{terminalHeight}px"
 />
