@@ -1,15 +1,24 @@
 <script lang="ts">
+	import type { Coordinates } from '$lib/state/stores/view';
+
 	import { createEventDispatcher } from 'svelte';
 	import { spring } from 'svelte/motion';
+	import { derived, type Readable } from 'svelte/store';
 
 	// define svelte sping animation effects
-	let coords = { x: 0, y: 0 };
-	let cursorLocation = spring(coords, {
+
+	export let cursorCoordinates: Readable<Coordinates>;
+	const springCursorCoordinates = spring($cursorCoordinates, {
 		stiffness: 0.2,
 		damping: 0.65
 	});
 
-	let size = spring(0);
+	cursorCoordinates.subscribe((currentCoordinates) => {
+		$springCursorCoordinates = currentCoordinates;
+	});
+
+	const radius = 20;
+	const size = spring(0);
 
 	const touchDuration = 500;
 
@@ -18,21 +27,15 @@
 
 	let dispatch = createEventDispatcher();
 
-	// follow the mouse
-	function handleMouseMove(event: MouseEvent) {
-		event.preventDefault();
-		coords = { x: event.clientX, y: event.clientY };
-	}
-
 	function handleMouseDown(event: MouseEvent) {
 		// click
 		if (!longPressTimer && event.button == 0) {
-			size.set(20);
+			size.set(radius);
 			// send an event at end of timer
 			longPressTimer = setTimeout(() => {
 				size.set(0);
 				// notify parent that there has been a long press
-				dispatch('longpress', coords);
+				dispatch('longpress', $cursorCoordinates);
 			}, touchDuration);
 		}
 	}
@@ -46,28 +49,37 @@
 		}
 	}
 
-	$: {
-		cursorLocation.set(coords);
+	function followCursorAction(element: SVGSVGElement) {
+		const svgPosition = derived(
+			[springCursorCoordinates, size],
+			([$springCursorCoordinates, $size]) => {
+				const left = $springCursorCoordinates.x - $size + 'px';
+				const top = $springCursorCoordinates.y - $size + 'px';
+
+				return { left, top };
+			}
+		);
+		svgPosition.subscribe((newPosition) => {
+			element.style.left = newPosition.left;
+			element.style.top = newPosition.top;
+		});
 	}
 </script>
 
-<svelte:window on:mouseup={handleMouseUp} />
+<svelte:window on:mouseup={handleMouseUp} on:mousedown={handleMouseDown} />
 
-<svg on:mousemove={handleMouseMove} on:mousedown={handleMouseDown}>
-	<circle cx={$cursorLocation.x} cy={$cursorLocation.y} r={$size > 0 ? $size : 0} />
+<svg use:followCursorAction width={$size > 0 ? $size * 2 : 0} height={$size > 0 ? $size * 2 : 0}>
+	<circle cx={$size} cy={$size} r={$size > 0 ? $size : 0} />
 </svg>
 
 <style>
 	svg {
 		position: absolute;
-		width: 100%;
-		height: 100%;
-
-		top: 0;
-		left: 0;
+		top: 0px;
+		left: 0px;
 	}
 	circle {
-		fill: hsla(0, 0%, 100%, 0.3);
+		fill: hsla(0, 50%, 100%, 0.8);
 		opacity: 30%;
 		filter: blur(10px);
 	}

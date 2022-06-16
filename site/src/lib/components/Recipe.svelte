@@ -17,7 +17,8 @@
 	import CableComponent from './Cable.svelte';
 	import LiveTerminal from './LiveTerminal.svelte';
 
-	import type { Terminal } from '$lib/state/stores/view';
+	import type { Terminal, ViewState } from '$lib/state/stores/view';
+	import { viewStateContextKey } from '$lib/state';
 
 	const recipeState: RecipeState = getContext('recipe');
 	export let nodes: Readable<Node[]>;
@@ -49,6 +50,7 @@
 
 		recipeState.dispatch(action);
 	}
+	const viewState: ViewState = getContext(viewStateContextKey);
 </script>
 
 {#each $nodes as node (node.callFor.uuid)}
@@ -81,8 +83,9 @@
 <Dock direction={Direction.Out} />
 
 <CursorCircle
+	cursorCoordinates={viewState.cursorCoordinates}
 	on:longpress={(event) => {
-		let coords = event.detail;
+		const coords = event.detail;
 		createIngredient(coords);
 	}}
 />

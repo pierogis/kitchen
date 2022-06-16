@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	import { defaultRecipe } from './_recipe';
-	import { storeRecipe } from '$lib/state';
+	import { recipeStateContextKey, storeRecipe, viewStateContextKey } from '$lib/state';
 
 	/** @type {import('./index').Load} */
 	export async function load() {
@@ -27,8 +27,8 @@
 	const recipeState = storeRecipe(recipe);
 	const viewState = readableViewState(recipeState);
 
-	setContext('recipe', recipeState);
-	setContext('view', viewState);
+	setContext(recipeStateContextKey, recipeState);
+	setContext(viewStateContextKey, viewState);
 
 	const handleMouseMove = (ev: MouseEvent) => {
 		viewState.cursorCoordinates.set({ x: ev.clientX, y: ev.clientY });
