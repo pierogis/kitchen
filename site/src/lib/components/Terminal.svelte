@@ -7,10 +7,12 @@
 	import type { Coordinates, LiveConnection, ViewState } from '$lib/state/stores/view';
 	import { viewStateContextKey } from '$lib/state';
 	import type { Terminal } from '$lib/state/stores/view/terminals';
-	import { derived, get, writable, type Writable } from 'svelte/store';
-	import { tweened, type Tweened } from 'svelte/motion';
+	import { derived, get, type Writable } from 'svelte/store';
+
+	import { useActions, type ActionDescription } from '$lib/common/actions/useActions';
 
 	export let terminal: Terminal;
+	export let actionDescriptions: ActionDescription<any>[] = [];
 
 	export let live = false;
 	export let expanded: boolean;
@@ -91,48 +93,6 @@
 		};
 	}
 
-	const tweenDuration = 150;
-
-	const tween: Tweened<Coordinates> = tweened(get(terminal.coordinates), {
-		duration: tweenDuration
-	});
-	const followCursor = writable(live);
-
-	function dragTerminalAction(element: HTMLElement, followCursor: boolean) {
-		let cursorUnsub: (() => void) | null = null;
-		const handleFollowOrder = () => {
-			if (followCursor) {
-				if (cursorUnsub) cursorUnsub();
-				cursorUnsub = viewState.cursorCoordinates.subscribe((currentCursorCoordinates) => {
-					tween.set(currentCursorCoordinates);
-				});
-			} else {
-				cursorUnsub = null;
-			}
-		};
-
-		let tweenUnsub = tween.subscribe((currentTween) => {
-			if (currentTween) {
-				element.style.left = currentTween.x + 'px';
-				element.style.top = currentTween.y + 'px';
-			}
-		});
-
-		handleFollowOrder();
-
-		return {
-			update(newFollowCursor: boolean) {
-				followCursor = newFollowCursor;
-
-				handleFollowOrder();
-			},
-			destroy() {
-				if (cursorUnsub) cursorUnsub();
-				if (tweenUnsub) tweenUnsub();
-			}
-		};
-	}
-
 	function dropTerminalAction(
 		element: HTMLElement,
 		params: {
@@ -147,31 +107,24 @@
 
 				if (params.liveConnection) {
 					// for live terminal
-					if (live || !terminal.flavorUuid) {
+					if (!live && terminal.flavorUuid) {
 						// drop the terminal and slinky back to anchor
-						$followCursor = false;
-						const liveCable = get(viewState.cables).find(
-							(cable) => cable.connectionUuid == params.liveConnection?.connectionUuid
-						);
-						if (liveCable) {
-							const anchorCoordinates = get(
-								params.liveConnection.anchorDirection == Direction.In
-									? liveCable.inCoordinates
-									: liveCable.outCoordinates
-							);
-							if (anchorCoordinates) {
-								// set tween controlling position in
-								tween.set(anchorCoordinates);
-							}
-						}
+						// $followCursor = false;
+						// const liveCable = get(viewState.cables).find(
+						// 	(cable) => cable.connectionUuid == params.liveConnection?.connectionUuid
+						// );
+						// if (liveCable) {
+						// 	const anchorCoordinates = get(
+						// 		params.liveConnection.anchorDirection == Direction.In
+						// 			? liveCable.inCoordinates
+						// 			: liveCable.outCoordinates
+						// 	);
+						// 	if (anchorCoordinates) {
+						// 		// set tween controlling position in
 
-						setTimeout(() => {
-							if (params.liveConnection) {
-								params.liveConnection.drop();
-							}
-							$followCursor = true;
-						}, tweenDuration);
-					} else {
+						// 		tween.set(anchorCoordinates);
+						// 	}
+						// }
 						const nearTerminalDistance = 4;
 						// expanding the rect
 
@@ -232,9 +185,9 @@
 </script>
 
 <div
+	use:useActions={actionDescriptions}
 	use:updateCoordsAction={terminal.coordinates}
 	use:grabTerminalAction={{ cabled: terminal.cabled, liveConnection: $liveConnection }}
-	use:dragTerminalAction={$followCursor}
 	use:dropTerminalAction={{ coordinates: terminal.coordinates, liveConnection: $liveConnection }}
 	class="terminal"
 	class:out={terminal.direction == Direction.Out}

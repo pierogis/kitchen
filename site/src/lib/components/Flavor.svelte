@@ -21,10 +21,8 @@
 
 	const terminals = createTerminals(flavor, cables, viewState.liveConnection);
 
-	let inTerminals: Terminal[] = $terminals.filter((terminal) => terminal.direction == Direction.In);
-	let outTerminals: Terminal[] = $terminals.filter(
-		(terminal) => terminal.direction == Direction.Out
-	);
+	$: inTerminals = $terminals.filter((terminal) => terminal.direction == Direction.In);
+	$: outTerminals = $terminals.filter((terminal) => terminal.direction == Direction.Out);
 
 	let inCable = $cables.find((cable) => cable.inFlavorUuid == flavor.uuid);
 	let outCables = $cables.filter((cable) => cable.outFlavorUuid == flavor.uuid);
@@ -76,13 +74,21 @@
 {#if inCable}
 	<Monitor {folder} {payloadStore} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction (direction)}
-			<TerminalRack parentElement={monitorElement} terminals={inTerminals} {direction} />
+			<TerminalRack
+				parentElement={monitorElement}
+				terminals={direction == Direction.In ? inTerminals : outTerminals}
+				{direction}
+			/>
 		{/each}
 	</Monitor>
 {:else}
 	<Input {folder} {payloadStore} key={flavor.name} let:inputElement>
 		{#each flavor.directions as direction (direction)}
-			<TerminalRack parentElement={inputElement} terminals={outTerminals} {direction} />
+			<TerminalRack
+				parentElement={inputElement}
+				terminals={direction == Direction.In ? inTerminals : outTerminals}
+				{direction}
+			/>
 		{/each}
 	</Input>
 {/if}

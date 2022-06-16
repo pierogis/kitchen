@@ -5,7 +5,7 @@ import { Direction, FlavorType, type Flavor } from '$lib/common/types';
 
 import type { Coordinates } from '.';
 import type { Cable } from './cables';
-import type { LiveConnection, LiveConnectionState } from './liveConnection';
+import type { LiveConnectionState } from './liveConnection';
 
 export const terminalHeight = 10;
 
@@ -28,6 +28,9 @@ export function createTerminals(
 	cables: Readable<Cable[]>,
 	liveConnection: LiveConnectionState
 ): Readable<Terminal[]> {
+	let novelInConnectionUuid = uuid();
+	let novelOutConnectionUuid = uuid();
+
 	const novelInCoordinates = writable(undefined);
 	const novelOutCoordinates = writable(undefined);
 	const disconnectedCoords = writable(undefined);
@@ -35,6 +38,12 @@ export function createTerminals(
 	const terminals = derived([cables, liveConnection], ([currentCables, currentLiveConnection]) => {
 		let inTerminalUsed = false;
 		const terminals: Terminal[] = currentCables.flatMap((cable) => {
+			if (cable.connectionUuid == novelInConnectionUuid) {
+				novelInConnectionUuid = uuid();
+			}
+			if (cable.connectionUuid == novelOutConnectionUuid) {
+				novelOutConnectionUuid = uuid();
+			}
 			const terminals = [];
 			if (cable.inFlavorUuid == flavor.uuid) {
 				inTerminalUsed = true;
@@ -56,28 +65,30 @@ export function createTerminals(
 					flavorType: flavor.type
 				});
 			}
-
 			return terminals;
 		});
 
 		// creating novel terminals
-		if (!inTerminalUsed) {
-			terminals.push({
-				flavorUuid: flavor.uuid,
-				direction: Direction.In,
-				connectionUuid: uuid(),
-				coordinates: novelInCoordinates,
-				cabled: false,
-				flavorType: flavor.type
-			});
-		}
-		terminals.push({
-			flavorUuid: flavor.uuid,
-			direction: Direction.Out,
-			connectionUuid: uuid(),
-			coordinates: novelOutCoordinates,
-			cabled: false,
-			flavorType: flavor.type
+		flavor.directions.forEach((direction) => {
+			if (!inTerminalUsed && direction == Direction.In) {
+				terminals.push({
+					flavorUuid: flavor.uuid,
+					direction: Direction.In,
+					connectionUuid: novelInConnectionUuid,
+					coordinates: novelInCoordinates,
+					cabled: false,
+					flavorType: flavor.type
+				});
+			} else {
+				terminals.push({
+					flavorUuid: flavor.uuid,
+					direction: Direction.Out,
+					connectionUuid: novelOutConnectionUuid,
+					coordinates: novelOutCoordinates,
+					cabled: false,
+					flavorType: flavor.type
+				});
+			}
 		});
 
 		// maintain terminal for a disconnected flavor
