@@ -18,7 +18,7 @@ export interface ViewState {
 	cables: Readable<Cable[]>;
 	nodes: Readable<Node[]>;
 	dockedFlavors: Readable<Flavor[]>;
-	cursorCoordinates: Writable<Coordinates>;
+	cursorCoordinates: Writable<Coordinates | undefined>;
 	liveConnection: LiveConnectionState;
 	liveTerminal: Readable<Terminal | undefined>;
 	terminals: Readable<Terminal[]>;
@@ -55,7 +55,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	);
 
-	const cursorCoordinates = writable({ x: 0, y: 0 });
+	const cursorCoordinates = writable(undefined);
 
 	const liveConnection = createLiveConnection(recipeState, focusedIngredient);
 

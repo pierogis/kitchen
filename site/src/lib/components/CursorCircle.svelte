@@ -6,15 +6,15 @@
 
 	// define svelte sping animation effects
 
-	export let cursorCoordinates: Readable<Coordinates>;
+	export let cursorCoordinates: Coordinates;
 	export let pressing: boolean;
 
-	const springCursorCoordinates = spring($cursorCoordinates, {
+	const springCursorCoordinates = spring(cursorCoordinates, {
 		stiffness: 0.2,
 		damping: 0.65
 	});
 
-	$: $springCursorCoordinates = $cursorCoordinates;
+	$: $springCursorCoordinates = cursorCoordinates;
 
 	const radius = 10;
 	const size = spring(0);

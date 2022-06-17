@@ -109,8 +109,8 @@
 	use:grabTerminalAction={{ cabled: terminal.cabled, liveConnection: $liveConnection }}
 >
 	<div
-		use:updateCoordsAction
 		use:useActions={actionDescriptions}
+		use:updateCoordsAction
 		class="terminal"
 		class:out={terminal.direction == Direction.Out}
 		class:in={terminal.direction == Direction.In}

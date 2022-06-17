@@ -19,7 +19,7 @@
 	export let connections: Map<string, Connection>;
 	export let shaders: Map<string, Shader>;
 
-	export let cursorCoordinates: Readable<Coordinates>;
+	export let cursorCoordinates: Readable<Coordinates | undefined>;
 
 	let canvas: HTMLCanvasElement;
 	const recipeState: RecipeState = getContext('recipe');
@@ -84,7 +84,7 @@
 					window.removeEventListener('mouseup', handleMouseUp);
 					$pressing = false;
 					// notify parent that there has been a long press
-					dispatchCreateIngredientActions(recipeState, $cursorCoordinates);
+					dispatchCreateIngredientActions(recipeState, { x: event.clientX, y: event.clientY });
 				}, touchDuration);
 			}
 		}
@@ -102,4 +102,6 @@
 
 <canvas bind:this={canvas} use:longPressAction {width} {height} />
 
-<CursorCircle {cursorCoordinates} pressing={$pressing} />
+{#if $cursorCoordinates}
+	<CursorCircle cursorCoordinates={$cursorCoordinates} pressing={$pressing} />
+{/if}

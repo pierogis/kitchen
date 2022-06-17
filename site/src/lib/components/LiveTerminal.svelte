@@ -18,8 +18,10 @@
 
 		const follow = () => {
 			cursorUnsub = viewState.cursorCoordinates.subscribe((currentCursorCoordinates) => {
-				element.style.left = currentCursorCoordinates.x + 'px';
-				element.style.top = currentCursorCoordinates.y + 'px';
+				if (currentCursorCoordinates) {
+					element.style.left = currentCursorCoordinates.x + 'px';
+					element.style.top = currentCursorCoordinates.y + 'px';
+				}
 			});
 		};
 
