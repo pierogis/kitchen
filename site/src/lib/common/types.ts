@@ -60,18 +60,18 @@ export interface Parameter {
 }
 
 type FlavorTypesPayloadMapper = {
-	type: FlavorType;
-	Color: { r: number; g: number; b: number };
-	Image: string;
-	Number: number;
-	Text: string;
+	[FlavorType.Color]: string;
+	[FlavorType.Image]: string;
+	[FlavorType.Number]: number;
+	[FlavorType.Text]: string;
 };
 
-export type Payload<T> = T extends FlavorType
-	? Partial<{ [key in T]: FlavorTypesPayloadMapper[T] }> & {
-			type: T;
-	  }
-	: never;
+export type PayloadParams<T> = T extends FlavorType ? FlavorTypesPayloadMapper[T] : never;
+
+export interface Payload<T extends FlavorType> {
+	type: T;
+	params: PayloadParams<T> | undefined;
+}
 
 export interface Location {
 	uuid: string;

@@ -68,7 +68,7 @@
 		style:--rack-height={rackHeight + 'px'}
 		style:--pane-offset={paneOffset + 'px'}
 	>
-		{#each terminals as terminal, i (terminal.connectionUuid)}
+		{#each terminals as terminal (terminal.connectionUuid)}
 			<TerminalComponent {terminal} {expanded} {terminalHeight} />
 		{/each}
 	</div>

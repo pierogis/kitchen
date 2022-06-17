@@ -23,28 +23,27 @@
 
 	export let folder: FolderApi;
 
-	let initialParams: Payload<FlavorType>;
-	if (inCable) {
-		initialParams = get(inCable.payload);
-	} else {
+	let initialPayload = inCable ? get(inCable.payload) : undefined;
+
+	if (!initialPayload || !initialPayload.params) {
 		switch (flavor.type) {
 			case FlavorType.Color:
-				initialParams = { type: FlavorType.Color, Color: { r: 0, g: 0, b: 0 } };
+				initialPayload = { type: FlavorType.Color, params: '000000' };
 				break;
 			case FlavorType.Image:
-				initialParams = { type: FlavorType.Image, Image: '' };
+				initialPayload = { type: FlavorType.Image, params: '' };
 				break;
 			case FlavorType.Number:
-				initialParams = { type: FlavorType.Number, Number: 0 };
+				initialPayload = { type: FlavorType.Number, params: 0 };
 				break;
 			case FlavorType.Text:
-				initialParams = { type: FlavorType.Text, Text: '' };
+				initialPayload = { type: FlavorType.Text, params: '' };
 				break;
 		}
 	}
 
 	// need an intermediary store that recieves changes from ui
-	const payloadStore: Writable<Payload<FlavorType>> = writable(initialParams);
+	const payloadStore: Writable<Payload<FlavorType>> = writable(initialPayload);
 
 	// update ui paramsStore with new inCable payloads
 	inCable?.payload.subscribe((newPayload) => {
@@ -65,7 +64,7 @@
 	});
 </script>
 
-{#if inCable}
+{#if inCable && $payloadStore}
 	<Monitor {folder} {payloadStore} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack

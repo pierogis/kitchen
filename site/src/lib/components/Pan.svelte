@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { getContext, onMount, tick } from 'svelte';
 
-	import { v4 as uuid } from 'uuid';
-
 	import type { Parameter, Shader, Connection, Ingredient, Flavor } from '$lib/common/types';
 
 	import { draw } from '$lib/common/draw';

@@ -115,6 +115,14 @@ export const defaultRecipe: FullRecipe = {
 						type: FlavorType.Text,
 						directions: [Direction.In],
 						options: null
+					},
+					{
+						uuid: '7',
+						ingredientUuid: '2',
+						name: 'color',
+						type: FlavorType.Color,
+						directions: [Direction.In],
+						options: { view: 'color', color: { alpha: true } }
 					}
 				],
 				connections: []
@@ -135,7 +143,7 @@ export const defaultRecipe: FullRecipe = {
 			callForUuid: '0',
 			payload: {
 				type: FlavorType.Image,
-				Image: ''
+				params: ''
 			}
 		},
 		{
@@ -145,7 +153,7 @@ export const defaultRecipe: FullRecipe = {
 			callForUuid: '0',
 			payload: {
 				type: FlavorType.Number,
-				Number: 0
+				params: 0
 			}
 		},
 		{
@@ -155,7 +163,7 @@ export const defaultRecipe: FullRecipe = {
 			callForUuid: '0',
 			payload: {
 				type: FlavorType.Number,
-				Number: 40
+				params: 40
 			}
 		},
 		{
@@ -165,7 +173,7 @@ export const defaultRecipe: FullRecipe = {
 			callForUuid: '0',
 			payload: {
 				type: FlavorType.Number,
-				Number: 180
+				params: 180
 			}
 		},
 		{
@@ -175,7 +183,7 @@ export const defaultRecipe: FullRecipe = {
 			callForUuid: '1',
 			payload: {
 				type: FlavorType.Text,
-				Text: ''
+				params: ''
 			}
 		},
 		{
@@ -185,7 +193,7 @@ export const defaultRecipe: FullRecipe = {
 			callForUuid: '2',
 			payload: {
 				type: FlavorType.Image,
-				Image: ''
+				params: ''
 			}
 		},
 		{
@@ -195,7 +203,17 @@ export const defaultRecipe: FullRecipe = {
 			callForUuid: '2',
 			payload: {
 				type: FlavorType.Text,
-				Text: ''
+				params: ''
+			}
+		},
+		{
+			uuid: '7',
+			recipeUuid: '0',
+			flavorUuid: '7',
+			callForUuid: '2',
+			payload: {
+				type: FlavorType.Color,
+				params: '000000'
 			}
 		}
 	],

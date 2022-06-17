@@ -94,7 +94,7 @@ export function createLiveConnection(
 				recipeState.dispatch({
 					type: ActionType.DeleteConnection,
 					params: {
-						connectionUuid: terminal.connectionUuid
+						uuid: terminal.connectionUuid
 					}
 				});
 
@@ -137,17 +137,19 @@ export function createLiveConnection(
 			}
 
 			const params: ActionParams<ActionType.CreateConnection> = {
-				uuid: connectionUuid,
-				parentIngredientUuid: get(currentFocusedIngredientUuid),
-				inFlavorUuid:
-					liveConnection.anchorDirection == Direction.In
-						? liveConnection.anchorFlavorUuid
-						: targetFlavorUuid,
-				outFlavorUuid:
-					liveConnection.anchorDirection == Direction.In
-						? targetFlavorUuid
-						: liveConnection.anchorFlavorUuid,
-				flavorType: liveConnection.flavorType
+				connection: {
+					uuid: connectionUuid,
+					parentIngredientUuid: get(currentFocusedIngredientUuid),
+					inFlavorUuid:
+						liveConnection.anchorDirection == Direction.In
+							? liveConnection.anchorFlavorUuid
+							: targetFlavorUuid,
+					outFlavorUuid:
+						liveConnection.anchorDirection == Direction.In
+							? targetFlavorUuid
+							: liveConnection.anchorFlavorUuid,
+					flavorType: liveConnection.flavorType
+				}
 			};
 
 			recipeState.dispatch({

@@ -74,8 +74,8 @@ export function createCables(
 								inFlavorUuid: terminalPair.inTerminal.flavorUuid,
 								outFlavorUuid: terminalPair.outTerminal.flavorUuid,
 								payload: writable({
-									...outParameter?.payload,
-									type: terminalPair.outTerminal.flavorType
+									type: terminalPair.outTerminal.flavorType,
+									params: outParameter?.payload?.params
 								})
 							}
 						];
