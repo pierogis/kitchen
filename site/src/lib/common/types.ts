@@ -21,6 +21,7 @@ export interface Connection {
 	parentIngredientUuid: string;
 	inFlavorUuid: string;
 	outFlavorUuid: string;
+	flavorType: FlavorType;
 }
 
 export interface Recipe {

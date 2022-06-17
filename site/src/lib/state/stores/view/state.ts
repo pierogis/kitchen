@@ -1,11 +1,16 @@
 import { derived, writable, type Writable, type Readable } from 'svelte/store';
 
-import { Direction, type Flavor } from '$lib/common/types';
+import type { Flavor } from '$lib/common/types';
 import type { RecipeState } from '$lib/state/stores/recipe';
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
 import { createCables, type Cable } from './cables';
 import { createNodes, type Node } from './nodes';
-import type { Terminal } from './terminals';
+import {
+	createTerminalCoordinates,
+	type Terminal,
+	type TerminalCoordinatesState
+} from './terminals';
+import { createTerminals } from '.';
 
 export type Coordinates = { x: number; y: number };
 
@@ -16,6 +21,8 @@ export interface ViewState {
 	cursorCoordinates: Writable<Coordinates>;
 	liveConnection: LiveConnectionState;
 	liveTerminal: Readable<Terminal | undefined>;
+	terminals: Readable<Terminal[]>;
+	terminalCoordinates: TerminalCoordinatesState;
 }
 
 export function readableViewState(recipeState: RecipeState): ViewState {
@@ -52,8 +59,25 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 
 	const liveConnection = createLiveConnection(recipeState, focusedIngredient);
 
+	const terminals = createTerminals(recipeState, focusedIngredient, liveConnection);
+
+	const liveTerminal: Readable<Terminal | undefined> = derived(
+		[liveConnection],
+		([currentLiveConnection]) => {
+			if (currentLiveConnection) {
+				return {
+					direction: currentLiveConnection.dragDirection,
+					flavorType: currentLiveConnection.flavorType,
+
+					connectionUuid: currentLiveConnection.connectionUuid,
+					cabled: true
+				};
+			}
+		}
+	);
+
 	// create representations of connections in the current view
-	const cables = createCables(recipeState, focusedIngredient, liveConnection);
+	const cables = createCables(recipeState, terminals, liveTerminal);
 
 	// callsFor/ingredients/nodes in the current view and their components
 	const nodes = createNodes(recipeState, focusedCallsFor);
@@ -68,29 +92,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	);
 
-	const liveTerminal: Readable<Terminal | undefined> = derived(
-		[cables, liveConnection],
-		([currentCables, currentLiveConnection]) => {
-			if (currentLiveConnection) {
-				const liveCable = currentCables.find(
-					(cable) => cable.connectionUuid == currentLiveConnection.connectionUuid
-				);
-
-				if (liveCable) {
-					return {
-						direction: currentLiveConnection.dragDirection,
-						flavorType: currentLiveConnection.flavorType,
-						coordinates:
-							currentLiveConnection.dragDirection == Direction.In
-								? liveCable.inCoordinates
-								: liveCable.outCoordinates,
-						connectionUuid: currentLiveConnection.connectionUuid,
-						cabled: true
-					};
-				}
-			}
-		}
-	);
+	const terminalCoordinates = createTerminalCoordinates();
 
 	return {
 		cables,
@@ -98,6 +100,8 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		dockedFlavors,
 		cursorCoordinates,
 		liveConnection,
-		liveTerminal
+		liveTerminal,
+		terminals,
+		terminalCoordinates
 	};
 }

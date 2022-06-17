@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { getContext, onDestroy } from 'svelte';
+	import { getContext } from 'svelte';
 
 	import { Direction } from '$lib/common/types';
-	import { calculateCenter, checkPointWithinBox } from '$lib/common/utils';
+	import { calculateCenter } from '$lib/common/utils';
 
-	import type { Coordinates, LiveConnection, ViewState } from '$lib/state/stores/view';
+	import type { LiveConnection, ViewState } from '$lib/state/stores/view';
 	import { viewStateContextKey } from '$lib/state';
 	import type { Terminal } from '$lib/state/stores/view/terminals';
-	import { derived, get, type Writable } from 'svelte/store';
+	import { derived } from 'svelte/store';
 
 	import { useActions, type ActionDescription } from '$lib/common/actions/useActions';
 
@@ -22,30 +22,35 @@
 	const viewState: ViewState = getContext(viewStateContextKey);
 
 	// export let actionDescriptions: ActionDescription<any>[];
-	function updateCoordsAction(
-		element: HTMLElement,
-		coordinates: Writable<Coordinates | undefined>
-	) {
-		let updateRect = () => {
+	function updateCoordsAction(element: HTMLElement) {
+		const getPosition = () => {
 			// calculate the rect and dispatch to the callback
 			let rect: DOMRect = element.getBoundingClientRect();
 			// accounts for scroll
 			rect.x += window.pageXOffset;
 			rect.y += window.pageYOffset;
 			let center = calculateCenter(rect);
-			coordinates.set({
+
+			return center;
+		};
+
+		const updateRect = () => {
+			const center = getPosition();
+			// update central store
+			viewState.terminalCoordinates.updateCoordinates(terminal, {
 				x: center.x,
 				y: center.y
 			});
 		};
 
+		// register this terminal
+		viewState.terminalCoordinates.addTerminal(terminal, getPosition());
+		// callback every 10ms to update the coordinates
 		let rectUpdateInterval = setInterval(updateRect, 10);
 
 		return {
-			update(newCoordinates: Writable<Coordinates>) {
-				coordinates = newCoordinates;
-			},
 			destroy() {
+				viewState.terminalCoordinates.deleteTerminal(terminal);
 				clearInterval(rectUpdateInterval);
 			}
 		};
@@ -93,91 +98,6 @@
 		};
 	}
 
-	function dropTerminalAction(
-		element: HTMLElement,
-		params: {
-			coordinates: Writable<Coordinates | undefined>;
-			liveConnection: LiveConnection | undefined;
-		}
-	) {
-		let handleMouseDown = (event: MouseEvent) => {
-			// ensure left click
-			if (event.button == 0) {
-				element.style.cursor = '';
-
-				if (params.liveConnection) {
-					// for live terminal
-					if (!live && terminal.flavorUuid) {
-						// drop the terminal and slinky back to anchor
-						// $followCursor = false;
-						// const liveCable = get(viewState.cables).find(
-						// 	(cable) => cable.connectionUuid == params.liveConnection?.connectionUuid
-						// );
-						// if (liveCable) {
-						// 	const anchorCoordinates = get(
-						// 		params.liveConnection.anchorDirection == Direction.In
-						// 			? liveCable.inCoordinates
-						// 			: liveCable.outCoordinates
-						// 	);
-						// 	if (anchorCoordinates) {
-						// 		// set tween controlling position in
-
-						// 		tween.set(anchorCoordinates);
-						// 	}
-						// }
-						const nearTerminalDistance = 4;
-						// expanding the rect
-
-						const terminalCoordinates = get(terminal.coordinates);
-
-						if (terminalCoordinates) {
-							const left = terminalCoordinates.x - (terminalHeight / 2 + nearTerminalDistance);
-							const top = terminalCoordinates.y - (terminalHeight / 2 + nearTerminalDistance);
-							const right = terminalCoordinates.x + (terminalHeight / 2 + nearTerminalDistance);
-							const bottom = terminalCoordinates.y + (terminalHeight / 2 + nearTerminalDistance);
-
-							if (
-								checkPointWithinBox(
-									{ x: event.clientX, y: event.clientY },
-									{ top: top, bottom: bottom, left: left, right: right }
-								)
-							) {
-								if (terminal.flavorUuid) {
-									params.liveConnection.connect(
-										terminal.flavorUuid,
-										terminal.cabled ? terminal.connectionUuid : undefined
-									);
-								}
-							}
-						}
-					}
-				}
-			}
-		};
-
-		if (liveConnection) {
-			element.addEventListener('mousedown', handleMouseDown);
-		}
-
-		return {
-			update(newParams: {
-				coordinates: Writable<Coordinates | undefined>;
-				liveConnection: LiveConnection | undefined;
-			}) {
-				element.removeEventListener('mousedown', handleMouseDown);
-				params = newParams;
-				if (params.liveConnection) {
-					element.addEventListener('mousedown', handleMouseDown);
-				} else {
-					element.removeEventListener('mousedown', handleMouseDown);
-				}
-			},
-			destroy() {
-				element.removeEventListener('mousedown', handleMouseDown);
-			}
-		};
-	}
-
 	const liveConnection = derived(
 		viewState.liveConnection,
 		(currentLiveConnection) => currentLiveConnection
@@ -185,20 +105,28 @@
 </script>
 
 <div
-	use:useActions={actionDescriptions}
-	use:updateCoordsAction={terminal.coordinates}
+	class="terminal-container"
 	use:grabTerminalAction={{ cabled: terminal.cabled, liveConnection: $liveConnection }}
-	use:dropTerminalAction={{ coordinates: terminal.coordinates, liveConnection: $liveConnection }}
-	class="terminal"
-	class:out={terminal.direction == Direction.Out}
-	class:in={terminal.direction == Direction.In}
-	class:expanded
-	class:cabled={terminal.cabled}
-	class:live
-	style:--terminal-height="{terminalHeight}px"
-/>
+>
+	<div
+		use:updateCoordsAction
+		use:useActions={actionDescriptions}
+		class="terminal"
+		class:out={terminal.direction == Direction.Out}
+		class:in={terminal.direction == Direction.In}
+		class:expanded
+		class:cabled={terminal.cabled}
+		class:live
+		style:--terminal-height="{terminalHeight}px"
+	/>
+</div>
 
 <style>
+	.terminal-container {
+		padding: 6px;
+		margin: -6px;
+		cursor: grab;
+	}
 	.terminal {
 		--border-width: 2px;
 		position: relative;
@@ -211,9 +139,6 @@
 		transition: border-radius 300ms, border 300ms, margin 300ms, width 300ms, left 300ms,
 			right 300ms;
 		z-index: 1;
-		cursor: grab;
-
-		pointer-events: all;
 	}
 
 	.terminal:focus {

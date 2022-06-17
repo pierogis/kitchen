@@ -1,88 +1,89 @@
 import { derived, writable, type Readable, type Writable } from 'svelte/store';
 
-import { Direction, type FlavorType, type Ingredient, type Payload } from '$lib/common/types';
+import { Direction, type FlavorType, type Payload } from '$lib/common/types';
 
 import type { RecipeState } from '$lib/state/stores/recipe';
-import type { Coordinates } from '.';
-import type { LiveConnectionState } from './liveConnection';
+import type { Terminal } from '.';
 
 export interface Cable {
 	connectionUuid: string;
 	flavorType: FlavorType;
 	inFlavorUuid: string | undefined;
 	outFlavorUuid: string | undefined;
-	inCoordinates: Writable<Coordinates | undefined>;
-	outCoordinates: Writable<Coordinates | undefined>;
 	payload: Writable<Payload<FlavorType>>;
 }
 
 export function createCables(
-	state: RecipeState,
-	focusedIngredient: Readable<Ingredient>,
-	liveConnection: LiveConnectionState
+	recipeState: RecipeState,
+	terminals: Readable<Terminal[]>,
+	liveTerminal: Readable<Terminal | undefined>
 ): Readable<Cable[]> {
-	const focusedConnections = derived(
-		[focusedIngredient, state.connections],
-		([currentFocusedIngredient, currentConnections]) =>
-			Array.from(currentConnections.values()).filter(
-				(connection) => connection.parentIngredientUuid == currentFocusedIngredient.uuid
-			)
-	);
-
 	const cables: Readable<Cable[]> = derived(
-		[focusedConnections, state.parameters, state.flavors, liveConnection],
-		([currentFocusedConnections, currentParameters, currentFlavors, currentLiveConnection]) => {
-			const cables: Cable[] = currentFocusedConnections.map((connection) => {
-				// get the parameter corresponding to the connection's outputting, "source" flavor ->
-				const outParameter = Array.from(currentParameters.values()).find(
-					(parameter) => parameter.flavorUuid == connection.outFlavorUuid
-				);
-
-				const inFlavor = Array.from(currentFlavors.values()).find(
-					(flavor) => flavor.uuid == connection.inFlavorUuid
-				);
-
-				if (!inFlavor) {
-					throw `inFlavor ${connection.inFlavorUuid} for connection ${connection.uuid} not found`;
+		[terminals, liveTerminal, recipeState.parameters],
+		([currentTerminals, currentLiveTerminal, currentParameters]) => {
+			const terminalPairs: Map<
+				string,
+				{
+					inTerminal: Terminal | undefined;
+					outTerminal: Terminal | undefined;
 				}
+			> = new Map();
 
-				const outFlavor = Array.from(currentFlavors.values()).find(
-					(flavor) => flavor.uuid == connection.outFlavorUuid
-				);
-
-				if (!outFlavor) {
-					throw `outFlavor ${connection.outFlavorUuid} for connection ${connection.uuid} not found`;
-				}
-
-				return {
-					connectionUuid: connection.uuid,
-					flavorType: outFlavor.type,
-					inFlavorUuid: connection.inFlavorUuid,
-					outFlavorUuid: connection.outFlavorUuid,
-					inCoordinates: writable(undefined),
-					outCoordinates: writable(undefined),
-					payload: writable({ ...outParameter?.payload, type: outFlavor.type })
+			currentTerminals.forEach((terminal) => {
+				const terminalPair = {
+					inTerminal:
+						terminal.direction == Direction.In
+							? terminal
+							: terminalPairs.get(terminal.connectionUuid)?.inTerminal,
+					outTerminal:
+						terminal.direction == Direction.Out
+							? terminal
+							: terminalPairs.get(terminal.connectionUuid)?.outTerminal
 				};
+				terminalPairs.set(terminal.connectionUuid, terminalPair);
 			});
 
-			if (currentLiveConnection) {
-				const liveCable: Cable = {
-					connectionUuid: currentLiveConnection.connectionUuid,
-					flavorType: currentLiveConnection.flavorType,
-					inFlavorUuid:
-						currentLiveConnection.anchorDirection == Direction.In
-							? currentLiveConnection.anchorFlavorUuid
-							: undefined,
-					outFlavorUuid:
-						currentLiveConnection.anchorDirection == Direction.Out
-							? currentLiveConnection.anchorFlavorUuid
-							: undefined,
-					inCoordinates: writable(undefined),
-					outCoordinates: writable(undefined),
-					payload: writable({ type: currentLiveConnection.flavorType })
+			if (currentLiveTerminal) {
+				// update the half-filled connection
+				const liveTerminalPair = {
+					inTerminal:
+						currentLiveTerminal.direction == Direction.In
+							? currentLiveTerminal
+							: terminalPairs.get(currentLiveTerminal.connectionUuid)?.inTerminal,
+					outTerminal:
+						currentLiveTerminal.direction == Direction.Out
+							? currentLiveTerminal
+							: terminalPairs.get(currentLiveTerminal.connectionUuid)?.outTerminal
 				};
-				cables.push(liveCable);
+
+				terminalPairs.set(currentLiveTerminal.connectionUuid, liveTerminalPair);
 			}
+
+			const cables: Cable[] = Array.from(terminalPairs.entries()).flatMap(
+				([connectionUuid, terminalPair]) => {
+					if (terminalPair.inTerminal && terminalPair.outTerminal) {
+						// get the parameter corresponding to the connection's outputting, "source" flavor ->
+						const outParameter = Array.from(currentParameters.values()).find(
+							(parameter) => parameter.flavorUuid == terminalPair.outTerminal?.flavorUuid
+						);
+
+						return [
+							{
+								connectionUuid: connectionUuid,
+								flavorType: terminalPair.outTerminal.flavorType,
+								inFlavorUuid: terminalPair.inTerminal.flavorUuid,
+								outFlavorUuid: terminalPair.outTerminal.flavorUuid,
+								payload: writable({
+									...outParameter?.payload,
+									type: terminalPair.outTerminal.flavorType
+								})
+							}
+						];
+					} else {
+						return [];
+					}
+				}
+			);
 
 			return cables;
 		}

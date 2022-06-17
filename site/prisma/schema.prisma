@@ -53,6 +53,7 @@ model Connection {
   inFlavor             Flavor     @relation("Flavor_inConnection", fields: [inFlavorUuid], references: [uuid])
   outFlavorUuid        String     @db.Uuid
   outFlavor            Flavor     @relation("Flavor_outConnections", fields: [outFlavorUuid], references: [uuid])
+  flavorType           FlavorType
 
   @@unique([parentIngredientUuid, inFlavorUuid, outFlavorUuid])
 }

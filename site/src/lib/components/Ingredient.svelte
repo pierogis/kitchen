@@ -45,6 +45,7 @@
 	const nodeHeaderSize = 12;
 
 	$: cables = viewState.cables;
+	$: terminals = viewState.terminals;
 </script>
 
 <div
@@ -69,6 +70,9 @@
 						currentCables.filter(
 							(cable) => cable.outFlavorUuid == flavor.uuid || cable.inFlavorUuid == flavor.uuid
 						)
+					)}
+					terminals={derived(terminals, (currentTerminals) =>
+						currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
 					)}
 					{flavor}
 					folder={pane}

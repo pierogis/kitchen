@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { get, writable, type Readable, type Writable } from 'svelte/store';
-	import { getContext } from 'svelte';
 
 	import type { FolderApi } from 'tweakpane';
 
 	import { type Payload, type Flavor, FlavorType, Direction } from '$lib/common/types';
 
-	import type { ViewState } from '$lib/state/stores/view';
-	import { viewStateContextKey } from '$lib/state';
-	import { type Cable, createTerminals, type Terminal } from '$lib/state/stores/view';
+	import type { Cable, Terminal } from '$lib/state/stores/view';
 
 	import Monitor from './tweakpane/Monitor.svelte';
 	import Input from './tweakpane/Input.svelte';
@@ -16,10 +13,7 @@
 
 	export let flavor: Flavor;
 	export let cables: Readable<Cable[]>;
-
-	const viewState: ViewState = getContext(viewStateContextKey);
-
-	const terminals = createTerminals(flavor, cables, viewState.liveConnection);
+	export let terminals: Readable<Terminal[]>;
 
 	$: inTerminals = $terminals.filter((terminal) => terminal.direction == Direction.In);
 	$: outTerminals = $terminals.filter((terminal) => terminal.direction == Direction.Out);

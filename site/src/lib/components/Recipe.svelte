@@ -1,27 +1,24 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
-	import { get, type Readable } from 'svelte/store';
+	import type { Readable } from 'svelte/store';
 
-	import { Direction, FlavorType } from '$lib/common/types';
-	import { ActionType, type Action } from '$lib/state/actions';
+	import { Direction } from '$lib/common/types';
 
-	import type { RecipeState } from '$lib/state/stores/recipe';
 	import type { Node } from '$lib/state/stores/view/nodes';
 	import type { Cable } from '$lib/state/stores/view/cables';
 
 	import {} from '$lib/flavors/plugins';
 
-	import CursorCircle from '$lib/components/CursorCircle.svelte';
 	import IngredientComponent from '$lib/components/Ingredient.svelte';
 	import Dock from '$lib/components/Dock.svelte';
 	import CableComponent from './Cable.svelte';
 	import LiveTerminal from './LiveTerminal.svelte';
 
-	import type { Terminal, ViewState } from '$lib/state/stores/view';
-	import { viewStateContextKey } from '$lib/state';
+	import type { Terminal } from '$lib/state/stores/view';
+	import type { TerminalCoordinatesState } from '$lib/state/stores/view/terminals';
 
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
+	export let terminalCoordinates: TerminalCoordinatesState;
 	export let liveTerminal: Readable<Terminal | undefined>;
 </script>
 
@@ -35,13 +32,15 @@
 {/each}
 
 {#each $cables as cable (cable.connectionUuid)}
-	<CableComponent inCoordinates={cable.inCoordinates} outCoordinates={cable.outCoordinates} />
+	<CableComponent
+		inCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
+		outCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
+	/>
 {/each}
 
 {#if $liveTerminal}
 	<LiveTerminal
 		terminal={{
-			coordinates: $liveTerminal.coordinates,
 			flavorUuid: undefined,
 			direction: $liveTerminal.direction,
 			cabled: true,
