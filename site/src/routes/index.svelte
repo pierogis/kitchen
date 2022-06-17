@@ -53,4 +53,5 @@
 	connections={$recipeState.connections}
 	shaders={$recipeState.shaders}
 	parameters={$recipeState.parameters}
+	cursorCoordinates={viewState.cursorCoordinates}
 />

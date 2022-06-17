@@ -20,37 +20,9 @@
 	import type { Terminal, ViewState } from '$lib/state/stores/view';
 	import { viewStateContextKey } from '$lib/state';
 
-	const recipeState: RecipeState = getContext('recipe');
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
 	export let liveTerminal: Readable<Terminal | undefined>;
-
-	function createIngredient(coordinates: { x: number; y: number }) {
-		const action: Action<ActionType.CreateIngredient> = {
-			type: ActionType.CreateIngredient,
-			params: {
-				ingredient: {
-					name: 'default'
-				},
-				callFor: {
-					parentCallForUuid: get(recipeState.focusedCallForUuid),
-					recipeUuid: get(recipeState.recipeUuid)
-				},
-				location: { ...coordinates },
-				flavors: [
-					{
-						type: FlavorType.Text,
-						name: 'text',
-						options: null,
-						directions: [Direction.Out]
-					}
-				]
-			}
-		};
-
-		recipeState.dispatch(action);
-	}
-	const viewState: ViewState = getContext(viewStateContextKey);
 </script>
 
 {#each $nodes as node (node.callFor.uuid)}
@@ -81,11 +53,3 @@
 
 <Dock direction={Direction.In} />
 <Dock direction={Direction.Out} />
-
-<CursorCircle
-	cursorCoordinates={viewState.cursorCoordinates}
-	on:longpress={(event) => {
-		const coords = event.detail;
-		createIngredient(coords);
-	}}
-/>
