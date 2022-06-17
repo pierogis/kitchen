@@ -1,5 +1,6 @@
 import { Direction, type FullRecipe, FlavorType } from '$lib/common/types';
 
+// Sample API response for defaultRecipe:
 export const defaultRecipe: FullRecipe = {
 	uuid: '0',
 	mainCallForUuid: '0',

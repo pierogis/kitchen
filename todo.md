@@ -1,4 +1,5 @@
-# todo
+# ToDos
+## App Related
 
 - [ ] recipe
   - [ ] terminals
@@ -15,3 +16,12 @@
   - [ ] detect near terminals and take the closest non live
 - [ ] pan
   - [ ] cooking images in progress
+
+
+ ## Project Structure
+ - [ ] move to main/dev branches
+ - [ ] make a readme
+ - [ ] needs a trello board
+ - [ ] draw a picture of the schema.prisma file
+  - UML?
+  - Lucid Chart?

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 enum FlavorType {
@@ -75,11 +75,11 @@ model Parameter {
   text        String? @db.VarChar(511)
   color       String? @db.VarChar(6)
   image       String? @db.VarChar(511)
-  recipeUuid  String
+  recipeUuid  String  @db.Uuid
   recipe      Recipe  @relation("Parameter_recipe", fields: [recipeUuid], references: [uuid])
-  flavorUuid  String  @unique
+  flavorUuid  String  @unique @db.Uuid
   flavor      Flavor  @relation("Parameter_flavor", fields: [flavorUuid], references: [uuid])
-  callForUuid String
+  callForUuid String  @db.Uuid
   callFor     CallFor @relation("Parameter_callFor", fields: [callForUuid], references: [uuid])
 
   @@unique([recipeUuid, flavorUuid])
@@ -98,6 +98,7 @@ model Shader {
   fragmentSource  String     @db.VarChar(16383)
 }
 
+// like, a recipe "calls for" an ingredient
 model CallFor {
   id                Int         @id @default(autoincrement())
   uuid              String      @unique @db.Uuid
