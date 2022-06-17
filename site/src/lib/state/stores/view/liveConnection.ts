@@ -109,7 +109,7 @@ export function createLiveConnection(
 					anchorDirection: terminal.direction == Direction.In ? Direction.Out : Direction.In,
 
 					anchorFlavorUuid,
-					disconnectedFlavorUuid: undefined,
+					disconnectedFlavorUuid: terminal.flavorUuid,
 
 					payload: undefined,
 					drop,

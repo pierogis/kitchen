@@ -157,7 +157,7 @@ export function createTerminals(
 				terminals.push({
 					flavorUuid: currentLiveConnection.disconnectedFlavorUuid,
 					direction: currentLiveConnection.dragDirection,
-					connectionUuid: currentLiveConnection.connectionUuid,
+					connectionUuid: uuid(),
 					cabled: false,
 					flavorType: currentLiveConnection.flavorType
 				});
