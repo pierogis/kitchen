@@ -5,7 +5,7 @@ import type { Writable } from 'svelte/store';
 
 export function dispatcher(recipeState: Writable<FlatRecipe>) {
 	let undoActions: Action<ActionType>[][] = [];
-	const redoActions: Action<ActionType>[][] = [];
+	let redoActions: Action<ActionType>[][] = [];
 
 	let lastId = 1;
 	const handlers: {
@@ -15,25 +15,26 @@ export function dispatcher(recipeState: Writable<FlatRecipe>) {
 		};
 	} = {};
 
-	function handleAction<T extends ActionType>(action: Action<T>) {
+	function handleActions<T extends ActionType>(actions: Action<T>[]): Action<ActionType>[] {
 		const newUndoActions: Action<ActionType>[] = [];
-		const currentActionHandlers: ActionHandler<ActionType, ActionType>[] = [];
-		for (const id in handlers) {
-			if (handlers[id].type == action.type) {
-				currentActionHandlers.push(handlers[id].handler);
-			}
-		}
-		if (currentActionHandlers.length > 0) {
-			recipeState.update((currentState) => {
-				for (const handler of currentActionHandlers) {
-					const { state: updatedState, undoAction } = handler(currentState, action.params);
-					currentState = updatedState;
-					newUndoActions.push(undoAction);
-				}
 
-				return currentState;
-			});
-		}
+		recipeState.update((currentState) => {
+			for (const action of actions) {
+				for (const id in handlers) {
+					if (handlers[id].type == action.type) {
+						const { state: updatedState, undoAction } = handlers[id].handler(
+							currentState,
+							action.params
+						);
+
+						currentState = updatedState;
+						newUndoActions.push(undoAction);
+					}
+				}
+			}
+
+			return currentState;
+		});
 
 		return newUndoActions;
 	}
@@ -48,42 +49,39 @@ export function dispatcher(recipeState: Writable<FlatRecipe>) {
 	}
 
 	function dispatch<T extends ActionType>(action: Action<T>) {
-		undoActions.push(handleAction(action));
+		undoActions.push(handleActions([action]));
 
 		if (undoActions.length) {
-			undoActions = [];
+			redoActions = [];
+		}
+	}
+
+	function batchDispatch<T extends ActionType>(actions: Action<T>[]) {
+		undoActions.push(handleActions(actions));
+
+		if (undoActions.length) {
+			redoActions = [];
 		}
 	}
 
 	function undo() {
 		const actions = undoActions.pop();
 		if (actions) {
-			redoActions.push(
-				actions
-					.map((action) => {
-						return handleAction(action);
-					})
-					.flat()
-			);
+			redoActions.push(handleActions(actions));
 		}
 	}
 
 	function redo() {
 		const actions = redoActions.pop();
 		if (actions) {
-			undoActions.push(
-				actions
-					.map((action) => {
-						return handleAction(action);
-					})
-					.flat()
-			);
+			undoActions.push(handleActions(actions));
 		}
 	}
 
 	return {
 		register,
 		dispatch,
+		batchDispatch,
 		undo,
 		redo
 	};

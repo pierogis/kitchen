@@ -1,23 +1,16 @@
 <script lang="ts">
 	import { getContext, onMount, tick } from 'svelte';
 
-	import {
-		type Parameter,
-		type Shader,
-		type Connection,
-		type Ingredient,
-		type Flavor,
-		FlavorType,
-		Direction
-	} from '$lib/common/types';
+	import { v4 as uuid } from 'uuid';
+
+	import type { Parameter, Shader, Connection, Ingredient, Flavor } from '$lib/common/types';
 
 	import { draw } from '$lib/common/draw';
 	import CursorCircle from './CursorCircle.svelte';
 	import type { Coordinates } from '$lib/state/stores/view';
-	import { ActionType, type Action } from '$lib/state/actions';
-	import type { createIngredient } from '$lib/state/handlers/ingredients';
-	import { get, writable, type Readable } from 'svelte/store';
+	import { writable, type Readable } from 'svelte/store';
 	import type { RecipeState } from '$lib/state/stores/recipe';
+	import { dispatchCreateIngredientActions } from '$lib/state/batch/ingredient';
 
 	export let width: number;
 	export let height: number;
@@ -65,32 +58,6 @@
 		return () => cancelAnimationFrame(frame);
 	});
 
-	function createIngredient(coordinates: { x: number; y: number }) {
-		const action: Action<ActionType.CreateIngredient> = {
-			type: ActionType.CreateIngredient,
-			params: {
-				ingredient: {
-					name: 'default'
-				},
-				callFor: {
-					parentCallForUuid: get(recipeState.focusedCallForUuid),
-					recipeUuid: get(recipeState.recipeUuid)
-				},
-				location: { ...coordinates },
-				flavors: [
-					{
-						type: FlavorType.Text,
-						name: 'text',
-						options: null,
-						directions: [Direction.Out]
-					}
-				]
-			}
-		};
-
-		recipeState.dispatch(action);
-	}
-
 	const pressing = writable(false);
 
 	function longPressAction(canvas: HTMLCanvasElement) {
@@ -119,7 +86,7 @@
 					window.removeEventListener('mouseup', handleMouseUp);
 					$pressing = false;
 					// notify parent that there has been a long press
-					createIngredient($cursorCoordinates);
+					dispatchCreateIngredientActions(recipeState, $cursorCoordinates);
 				}, touchDuration);
 			}
 		}

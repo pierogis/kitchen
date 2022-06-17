@@ -12,6 +12,6 @@
   - [x] fix ingredient delete
   - [ ] split `createIngredient` into multiple actions (for each added thing)
   - [x] add liveConnection to terminals derived
-  - [ ] detect near terminals and take the closest non live
+  - [x] detect near terminals and take the closest non live
 - [ ] pan
   - [ ] cooking images in progress

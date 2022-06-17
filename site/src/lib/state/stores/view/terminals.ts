@@ -167,7 +167,6 @@ export function createTerminals(
 			// creating novel terminals for each flavor
 			currentFlavors.forEach((flavor) => {
 				flavor.directions.forEach((direction) => {
-					console.log(usedInFlavorUuids);
 					if (!usedInFlavorUuids.has(flavor.uuid) && direction == Direction.In) {
 						let inNovelConnectionUuid = flavorNovelConnectionUuids.get([flavor.uuid, Direction.In]);
 

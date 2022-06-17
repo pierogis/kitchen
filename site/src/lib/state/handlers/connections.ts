@@ -22,7 +22,7 @@ export const createConnection: ActionHandler<
 		undoAction: {
 			type: ActionType.DeleteConnection,
 			params: {
-				connectionUuid: params.uuid
+				uuid: params.uuid
 			}
 		}
 	};
@@ -52,11 +52,11 @@ export const deleteConnection: ActionHandler<
 	ActionType.CreateConnection
 > = (state, params) => {
 	// delete callFor
-	const connection = state.connections.get(params.connectionUuid);
+	const connection = state.connections.get(params.uuid);
 
 	if (connection) {
 	} else {
-		throw `Connection ${params.connectionUuid} does not exist`;
+		throw `Connection ${params.uuid} does not exist`;
 	}
 	state.connections.delete(connection.uuid);
 

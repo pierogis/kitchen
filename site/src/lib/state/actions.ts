@@ -1,9 +1,23 @@
-import type { CallFor, Connection, Flavor, Ingredient, Location } from '$lib/common/types';
+import type {
+	CallFor,
+	Connection,
+	Flavor,
+	FlavorType,
+	Ingredient,
+	Location
+} from '$lib/common/types';
 import type { FlatRecipe } from './stores/recipe';
+import type { Coordinates } from './stores/view';
 
 export enum ActionType {
 	CreateIngredient,
 	DeleteIngredient,
+	CreateFlavor,
+	DeleteFlavor,
+	CreateCallFor,
+	DeleteCallFor,
+	CreateLocation,
+	DeleteLocation,
 	CreateConnection,
 	UpdateConnection,
 	DeleteConnection
@@ -11,24 +25,33 @@ export enum ActionType {
 
 type ActionParamsMapper = {
 	[ActionType.CreateIngredient]: {
-		ingredient: Omit<Ingredient, 'uuid'> & Partial<Pick<Ingredient, 'uuid'>>;
-		callFor: Omit<CallFor, 'uuid' | 'ingredientUuid'> &
-			Partial<Pick<CallFor, 'uuid' | 'ingredientUuid'>>;
-		location: Omit<Location, 'uuid' | 'callForUuid'> &
-			Partial<Pick<Location, 'uuid' | 'callForUuid'>>;
-		flavors: (Omit<Flavor, 'uuid' | 'ingredientUuid'> &
-			Partial<Pick<Flavor, 'uuid' | 'ingredientUuid'>>)[];
+		ingredient: Ingredient;
 	};
 	[ActionType.DeleteIngredient]: {
-		ingredient: Ingredient;
+		uuid: string;
+	};
+	[ActionType.CreateFlavor]: {
+		flavor: Flavor;
+	};
+	[ActionType.DeleteFlavor]: {
+		uuid: string;
+	};
+	[ActionType.CreateCallFor]: {
 		callFor: CallFor;
+	};
+	[ActionType.DeleteCallFor]: {
+		uuid: string;
+	};
+	[ActionType.CreateLocation]: {
 		location: Location;
-		flavors: Flavor[];
+	};
+	[ActionType.DeleteLocation]: {
+		uuid: string;
 	};
 	[ActionType.CreateConnection]: Connection;
 	[ActionType.UpdateConnection]: Connection;
 	[ActionType.DeleteConnection]: {
-		connectionUuid: string;
+		uuid: string;
 	};
 };
 

@@ -6,9 +6,10 @@
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 
 	import { recipeStateContextKey, viewStateContextKey } from '$lib/state';
-	import { ActionType } from '$lib/state/actions';
+
 	import type { RecipeState } from '$lib/state/stores/recipe';
 	import type { ViewState } from '$lib/state/stores/view';
+	import { dispatchDeleteCallForActions } from '$lib/state/batch/callFor';
 
 	import Pane from './tweakpane/Pane.svelte';
 	import FlavorComponent from './Flavor.svelte';
@@ -31,15 +32,7 @@
 
 	// delete node on close button
 	function handleRemove(_event: MouseEvent) {
-		recipeState.dispatch({
-			type: ActionType.DeleteIngredient,
-			params: {
-				ingredient: ingredient,
-				flavors: flavors,
-				callFor,
-				location: location
-			}
-		});
+		dispatchDeleteCallForActions(recipeState, callFor);
 	}
 
 	const nodeHeaderSize = 12;

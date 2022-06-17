@@ -31,6 +31,7 @@ export type RecipeState = {
 			handler: ActionHandler<T, U>
 		) => number;
 		dispatch: <T extends ActionType>(action: Action<T>) => void;
+		batchDispatch: <T extends ActionType>(actions: Action<T>[]) => void;
 	};
 
 export function createRecipeState(recipe: FlatRecipe): RecipeState {
@@ -42,6 +43,7 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 
 		register: actions.register,
 		dispatch: actions.dispatch,
+		batchDispatch: actions.batchDispatch,
 
 		recipeUuid: derived(store, (currentState) => {
 			return currentState.recipeUuid;
