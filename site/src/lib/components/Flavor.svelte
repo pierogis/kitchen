@@ -28,7 +28,7 @@
 	if (!initialPayload || !initialPayload.params) {
 		switch (flavor.type) {
 			case FlavorType.Color:
-				initialPayload = { type: FlavorType.Color, params: '000000' };
+				initialPayload = { type: FlavorType.Color, params: '#0088ff' };
 				break;
 			case FlavorType.Image:
 				initialPayload = { type: FlavorType.Image, params: '' };

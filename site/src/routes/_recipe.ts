@@ -213,7 +213,7 @@ export const defaultRecipe: FullRecipe = {
 			callForUuid: '2',
 			payload: {
 				type: FlavorType.Color,
-				params: '000000'
+				params: '#0088ff'
 			}
 		}
 	],

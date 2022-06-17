@@ -51,7 +51,7 @@
 		const element = bladeApi.controller_.valueController.view.element.parentElement;
 		if (element) {
 			inputElement = element;
-			inputElement.style.width = '4rem';
+			inputElement.style.maxWidth = '8rem';
 			inputElement.style.display = 'flex';
 		}
 
