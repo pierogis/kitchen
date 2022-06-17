@@ -46,7 +46,7 @@
 		// register this terminal
 		viewState.terminalCoordinates.addTerminal(terminal, getPosition());
 		// callback every 10ms to update the coordinates
-		let rectUpdateInterval = setInterval(updateRect, 10);
+		let rectUpdateInterval = setInterval(updateRect, 1000);
 
 		return {
 			destroy() {

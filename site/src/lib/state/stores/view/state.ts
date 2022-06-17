@@ -26,31 +26,16 @@ export interface ViewState {
 }
 
 export function readableViewState(recipeState: RecipeState): ViewState {
-	// get all callsFor that are part of the "recipe" for the focused callFor
-	const focusedCallsFor = derived(
-		[recipeState.callsFor, recipeState.focusedCallForUuid],
-		([currentCallsFor, currentFocusedCallForUuid]) => {
-			return Array.from(currentCallsFor.values()).filter(
-				(callFor) => callFor.parentCallForUuid == currentFocusedCallForUuid
-			);
-		}
-	);
-
 	// get the ingredient that is currently focused
 	const focusedIngredient = derived(
-		[recipeState.callsFor, recipeState.ingredients, recipeState.focusedCallForUuid],
-		([currentCallsFor, currentIngredients, currentFocusedCallForUuid]) => {
-			const focusedCallFor = currentCallsFor.get(currentFocusedCallForUuid);
-			if (focusedCallFor) {
-				const ingredient = currentIngredients.get(focusedCallFor.ingredientUuid);
-				if (ingredient) {
-					// return the focused ingredient
-					return ingredient;
-				} else {
-					throw `Ingredient ${currentFocusedCallForUuid} not found`;
-				}
+		[recipeState.ingredients, recipeState.focusedIngredientUuid],
+		([currentIngredients, currentFocusedIngredientUuid]) => {
+			const ingredient = currentIngredients.get(currentFocusedIngredientUuid);
+			if (ingredient) {
+				// return the focused ingredient
+				return ingredient;
 			} else {
-				throw `CallFor ${currentFocusedCallForUuid} not found`;
+				throw `Ingredient ${currentFocusedIngredientUuid} not found`;
 			}
 		}
 	);
@@ -59,7 +44,38 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 
 	const liveConnection = createLiveConnection(recipeState, focusedIngredient);
 
-	const terminals = createTerminals(recipeState, focusedIngredient, liveConnection);
+	const focusedConnections = derived(
+		[focusedIngredient, recipeState.connections],
+		([currentFocusedIngredient, currentConnections]) =>
+			Array.from(currentConnections.values()).filter(
+				(connection) => connection.parentIngredientUuid == currentFocusedIngredient.uuid
+			)
+	);
+	const focusedSubIngredients = derived(
+		[focusedIngredient, recipeState.ingredients],
+		([currentFocusedIngredient, currentIngredients]) =>
+			Array.from(currentIngredients.values()).filter(
+				(ingredient) => ingredient.parentIngredientUuid == currentFocusedIngredient.uuid
+			)
+	);
+	const focusedFlavors = derived(
+		[focusedSubIngredients, recipeState.flavors],
+		([currentFocusedSubIngredients, currentFlavors]) => {
+			const focusedSubIngedientUuids = currentFocusedSubIngredients.reduce<Set<string>>(
+				(previous, ingredient) => {
+					previous.add(ingredient.uuid);
+					return previous;
+				},
+				new Set()
+			);
+
+			return Array.from(currentFlavors.values()).filter((flavor) =>
+				focusedSubIngedientUuids.has(flavor.ingredientUuid)
+			);
+		}
+	);
+
+	const terminals = createTerminals(focusedConnections, focusedFlavors, liveConnection);
 
 	const liveTerminal: Readable<Terminal | undefined> = derived(
 		[liveConnection],
@@ -80,7 +96,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const cables = createCables(recipeState, terminals, liveTerminal);
 
 	// callsFor/ingredients/nodes in the current view and their components
-	const nodes = createNodes(recipeState, focusedCallsFor);
+	const nodes = createNodes(recipeState, focusedSubIngredients);
 
 	// flavors belonging to the focused ingredient
 	const dockedFlavors = derived(

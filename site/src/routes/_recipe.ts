@@ -7,10 +7,10 @@ export const defaultRecipe: FullRecipe = {
 		{
 			uuid: '0',
 			recipeUuid: '0',
-			parentCallForUuid: undefined,
 			ingredientUuid: '0',
 			ingredient: {
 				uuid: '0',
+				parentIngredientUuid: undefined,
 				name: 'sort',
 				flavors: [
 					{
@@ -67,10 +67,10 @@ export const defaultRecipe: FullRecipe = {
 		{
 			uuid: '1',
 			recipeUuid: '0',
-			parentCallForUuid: '0',
 			ingredientUuid: '1',
 			ingredient: {
 				uuid: '1',
+				parentIngredientUuid: '0',
 				name: 'code',
 				flavors: [
 					{
@@ -94,10 +94,10 @@ export const defaultRecipe: FullRecipe = {
 		{
 			uuid: '2',
 			recipeUuid: '0',
-			parentCallForUuid: '0',
 			ingredientUuid: '2',
 			ingredient: {
 				uuid: '2',
+				parentIngredientUuid: '0',
 				name: 'shader',
 				flavors: [
 					{

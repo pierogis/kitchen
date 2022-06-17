@@ -16,6 +16,7 @@
 	const pathDescription = derived(
 		[inCoordinates, outCoordinates],
 		([currentInCoordinates, currentOutCoordinates]) => {
+			// console.log(currentInCoordinates, currentOutCoordinates);
 			if (currentInCoordinates && currentOutCoordinates) {
 				const x1 = currentInCoordinates.x;
 				const y1 = currentInCoordinates.y;
@@ -86,6 +87,8 @@
 	});
 
 	const pathStrokeWidth = 4;
+
+	// $: console.log($pathString);
 </script>
 
 {#if $pathString && $pathDescription}

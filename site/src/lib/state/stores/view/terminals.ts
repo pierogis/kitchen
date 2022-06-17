@@ -1,7 +1,13 @@
 import { derived, writable, type Readable, type Writable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
-import { Direction, FlavorType, type Ingredient } from '$lib/common/types';
+import {
+	Direction,
+	FlavorType,
+	type Connection,
+	type Flavor,
+	type Ingredient
+} from '$lib/common/types';
 
 import type { Coordinates } from '.';
 
@@ -79,26 +85,20 @@ export function createTerminalCoordinates(): TerminalCoordinatesState {
 }
 
 export function createTerminals(
-	state: RecipeState,
-	focusedIngredient: Readable<Ingredient>,
+	focusedConnections: Readable<Connection[]>,
+	focusedFlavors: Readable<Flavor[]>,
 	liveConnection: LiveConnectionState
 ): Readable<Terminal[]> {
-	const focusedConnections = derived(
-		[focusedIngredient, state.connections],
-		([currentFocusedIngredient, currentConnections]) =>
-			Array.from(currentConnections.values()).filter(
-				(connection) => connection.parentIngredientUuid == currentFocusedIngredient.uuid
-			)
-	);
-
 	const flavorNovelConnectionUuids: Map<[flavorUuid: string, direction: Direction], string> =
 		new Map();
+	// track connectionIds that have already been used
+	const usedInFlavorUuids: Set<string> = new Set();
 
-	const terminals: Readable<Terminal[]> = derived(
-		[focusedConnections, state.flavors, liveConnection],
-		([currentFocusedConnections, currentFlavors, currentLiveConnection]) => {
+	const connectedTerminals: Readable<Terminal[]> = derived(
+		[focusedConnections, liveConnection],
+		([currentFocusedConnections, currentLiveConnection]) => {
 			// track connectionIds that have already been used
-			const usedInFlavorUuids: Set<string> = new Set();
+			usedInFlavorUuids.clear();
 
 			const terminals: Terminal[] = currentFocusedConnections.flatMap((connection) => {
 				// change in connection based terminals could mean the current novel uuid has been used
@@ -141,9 +141,17 @@ export function createTerminals(
 				});
 			}
 
+			return terminals;
+		}
+	);
+
+	const novelTerminals: Readable<Terminal[]> = derived(
+		[focusedFlavors, connectedTerminals, liveConnection],
+		([currentFocusedFlavors, currentConnectedTerminals, currentLiveConnection]) => {
+			const novelTerminals = [];
 			// maintain terminal for a disconnected flavor
 			if (currentLiveConnection && currentLiveConnection.disconnectedFlavorUuid) {
-				terminals.push({
+				novelTerminals.push({
 					flavorUuid: currentLiveConnection.disconnectedFlavorUuid,
 					direction: currentLiveConnection.dragDirection,
 					connectionUuid: uuid(),
@@ -153,7 +161,7 @@ export function createTerminals(
 			}
 
 			// creating novel terminals for each flavor
-			currentFlavors.forEach((flavor) => {
+			currentFocusedFlavors.forEach((flavor) => {
 				flavor.directions.forEach((direction) => {
 					// don't create a novel terminal in place of the live connection's disconnected terminal
 					if (
@@ -161,7 +169,13 @@ export function createTerminals(
 						currentLiveConnection?.dragDirection != direction
 					) {
 						// there should only be one in terminal on each flavor
-						if (!usedInFlavorUuids.has(flavor.uuid) && direction == Direction.In) {
+						if (
+							!currentConnectedTerminals.find(
+								(terminal) =>
+									terminal.flavorUuid == flavor.uuid && terminal.direction == Direction.In
+							) &&
+							direction == Direction.In
+						) {
 							// preserve the flavor's novel connection uuids
 							let inNovelConnectionUuid = flavorNovelConnectionUuids.get([
 								flavor.uuid,
@@ -174,7 +188,7 @@ export function createTerminals(
 								flavorNovelConnectionUuids.set([flavor.uuid, Direction.In], inNovelConnectionUuid);
 							}
 
-							terminals.push({
+							novelTerminals.push({
 								flavorUuid: flavor.uuid,
 								direction: Direction.In,
 								connectionUuid: inNovelConnectionUuid,
@@ -195,7 +209,7 @@ export function createTerminals(
 								);
 							}
 
-							terminals.push({
+							novelTerminals.push({
 								flavorUuid: flavor.uuid,
 								direction: Direction.Out,
 								connectionUuid: outNovelConnectionUuid,
@@ -207,9 +221,13 @@ export function createTerminals(
 				});
 			});
 
-			return terminals;
+			return novelTerminals;
 		}
 	);
 
-	return terminals;
+	return derived(
+		[connectedTerminals, novelTerminals],
+		([currentConnectedTerminals, currentNovelTerminals]) =>
+			currentConnectedTerminals.concat(currentNovelTerminals)
+	);
 }

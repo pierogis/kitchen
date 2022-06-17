@@ -29,6 +29,8 @@ export function createCables(
 				}
 			> = new Map();
 
+			console.log(currentTerminals);
+
 			currentTerminals.forEach((terminal) => {
 				const terminalPair = {
 					inTerminal:

@@ -13,7 +13,7 @@ import { dispatcher } from '$lib/state/dispatcher';
 
 export interface FlatRecipe {
 	recipeUuid: string;
-	focusedCallForUuid: string;
+	focusedIngredientUuid: string;
 	ingredients: Map<string, Ingredient>;
 	flavors: Map<string, Flavor>;
 	callsFor: Map<string, CallFor>;
@@ -48,8 +48,8 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 		recipeUuid: derived(store, (currentState) => {
 			return currentState.recipeUuid;
 		}),
-		focusedCallForUuid: derived(store, (currentState) => {
-			return currentState.focusedCallForUuid;
+		focusedIngredientUuid: derived(store, (currentState) => {
+			return currentState.focusedIngredientUuid;
 		}),
 		ingredients: derived(store, (currentState) => {
 			return currentState.ingredients;

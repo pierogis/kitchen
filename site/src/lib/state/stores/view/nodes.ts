@@ -12,27 +12,29 @@ export type Node = {
 
 export function createNodes(
 	recipeState: RecipeState,
-	focusedCallsFor: Readable<CallFor[]>
+	focusedSubIngredients: Readable<Ingredient[]>
 ): Readable<Node[]> {
 	// collapse the store maps into a list of currently-in-view ingredients with flavors and location
 	const nodes: Readable<Node[]> = derived(
-		[focusedCallsFor, recipeState.ingredients, recipeState.locations, recipeState.flavors],
-		([currentFocusedCallsFor, currentIngredients, currentLocations, currentFlavors]) => {
-			return Array.from(currentFocusedCallsFor.values()).map((callFor) => {
-				// find ingredient that matches this callFor
-				const ingredient = currentIngredients.get(callFor.ingredientUuid);
+		[focusedSubIngredients, recipeState.callsFor, recipeState.locations, recipeState.flavors],
+		([currentFocusedSubIngredients, currentCallsFor, currentLocations, currentFlavors]) => {
+			return Array.from(currentFocusedSubIngredients.values()).map((ingredient) => {
+				// find callFor that matches this ingredient
+				const callFor = Array.from(currentCallsFor.values()).find(
+					(callFor) => callFor.ingredientUuid == ingredient.uuid
+				);
 
-				if (!ingredient) {
-					throw "Couldn't find referenced ingredient";
+				if (!callFor) {
+					throw `Couldn't find CallFor referencing Ingredient ${ingredient.uuid}`;
 				}
 
-				// find location that matches this callFor
+				// find location that matches this ingredient
 				const location = Array.from(currentLocations.values()).find(
 					(location) => location.callForUuid == callFor.uuid
 				);
 
 				if (!location) {
-					throw "Couldn't find referenced location";
+					throw `Couldn't find Location referencing CallFor ${callFor.uuid}`;
 				}
 
 				// get the flavors that attach to this ingredient

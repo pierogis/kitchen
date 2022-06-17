@@ -31,13 +31,6 @@
 	/>
 {/each}
 
-{#each $cables as cable (cable.connectionUuid)}
-	<CableComponent
-		inCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
-		outCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
-	/>
-{/each}
-
 {#if $liveTerminal}
 	<LiveTerminal
 		terminal={{
@@ -49,6 +42,13 @@
 		}}
 	/>
 {/if}
+
+{#each $cables as cable (cable.connectionUuid)}
+	<CableComponent
+		inCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
+		outCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
+	/>
+{/each}
 
 <Dock direction={Direction.In} />
 <Dock direction={Direction.Out} />

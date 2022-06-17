@@ -38,9 +38,13 @@ export function storeRecipe(recipe: FullRecipe) {
 		recipe.callsFor.map((callFor) => [callFor.location.uuid, callFor.location])
 	);
 
+	const mainCallFor = initialCallsFor.get(recipe.mainCallForUuid);
+
+	if (!mainCallFor) throw `Main CallFor ${recipe.mainCallForUuid} not found`;
+
 	const recipeState = createRecipeState({
 		recipeUuid: recipe.uuid,
-		focusedCallForUuid: recipe.mainCallForUuid,
+		focusedIngredientUuid: mainCallFor.ingredientUuid,
 		ingredients: initialIngredients,
 		flavors: initialFlavors,
 		callsFor: initialCallsFor,

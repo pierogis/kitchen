@@ -19,7 +19,8 @@ export function dispatchCreateIngredientActions(
 ) {
 	const ingredient: Ingredient = {
 		uuid: uuid(),
-		name: 'default'
+		name: 'default',
+		parentIngredientUuid: get(recipeState.focusedIngredientUuid)
 	};
 	const ingredientAction: Action<ActionType.CreateIngredient> = {
 		type: ActionType.CreateIngredient,
@@ -31,8 +32,7 @@ export function dispatchCreateIngredientActions(
 	const callFor: CallFor = {
 		uuid: uuid(),
 		recipeUuid: get(recipeState.recipeUuid),
-		ingredientUuid: ingredient.uuid,
-		parentCallForUuid: get(recipeState.focusedCallForUuid)
+		ingredientUuid: ingredient.uuid
 	};
 	const callForAction: Action<ActionType.CreateCallFor> = {
 		type: ActionType.CreateCallFor,

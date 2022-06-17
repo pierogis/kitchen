@@ -35,13 +35,16 @@ model Flavor {
 }
 
 model Ingredient {
-  id          Int          @id @default(autoincrement())
-  uuid        String       @unique @db.Uuid
-  name        String       @db.VarChar(255)
-  flavors     Flavor[]
-  connections Connection[]
-  shader      Shader?      @relation("Shader_ingredient")
-  callsFor    CallFor[]    @relation("CallFor_ingredient")
+  id                   Int          @id @default(autoincrement())
+  uuid                 String       @unique @db.Uuid
+  name                 String       @db.VarChar(255)
+  flavors              Flavor[]
+  connections          Connection[]
+  shader               Shader?      @relation("Shader_ingredient")
+  callsFor             CallFor[]    @relation("CallFor_ingredient")
+  parentIngredientUuid String       @db.Uuid
+  parentIngredient     Ingredient?  @relation("Ingredient_parentIngredient", fields: [parentIngredientUuid], references: [uuid])
+  subCallsFor          Ingredient[] @relation("Ingredient_parentIngredient")
 }
 
 model Connection {
@@ -99,18 +102,15 @@ model Shader {
 }
 
 model CallFor {
-  id                Int         @id @default(autoincrement())
-  uuid              String      @unique @db.Uuid
-  mainRecipe        Recipe?     @relation("Recipe_mainCallFor")
-  recipeUuid        String      @db.Uuid
-  recipe            Recipe      @relation("CallFor_recipe", fields: [recipeUuid], references: [uuid], onDelete: Cascade)
-  ingredientUuid    String      @db.Uuid
-  ingredient        Ingredient  @relation("CallFor_ingredient", fields: [ingredientUuid], references: [uuid])
-  parameters        Parameter[] @relation("Parameter_callFor")
-  location          Location?   @relation("Location_callFor")
-  parentCallForUuid String      @db.Uuid
-  parentCallFor     CallFor?    @relation("CallFor_subCallFor", fields: [parentCallForUuid], references: [uuid])
-  subCallsFor       CallFor[]   @relation("CallFor_subCallFor")
+  id             Int         @id @default(autoincrement())
+  uuid           String      @unique @db.Uuid
+  mainRecipe     Recipe?     @relation("Recipe_mainCallFor")
+  recipeUuid     String      @db.Uuid
+  recipe         Recipe      @relation("CallFor_recipe", fields: [recipeUuid], references: [uuid], onDelete: Cascade)
+  ingredientUuid String      @db.Uuid
+  ingredient     Ingredient  @relation("CallFor_ingredient", fields: [ingredientUuid], references: [uuid])
+  parameters     Parameter[] @relation("Parameter_callFor")
+  location       Location?   @relation("Location_callFor")
 }
 
 model Location {
