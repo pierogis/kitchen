@@ -86,19 +86,38 @@ export function createLiveConnection(
 			throw 'There is already a live connection';
 		}
 		if (terminal.flavorUuid) {
-			store.set({
-				connectionUuid: terminal.connectionUuid,
-				flavorType: terminal.flavorType,
-				anchorDirection: terminal.direction,
-				dragDirection: terminal.direction == Direction.In ? Direction.Out : Direction.In,
+			const anchorDirection = terminal.direction == Direction.In ? Direction.Out : Direction.In;
 
-				anchorFlavorUuid: terminal.flavorUuid,
-				disconnectedFlavorUuid: undefined,
+			const connection = get(recipeState.connections).get(terminal.connectionUuid);
 
-				payload: undefined,
-				drop,
-				connect
-			});
+			if (connection) {
+				recipeState.dispatch({
+					type: ActionType.DeleteConnection,
+					params: {
+						connectionUuid: terminal.connectionUuid
+					}
+				});
+
+				const anchorFlavorUuid =
+					anchorDirection == Direction.In ? connection?.inFlavorUuid : connection?.outFlavorUuid;
+
+				store.set({
+					connectionUuid: terminal.connectionUuid,
+					flavorType: terminal.flavorType,
+
+					dragDirection: terminal.direction,
+					anchorDirection: terminal.direction == Direction.In ? Direction.Out : Direction.In,
+
+					anchorFlavorUuid,
+					disconnectedFlavorUuid: undefined,
+
+					payload: undefined,
+					drop,
+					connect
+				});
+			} else {
+				throw `Connection ${terminal.connectionUuid} does not exist`;
+			}
 		} else {
 			throw `Cable ${terminal.connectionUuid} does not have anchorFlavorUuid`;
 		}
@@ -127,7 +146,8 @@ export function createLiveConnection(
 				outFlavorUuid:
 					liveConnection.anchorDirection == Direction.In
 						? targetFlavorUuid
-						: liveConnection.anchorFlavorUuid
+						: liveConnection.anchorFlavorUuid,
+				flavorType: liveConnection.flavorType
 			};
 
 			recipeState.dispatch({

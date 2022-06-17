@@ -11,7 +11,8 @@ export const createConnection: ActionHandler<
 		uuid: params.uuid || uuid(),
 		parentIngredientUuid: params.parentIngredientUuid,
 		inFlavorUuid: params.inFlavorUuid,
-		outFlavorUuid: params.outFlavorUuid
+		outFlavorUuid: params.outFlavorUuid,
+		flavorType: params.flavorType
 	};
 
 	state.connections.set(connnection.uuid, connnection);
