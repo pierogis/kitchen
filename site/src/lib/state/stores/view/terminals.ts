@@ -184,44 +184,48 @@ export function createTerminals(
 							!currentConnectedTerminals.find(
 								(terminal) =>
 									terminal.flavorUuid == flavor.uuid && terminal.direction == Direction.In
-							) &&
-							direction == Direction.In
+							)
 						) {
-							// preserve the flavor's novel connection uuids
-							let inNovelConnectionUuid = flavorNovelConnectionUuids.get(
-								flavor.uuid + Direction.In
-							);
+							if (direction == Direction.In) {
+								// preserve the flavor's novel connection uuids
+								let inNovelConnectionUuid = flavorNovelConnectionUuids.get(
+									flavor.uuid + Direction.In
+								);
 
-							// make a new one if it doesnt exist
-							if (!inNovelConnectionUuid) {
-								inNovelConnectionUuid = uuid();
-								flavorNovelConnectionUuids.set(flavor.uuid + Direction.In, inNovelConnectionUuid);
+								// make a new one if it doesnt exist
+								if (!inNovelConnectionUuid) {
+									inNovelConnectionUuid = uuid();
+									flavorNovelConnectionUuids.set(flavor.uuid + Direction.In, inNovelConnectionUuid);
+								}
+
+								novelTerminals.push({
+									flavorUuid: flavor.uuid,
+									direction: Direction.In,
+									connectionUuid: inNovelConnectionUuid,
+									cabled: false,
+									flavorType: flavor.type
+								});
+							} else {
+								// do the same for out terminal
+								let outNovelConnectionUuid = flavorNovelConnectionUuids.get(
+									flavor.uuid + Direction.Out
+								);
+								if (!outNovelConnectionUuid) {
+									outNovelConnectionUuid = uuid();
+									flavorNovelConnectionUuids.set(
+										flavor.uuid + Direction.Out,
+										outNovelConnectionUuid
+									);
+								}
+
+								novelTerminals.push({
+									flavorUuid: flavor.uuid,
+									direction: Direction.Out,
+									connectionUuid: outNovelConnectionUuid,
+									cabled: false,
+									flavorType: flavor.type
+								});
 							}
-
-							novelTerminals.push({
-								flavorUuid: flavor.uuid,
-								direction: Direction.In,
-								connectionUuid: inNovelConnectionUuid,
-								cabled: false,
-								flavorType: flavor.type
-							});
-						} else {
-							// do the same for out terminal
-							let outNovelConnectionUuid = flavorNovelConnectionUuids.get(
-								flavor.uuid + Direction.Out
-							);
-							if (!outNovelConnectionUuid) {
-								outNovelConnectionUuid = uuid();
-								flavorNovelConnectionUuids.set(flavor.uuid + Direction.Out, outNovelConnectionUuid);
-							}
-
-							novelTerminals.push({
-								flavorUuid: flavor.uuid,
-								direction: Direction.Out,
-								connectionUuid: outNovelConnectionUuid,
-								cabled: false,
-								flavorType: flavor.type
-							});
 						}
 					}
 				});
