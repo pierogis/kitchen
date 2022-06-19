@@ -52,19 +52,19 @@
 			if (event.button == 0 && liveConnection) {
 				element.style.cursor = '';
 				// for live terminal
-				const nearTerminalDistance = 4;
+				const nearTerminalDistance = 20;
 
 				const targetTerminals: Terminal[] =
 					viewState.terminalCoordinates.getMatchingTerminals(terminal);
 
 				let anyConnected = false;
 
-				targetTerminals.forEach((terminal) => {
+				for (const targetTerminal of targetTerminals) {
 					// expanding the rect
 					const terminalCoordinates = get(
 						viewState.terminalCoordinates.getCoordinates(
-							terminal.connectionUuid,
-							terminal.direction
+							targetTerminal.connectionUuid,
+							targetTerminal.direction
 						)
 					);
 
@@ -80,27 +80,18 @@
 								{ top: top, bottom: bottom, left: left, right: right }
 							)
 						) {
-							if (terminal.flavorUuid) {
+							if (targetTerminal.flavorUuid) {
 								liveConnection.connect(
-									terminal.flavorUuid,
-									terminal.cabled ? terminal.connectionUuid : undefined
+									targetTerminal.flavorUuid,
+									targetTerminal.cabled ? targetTerminal.connectionUuid : undefined
 								);
 								anyConnected = true;
+								break;
 							}
 						}
 					}
-				});
+				}
 				if (!anyConnected) {
-					// const anchorCoordinates = get(
-					// 	params.liveConnection.anchorDirection == Direction.In
-					// 		? liveCable.inCoordinates
-					// 		: liveCable.outCoordinates
-					// );
-					// if (anchorCoordinates) {
-					// 	// set tween controlling position in
-					// 	tween.set(anchorCoordinates);
-					// }
-
 					liveConnection.drop();
 				}
 			}

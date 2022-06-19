@@ -12,6 +12,7 @@
   - [x] split `createIngredient` into multiple actions (for each added thing)
   - [x] add liveConnection to terminals derived
   - [x] detect near terminals and take the closest non live
+  - [x] fix live cable undefined initial coordinates
   - [ ] image input
     - [ ] canvas when monitor
     - [ ] file input when input

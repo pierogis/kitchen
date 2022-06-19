@@ -45,13 +45,16 @@
 
 		// register this terminal
 		viewState.terminalCoordinates.addTerminal(terminal, getPosition());
-		// callback every 10ms to update the coordinates
-		let rectUpdateInterval = setInterval(updateRect, 1000);
+
+		// callback every n ms to update the coordinates
+		const rectUpdateInterval = 10;
+		let rectUpdateTimer = setInterval(updateRect, rectUpdateInterval);
 
 		return {
-			destroy() {
+			destroy: () => {
 				viewState.terminalCoordinates.deleteTerminal(terminal);
-				clearInterval(rectUpdateInterval);
+
+				clearInterval(rectUpdateTimer);
 			}
 		};
 	}

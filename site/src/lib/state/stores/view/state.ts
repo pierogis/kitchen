@@ -108,7 +108,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	);
 
-	const terminalCoordinates = createTerminalCoordinates();
+	const terminalCoordinates = createTerminalCoordinates(terminals, liveConnection);
 
 	return {
 		cables,

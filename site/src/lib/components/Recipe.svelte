@@ -45,8 +45,8 @@
 
 {#each $cables as cable (cable.connectionUuid)}
 	<CableComponent
-		inCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
 		outCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
+		inCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
 	/>
 {/each}
 

@@ -1,18 +1,11 @@
-import { derived, writable, type Readable, type Writable } from 'svelte/store';
+import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
-import {
-	Direction,
-	FlavorType,
-	type Connection,
-	type Flavor,
-	type Ingredient
-} from '$lib/common/types';
+import { Direction, FlavorType, type Connection, type Flavor } from '$lib/common/types';
 
 import type { Coordinates } from '.';
 
 import type { LiveConnectionState } from './liveConnection';
-import type { RecipeState } from '../recipe';
 
 export const terminalHeight = 10;
 
@@ -25,37 +18,38 @@ export type Terminal = {
 };
 
 export type TerminalCoordinatesState = {
-	getCoordinates: (
-		connectionUuid: string,
-		direction: Direction
-	) => Readable<Coordinates | undefined>;
+	getCoordinates: (connectionUuid: string, direction: Direction) => Readable<Coordinates>;
 	getMatchingTerminals: (terminal: Terminal) => Terminal[];
 	addTerminal: (terminal: Terminal, newCoordinates: Coordinates) => void;
 	updateCoordinates: (terminal: Terminal, newCoordinates: Coordinates) => void;
 	deleteTerminal: (terminal: Terminal) => void;
 };
 
-export function createTerminalCoordinates(): TerminalCoordinatesState {
-	const coordinates: Writable<Map<string, Coordinates>> = writable(new Map());
-	const terminals: Map<string, Terminal> = new Map();
+export function createTerminalCoordinates(
+	terminals: Readable<Terminal[]>,
+	liveConnection: LiveConnectionState
+): TerminalCoordinatesState {
+	const coordinates: Map<string, Writable<Coordinates>> = new Map();
 
-	function getCoordinates(
-		connectionUuid: string,
-		direction: Direction
-	): Readable<Coordinates | undefined> {
-		return derived(coordinates, (currentCoordinates) =>
-			currentCoordinates.get(connectionUuid + direction)
-		);
+	function getCoordinates(connectionUuid: string, direction: Direction): Readable<Coordinates> {
+		const store = coordinates.get(connectionUuid + direction);
+		if (store) {
+			return { subscribe: store.subscribe };
+		} else {
+			throw `Couldn't find coordinates store for ${connectionUuid} ${direction}`;
+		}
 	}
 
 	function addTerminal(terminal: Terminal, newCoordinates: Coordinates) {
-		terminals.set(terminal.connectionUuid + terminal.direction, terminal);
-		coordinates.update((currentCoordinates) =>
-			currentCoordinates.set(terminal.connectionUuid + terminal.direction, newCoordinates)
-		);
+		const terminalCoordinates = coordinates.get(terminal.connectionUuid + terminal.direction);
+		if (terminalCoordinates) {
+			terminalCoordinates.set(newCoordinates);
+		} else {
+			coordinates.set(terminal.connectionUuid + terminal.direction, writable(newCoordinates));
+		}
 	}
 	function getMatchingTerminals(terminal: Terminal) {
-		return Array.from(terminals.values()).filter(
+		return get(terminals).filter(
 			(candidateTerminal) =>
 				candidateTerminal.direction == terminal.direction &&
 				terminal.flavorType == candidateTerminal.flavorType &&
@@ -63,17 +57,26 @@ export function createTerminalCoordinates(): TerminalCoordinatesState {
 		);
 	}
 	function updateCoordinates(terminal: Terminal, newCoordinates: Coordinates) {
-		coordinates.update((currentCoordinates) => {
-			currentCoordinates.set(terminal.connectionUuid + terminal.direction, newCoordinates);
-			return currentCoordinates;
-		});
+		const store = coordinates.get(terminal.connectionUuid + terminal.direction);
+		store?.set(newCoordinates);
 	}
 	function deleteTerminal(terminal: Terminal) {
-		terminals.delete(terminal.connectionUuid + terminal.direction);
-		coordinates.update((currentCoordinates) => {
-			currentCoordinates.delete(terminal.connectionUuid + terminal.direction);
-			return currentCoordinates;
-		});
+		// this function is called when Terminals die
+		// if the terminal still exists (live terminal died), don't delete
+		const existingTerminal = get(terminals).find(
+			(existingTerminal) =>
+				terminal.connectionUuid == existingTerminal.connectionUuid &&
+				terminal.direction == existingTerminal.direction
+		);
+		if (!existingTerminal) {
+			// also don't delete if the live terminal is using the terminal that died
+			const currentLiveConnection = get(liveConnection);
+			if (
+				currentLiveConnection?.connectionUuid != terminal.connectionUuid ||
+				currentLiveConnection.dragDirection != terminal.direction
+			)
+				coordinates.delete(terminal.connectionUuid + terminal.direction);
+		}
 	}
 	return {
 		getCoordinates,
@@ -89,8 +92,7 @@ export function createTerminals(
 	focusedFlavors: Readable<Flavor[]>,
 	liveConnection: LiveConnectionState
 ): Readable<Terminal[]> {
-	const flavorNovelConnectionUuids: Map<[flavorUuid: string, direction: Direction], string> =
-		new Map();
+	const flavorNovelConnectionUuids: Map<string, string> = new Map();
 	// track connectionIds that have already been used
 	const usedInFlavorUuids: Set<string> = new Set();
 
@@ -102,11 +104,11 @@ export function createTerminals(
 
 			const terminals: Terminal[] = currentFocusedConnections.flatMap((connection) => {
 				// change in connection based terminals could mean the current novel uuid has been used
-				if (flavorNovelConnectionUuids.has([connection.inFlavorUuid, Direction.In])) {
-					flavorNovelConnectionUuids.delete([connection.inFlavorUuid, Direction.In]);
+				if (flavorNovelConnectionUuids.has(connection.inFlavorUuid + Direction.In)) {
+					flavorNovelConnectionUuids.delete(connection.inFlavorUuid + Direction.In);
 				}
-				if (flavorNovelConnectionUuids.has([connection.outFlavorUuid, Direction.Out])) {
-					flavorNovelConnectionUuids.delete([connection.outFlavorUuid, Direction.Out]);
+				if (flavorNovelConnectionUuids.has(connection.outFlavorUuid + Direction.Out)) {
+					flavorNovelConnectionUuids.delete(connection.outFlavorUuid + Direction.Out);
 				}
 
 				usedInFlavorUuids.add(connection.inFlavorUuid);
@@ -130,6 +132,15 @@ export function createTerminals(
 
 			// maintain terminal for live anchored flavor
 			if (currentLiveConnection) {
+				if (
+					flavorNovelConnectionUuids.has(
+						currentLiveConnection.anchorFlavorUuid + currentLiveConnection.anchorDirection
+					)
+				) {
+					flavorNovelConnectionUuids.delete(
+						currentLiveConnection.anchorFlavorUuid + currentLiveConnection.anchorDirection
+					);
+				}
 				usedInFlavorUuids.add(currentLiveConnection.anchorFlavorUuid);
 
 				terminals.push({
@@ -177,15 +188,14 @@ export function createTerminals(
 							direction == Direction.In
 						) {
 							// preserve the flavor's novel connection uuids
-							let inNovelConnectionUuid = flavorNovelConnectionUuids.get([
-								flavor.uuid,
-								Direction.In
-							]);
+							let inNovelConnectionUuid = flavorNovelConnectionUuids.get(
+								flavor.uuid + Direction.In
+							);
 
 							// make a new one if it doesnt exist
 							if (!inNovelConnectionUuid) {
 								inNovelConnectionUuid = uuid();
-								flavorNovelConnectionUuids.set([flavor.uuid, Direction.In], inNovelConnectionUuid);
+								flavorNovelConnectionUuids.set(flavor.uuid + Direction.In, inNovelConnectionUuid);
 							}
 
 							novelTerminals.push({
@@ -197,16 +207,12 @@ export function createTerminals(
 							});
 						} else {
 							// do the same for out terminal
-							let outNovelConnectionUuid = flavorNovelConnectionUuids.get([
-								flavor.uuid,
-								Direction.Out
-							]);
+							let outNovelConnectionUuid = flavorNovelConnectionUuids.get(
+								flavor.uuid + Direction.Out
+							);
 							if (!outNovelConnectionUuid) {
 								outNovelConnectionUuid = uuid();
-								flavorNovelConnectionUuids.set(
-									[flavor.uuid, Direction.Out],
-									outNovelConnectionUuid
-								);
+								flavorNovelConnectionUuids.set(flavor.uuid + Direction.Out, outNovelConnectionUuid);
 							}
 
 							novelTerminals.push({

@@ -21,6 +21,7 @@ export function createCables(
 	const cables: Readable<Cable[]> = derived(
 		[terminals, liveTerminal, recipeState.parameters],
 		([currentTerminals, currentLiveTerminal, currentParameters]) => {
+			// pairing the in and out terminals by connecionUuid
 			const terminalPairs: Map<
 				string,
 				{
@@ -29,62 +30,53 @@ export function createCables(
 				}
 			> = new Map();
 
-			console.log(currentTerminals);
-
-			currentTerminals.forEach((terminal) => {
-				const terminalPair = {
-					inTerminal:
-						terminal.direction == Direction.In
-							? terminal
-							: terminalPairs.get(terminal.connectionUuid)?.inTerminal,
-					outTerminal:
-						terminal.direction == Direction.Out
-							? terminal
-							: terminalPairs.get(terminal.connectionUuid)?.outTerminal
-				};
-				terminalPairs.set(terminal.connectionUuid, terminalPair);
-			});
-
 			if (currentLiveTerminal) {
-				// update the half-filled connection
+				// create a half-filled terminal pair
 				const liveTerminalPair = {
 					inTerminal:
-						currentLiveTerminal.direction == Direction.In
-							? currentLiveTerminal
-							: terminalPairs.get(currentLiveTerminal.connectionUuid)?.inTerminal,
+						currentLiveTerminal.direction == Direction.In ? currentLiveTerminal : undefined,
 					outTerminal:
-						currentLiveTerminal.direction == Direction.Out
-							? currentLiveTerminal
-							: terminalPairs.get(currentLiveTerminal.connectionUuid)?.outTerminal
+						currentLiveTerminal.direction == Direction.Out ? currentLiveTerminal : undefined
 				};
 
 				terminalPairs.set(currentLiveTerminal.connectionUuid, liveTerminalPair);
 			}
 
-			const cables: Cable[] = Array.from(terminalPairs.entries()).flatMap(
-				([connectionUuid, terminalPair]) => {
+			currentTerminals.forEach((terminal) => {
+				// if a pair has already started for this terminal's connectionUuid
+				const currentTerminalPair = terminalPairs.get(terminal.connectionUuid);
+				const terminalPair = {
+					inTerminal:
+						terminal.direction == Direction.In ? terminal : currentTerminalPair?.inTerminal,
+					outTerminal:
+						terminal.direction == Direction.Out ? terminal : currentTerminalPair?.outTerminal
+				};
+				terminalPairs.set(terminal.connectionUuid, terminalPair);
+			});
+
+			// each terminal pair could lead to a cable if in and out are both present
+			const cables: Cable[] = Array.from(terminalPairs.entries()).reduce<Cable[]>(
+				(previous, [connectionUuid, terminalPair]) => {
 					if (terminalPair.inTerminal && terminalPair.outTerminal) {
 						// get the parameter corresponding to the connection's outputting, "source" flavor ->
 						const outParameter = Array.from(currentParameters.values()).find(
 							(parameter) => parameter.flavorUuid == terminalPair.outTerminal?.flavorUuid
 						);
 
-						return [
-							{
-								connectionUuid: connectionUuid,
-								flavorType: terminalPair.outTerminal.flavorType,
-								inFlavorUuid: terminalPair.inTerminal.flavorUuid,
-								outFlavorUuid: terminalPair.outTerminal.flavorUuid,
-								payload: writable({
-									type: terminalPair.outTerminal.flavorType,
-									params: outParameter?.payload?.params
-								})
-							}
-						];
-					} else {
-						return [];
+						previous.push({
+							connectionUuid: connectionUuid,
+							flavorType: terminalPair.outTerminal.flavorType,
+							inFlavorUuid: terminalPair.inTerminal.flavorUuid,
+							outFlavorUuid: terminalPair.outTerminal.flavorUuid,
+							payload: writable({
+								type: terminalPair.outTerminal.flavorType,
+								params: outParameter?.payload.params
+							})
+						});
 					}
-				}
+					return previous;
+				},
+				[]
 			);
 
 			return cables;

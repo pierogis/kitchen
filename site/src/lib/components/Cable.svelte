@@ -3,8 +3,8 @@
 
 	import type { Coordinates } from '$lib/state/stores/view';
 
-	export let inCoordinates: Readable<Coordinates | undefined>;
-	export let outCoordinates: Readable<Coordinates | undefined>;
+	export let outCoordinates: Readable<Coordinates>;
+	export let inCoordinates: Readable<Coordinates>;
 
 	let dragging = false;
 
@@ -16,7 +16,6 @@
 	const pathDescription = derived(
 		[inCoordinates, outCoordinates],
 		([currentInCoordinates, currentOutCoordinates]) => {
-			// console.log(currentInCoordinates, currentOutCoordinates);
 			if (currentInCoordinates && currentOutCoordinates) {
 				const x1 = currentInCoordinates.x;
 				const y1 = currentInCoordinates.y;
@@ -87,8 +86,6 @@
 	});
 
 	const pathStrokeWidth = 4;
-
-	// $: console.log($pathString);
 </script>
 
 {#if $pathString && $pathDescription}

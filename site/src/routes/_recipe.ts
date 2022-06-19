@@ -100,14 +100,14 @@ export const defaultRecipe: FullRecipe = {
 				parentIngredientUuid: '0',
 				name: 'shader',
 				flavors: [
-					{
-						uuid: '5',
-						ingredientUuid: '2',
-						name: 'texture',
-						type: FlavorType.Image,
-						directions: [Direction.In, Direction.Out],
-						options: null
-					},
+					// {
+					// 	uuid: '5',
+					// 	ingredientUuid: '2',
+					// 	name: 'texture',
+					// 	type: FlavorType.Image,
+					// 	directions: [Direction.In, Direction.Out],
+					// 	options: null
+					// },
 					{
 						uuid: '6',
 						ingredientUuid: '2',
@@ -115,15 +115,15 @@ export const defaultRecipe: FullRecipe = {
 						type: FlavorType.Text,
 						directions: [Direction.In],
 						options: null
-					},
-					{
-						uuid: '7',
-						ingredientUuid: '2',
-						name: 'color',
-						type: FlavorType.Color,
-						directions: [Direction.In],
-						options: { view: 'color', color: { alpha: true } }
 					}
+					// {
+					// 	uuid: '7',
+					// 	ingredientUuid: '2',
+					// 	name: 'color',
+					// 	type: FlavorType.Color,
+					// 	directions: [Direction.In],
+					// 	options: { view: 'color', color: { alpha: true } }
+					// }
 				],
 				connections: []
 			},
