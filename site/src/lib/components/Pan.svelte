@@ -14,10 +14,11 @@
 	export let height: number;
 
 	export let mainCallForUuid: string;
-	export let flavors: Map<string, Flavor>;
-	export let ingredients: Map<string, Ingredient>;
-	export let connections: Map<string, Connection>;
-	export let shaders: Map<string, Shader>;
+	export let flavors: Readable<Map<string, Flavor>>;
+	export let ingredients: Readable<Map<string, Ingredient>>;
+	export let connections: Readable<Map<string, Connection>>;
+	export let shaders: Readable<Map<string, Shader>>;
+	export let parameters: Readable<Map<string, Parameter>>;
 
 	export let cursorCoordinates: Readable<Coordinates | undefined>;
 
@@ -27,7 +28,6 @@
 	// export let media: (HTMLImageElement | HTMLVideoElement | HTMLAudioElement | WebGLTexture)[];
 
 	const programs: Map<string, WebGLProgram> = new Map();
-	export let parameters: Map<string, Parameter>;
 
 	onMount(async () => {
 		await tick();
@@ -38,15 +38,15 @@
 			frame = requestAnimationFrame(loop);
 
 			if (gl) {
-				const knownParameters: Map<string, Parameter> = new Map(parameters);
+				const knownParameters: Map<string, Parameter> = new Map($parameters);
 				draw(
 					gl,
 					mainCallForUuid,
 					knownParameters,
-					connections,
-					ingredients,
-					flavors,
-					shaders,
+					$connections,
+					$ingredients,
+					$flavors,
+					$shaders,
 					programs
 				);
 			}

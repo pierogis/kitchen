@@ -36,14 +36,14 @@ export type RecipeState = {
 
 export function createRecipeState(recipe: FlatRecipe): RecipeState {
 	const store = writable(recipe);
-	const actions = dispatcher(store);
+	const actionsDispatcher = dispatcher(store);
 
 	return {
 		subscribe: store.subscribe,
 
-		register: actions.register,
-		dispatch: actions.dispatch,
-		batchDispatch: actions.batchDispatch,
+		register: actionsDispatcher.register,
+		dispatch: actionsDispatcher.dispatch,
+		batchDispatch: actionsDispatcher.batchDispatch,
 
 		recipeUuid: derived(store, (currentState) => {
 			return currentState.recipeUuid;

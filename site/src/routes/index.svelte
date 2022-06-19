@@ -53,10 +53,10 @@
 	width={innerWidth}
 	height={innerHeight}
 	mainCallForUuid={recipe.mainCallForUuid}
-	ingredients={$recipeState.ingredients}
-	flavors={$recipeState.flavors}
-	connections={$recipeState.connections}
-	shaders={$recipeState.shaders}
-	parameters={$recipeState.parameters}
+	ingredients={recipeState.ingredients}
+	flavors={recipeState.flavors}
+	connections={recipeState.connections}
+	shaders={recipeState.shaders}
+	parameters={recipeState.parameters}
 	cursorCoordinates={viewState.cursorCoordinates}
 />

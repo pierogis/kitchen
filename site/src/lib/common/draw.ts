@@ -229,20 +229,6 @@ export function draw(
 	shaders: Map<string, Shader>,
 	programs: Map<string, WebGLProgram>
 ) {
-	// function findPathFromSourceFlavor(flavorUuid: string, path: number[] = []): number[] {
-	// 	for (const connection of connections.values()) {
-	// 		if (connection.inFlavorUuid == flavorUuid) {
-	// 			let calculatedParameter = knownParameters.get(connection.outFlavorUuid);
-	// 			if (calculatedParameter) {
-	// 			}
-	// 			path.push(flavorUuid);
-	// 			return findPathFromSourceFlavor(connection.outFlavorUuid, path);
-	// 		}
-	// 	}
-
-	// 	return path;
-	// }
-
 	// get the main ingredient that we are cooking
 	const mainIngredient = ingredients.get(mainIngredientUuid);
 
