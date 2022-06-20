@@ -7,6 +7,7 @@
 	import { checkPointWithinBox } from '$lib/common/utils';
 
 	import TerminalComponent from '@components/Terminal.svelte';
+	import { tweened } from 'svelte/motion';
 
 	export let terminal: Terminal;
 
@@ -16,13 +17,19 @@
 
 	function followCursorAction(element: HTMLElement, followCursor: boolean) {
 		let cursorUnsub: (() => void) | null = null;
+		let tweenedUnsub: (() => void) | null = null;
 
 		const follow = () => {
+			const tweenedCursorCoordinates = tweened(get(viewState.cursorCoordinates), { duration: 150 });
 			cursorUnsub = viewState.cursorCoordinates.subscribe((currentCursorCoordinates) => {
 				if (currentCursorCoordinates) {
-					element.style.left = currentCursorCoordinates.x + 'px';
-					element.style.top = currentCursorCoordinates.y + 'px';
+					tweenedCursorCoordinates.set(currentCursorCoordinates);
 				}
+			});
+
+			tweenedUnsub = tweenedCursorCoordinates.subscribe((currentTweenedCursorCoordinates) => {
+				element.style.left = currentTweenedCursorCoordinates.x + 'px';
+				element.style.top = currentTweenedCursorCoordinates.y + 'px';
 			});
 		};
 
@@ -34,6 +41,7 @@
 			update(newFollowCursor: boolean) {
 				if (followCursor != newFollowCursor) {
 					if (cursorUnsub) cursorUnsub();
+					if (tweenedUnsub) tweenedUnsub();
 					if (newFollowCursor) {
 						follow();
 					}
@@ -42,6 +50,7 @@
 			},
 			destroy() {
 				if (cursorUnsub) cursorUnsub();
+				if (tweenedUnsub) tweenedUnsub();
 			}
 		};
 	}
