@@ -1,27 +1,21 @@
 <script lang="ts">
-	import { registerPlugins } from '$lib/flavors/plugins';
+	import { onDestroy } from 'svelte';
 	import { Pane } from 'tweakpane';
 
+	import { registerPlugins } from '$lib/flavors/plugins';
+
+	export let container: HTMLElement;
 	export let title: string | undefined = undefined;
 
-	let pane: Pane;
+	let pane: Pane = new Pane({ container: container, title });
+	registerPlugins(pane);
 
-	function attachPaneAction(element: HTMLElement) {
-		pane = new Pane({ container: element, title });
-
-		registerPlugins(pane);
-
-		return {
-			destroy() {
-				pane.dispose();
-			}
-		};
-	}
+	onDestroy(() => {
+		pane.dispose();
+	});
 </script>
 
-<div use:attachPaneAction class="no-select">
-	<slot {pane} />
-</div>
+<slot {pane} />
 
 <style>
 	:root {

@@ -36,43 +36,53 @@
 	}
 
 	const nodeHeaderSize = 12;
+	const nodeWidth = 180;
 
 	$: cables = viewState.cables;
 	$: terminals = viewState.terminals;
+	let paneContainer: HTMLElement;
 </script>
 
 <div
 	class="node no-select"
-	style="top: {location.y - nodeHeaderSize / 2}px; --node-header-size: {nodeHeaderSize}px"
-	use:centerOnInitialLocationAction
+	style:left="{location.x - nodeWidth / 2}px"
+	style:width="{nodeWidth}px"
+	style:top="{location.y - nodeHeaderSize / 2}px"
+	style:--node-header-size="{nodeHeaderSize}px"
 	use:draggableAction={grabTarget}
 >
-	<div class="header">
-		<div class="grab" bind:this={grabTarget} class:dragging>
-			<div class="grab-dot" />
-			<div class="grab-dot" />
-		</div>
+	{#if paneContainer}
+		<div class="header">
+			<div class="grab" bind:this={grabTarget} class:dragging>
+				<div class="grab-dot" />
+				<div class="grab-dot" />
+			</div>
 
-		<div class="remove" on:click={handleRemove} />
-	</div>
-	<Pane let:pane title={ingredient.name}>
-		{#if pane}
-			{#each flavors as flavor, i (flavor.uuid)}
-				<FlavorComponent
-					inPayload={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)?.payload}
-					outPayloads={$cables
-						.filter((cable) => cable.outFlavorUuid == flavor.uuid)
-						.map((cable) => cable.payload)}
-					terminals={derived(terminals, (currentTerminals) =>
-						currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
-					)}
-					index={i}
-					{flavor}
-					folder={pane}
-				/>
-			{/each}
+			<div class="remove" on:click={handleRemove} />
+		</div>
+	{/if}
+	<div bind:this={paneContainer} class="no-select">
+		{#if paneContainer}
+			<Pane let:pane container={paneContainer} title={ingredient.name}>
+				{#if pane}
+					{#each flavors as flavor, index (flavor.uuid)}
+						<FlavorComponent
+							inPayload={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)?.payload}
+							outPayloads={$cables
+								.filter((cable) => cable.outFlavorUuid == flavor.uuid)
+								.map((cable) => cable.payload)}
+							terminals={derived(terminals, (currentTerminals) =>
+								currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
+							)}
+							{index}
+							{flavor}
+							folder={pane}
+						/>
+					{/each}
+				{/if}
+			</Pane>
 		{/if}
-	</Pane>
+	</div>
 </div>
 
 <style>

@@ -18,66 +18,68 @@
 	const viewState: ViewState = getContext(viewStateContextKey);
 
 	$: cables = viewState.cables;
+
+	let paneContainer: HTMLElement;
 </script>
 
 <div
 	class="dock"
-	class:expanded
 	class:in={direction == Direction.In}
 	class:out={direction == Direction.Out}
-	use:checkNearAction={10}
+	use:checkNearAction={64}
 	on:near={(event) => {
 		expanded = event.detail;
 	}}
 >
-	<Pane let:pane>
-		{#each flavors as flavor, index (flavor.uuid)}
-			<!-- inPayload could have a  not necessarily based on cables -->
-			<FlavorComponent
-				{index}
-				{flavor}
-				inPayload={direction == Direction.In
-					? undefined
-					: $cables.find((cable) => cable.inFlavorUuid == flavor.uuid)?.payload}
-				outPayloads={direction == Direction.Out
-					? []
-					: $cables
-							.filter((cable) => cable.outFlavorUuid == flavor.uuid)
-							.map((cable) => cable.payload)}
-				terminals={derived(viewState.terminals, (currentTerminals) =>
-					currentTerminals.filter(
-						(terminal) =>
-							terminal.flavorUuid == flavor.uuid &&
-							terminal.direction == (direction == Direction.In ? Direction.Out : Direction.In)
-					)
-				)}
-				folder={pane}
-			/>
-		{/each}
-	</Pane>
+	<div
+		bind:this={paneContainer}
+		class:expanded
+		class:in={direction == Direction.In}
+		class:out={direction == Direction.Out}
+		class="pane-container no-select"
+	>
+		{#if paneContainer}
+			<Pane container={paneContainer} let:pane>
+				{#each flavors as flavor, index (flavor.uuid)}
+					<!-- inPayload could have a value not necessarily based on cables -->
+					<FlavorComponent
+						{index}
+						{flavor}
+						inPayload={direction == Direction.In
+							? undefined
+							: $cables.find((cable) => cable.inFlavorUuid == flavor.uuid)?.payload}
+						outPayloads={direction == Direction.Out
+							? []
+							: $cables
+									.filter((cable) => cable.outFlavorUuid == flavor.uuid)
+									.map((cable) => cable.payload)}
+						terminals={derived(viewState.terminals, (currentTerminals) =>
+							currentTerminals.filter(
+								(terminal) =>
+									terminal.flavorUuid == flavor.uuid &&
+									terminal.direction == (direction == Direction.In ? Direction.Out : Direction.In)
+							)
+						)}
+						folder={pane}
+					/>
+				{/each}
+			</Pane>
+		{/if}
+	</div>
 </div>
 
 <style>
 	.dock {
 		position: absolute;
-		right: 0%;
 		top: 50%;
+		overflow: visible;
 
 		transform: translate(0%, -50%);
 
-		height: 90vh;
-		width: 10px;
-
-		background-color: var(--primary-color);
 		border-radius: 4px;
-
-		transition: width 0.2s;
 
 		display: flex;
 		align-items: center;
-	}
-	.expanded {
-		width: 40px;
 	}
 	.in {
 		left: 0%;
@@ -86,5 +88,25 @@
 	.out {
 		right: 0%;
 		justify-content: right;
+	}
+
+	:global(.pane-container > div) {
+		transition: margin-left 0.5s, margin-right 0.5s;
+	}
+
+	:global(.pane-container.in > div) {
+		margin-left: 8px;
+	}
+
+	:global(.pane-container.out > div) {
+		margin-right: 8px;
+	}
+
+	:global(.pane-container.expanded.in > div) {
+		margin-left: 8px;
+	}
+
+	:global(.pane-container.expanded.out > div) {
+		margin-right: 8px;
 	}
 </style>

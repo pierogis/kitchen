@@ -15,7 +15,7 @@
 
 	let monitorElement: HTMLElement;
 
-	onMount(async () => {
+	onMount(() => {
 		let payload = $payloadStore;
 		let bladeApi: BladeApi<MonitorBindingController<any>>;
 
