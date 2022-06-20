@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { getContext, onMount, tick } from 'svelte';
-
-	import type { Parameter, Shader, Connection, Ingredient, Flavor } from '$lib/common/types';
-
-	import { draw } from '$lib/common/draw';
-	import CursorCircle from './CursorCircle.svelte';
-	import type { Coordinates } from '$lib/state/stores/view';
 	import { writable, type Readable } from 'svelte/store';
-	import type { RecipeState } from '$lib/state/stores/recipe';
-	import { dispatchCreateIngredientActions } from '$lib/state/batch/ingredient';
+
+	import type { Parameter, Shader, Connection, Ingredient, Flavor } from '@types';
+	import { draw } from '$lib/common/draw';
+
+	import type { Coordinates } from '@view';
+	import type { RecipeState } from '@recipe';
+	import { dispatchCreateIngredientActions } from '@state/batch/ingredient';
+
+	import CursorCircle from '@components/CursorCircle.svelte';
 
 	export let width: number;
 	export let height: number;

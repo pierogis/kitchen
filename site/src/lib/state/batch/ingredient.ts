@@ -1,3 +1,7 @@
+import { get } from 'svelte/store';
+
+import { v4 as uuid } from 'uuid';
+
 import {
 	Direction,
 	FlavorType,
@@ -5,13 +9,11 @@ import {
 	type Flavor,
 	type Ingredient,
 	type Location
-} from '$lib/common/types';
-import { type Action, ActionType } from '../actions';
-import type { Coordinates } from '../stores/view';
+} from '@types';
 
-import { v4 as uuid } from 'uuid';
-import type { RecipeState } from '../stores/recipe';
-import { get } from 'svelte/store';
+import type { RecipeState } from '@recipe';
+import type { Coordinates } from '@view';
+import { type Action, ActionType } from '@state/actions';
 
 export function dispatchCreateIngredientActions(
 	recipeState: RecipeState,

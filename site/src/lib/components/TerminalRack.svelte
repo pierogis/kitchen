@@ -2,11 +2,11 @@
 	import { onMount, tick } from 'svelte';
 
 	import { checkNearAction } from '$lib/common/actions/checkNear';
-	import { Direction } from '$lib/common/types';
+	import { Direction } from '@types';
 
-	import { type Terminal, terminalHeight } from '$lib/state/stores/view';
+	import { type Terminal, terminalHeight } from '@view';
 
-	import TerminalComponent from '$lib/components/Terminal.svelte';
+	import TerminalComponent from '@components/Terminal.svelte';
 
 	export let direction: Direction;
 	export let container: HTMLElement | null = null;

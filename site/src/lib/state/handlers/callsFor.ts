@@ -1,4 +1,4 @@
-import { type ActionHandler, ActionType } from '../actions';
+import { type ActionHandler, ActionType } from '@state/actions';
 
 export const createCallFor: ActionHandler<ActionType.CreateCallFor, ActionType.DeleteCallFor> = (
 	state,

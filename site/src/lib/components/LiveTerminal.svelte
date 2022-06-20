@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { type Terminal, terminalHeight, type ViewState } from '$lib/state/stores/view';
-
-	import TerminalComponent from '$lib/components/Terminal.svelte';
-	import { get, writable } from 'svelte/store';
 	import { getContext } from 'svelte';
-	import { viewStateContextKey } from '$lib/state';
+	import { get, writable } from 'svelte/store';
+
+	import { type Terminal, terminalHeight, type ViewState } from '@view';
+	import { viewStateContextKey } from '@state';
 	import { checkPointWithinBox } from '$lib/common/utils';
+
+	import TerminalComponent from '@components/Terminal.svelte';
 
 	export let terminal: Terminal;
 
@@ -55,24 +56,24 @@
 				const nearTerminalDistance = 20;
 
 				const targetTerminals: Terminal[] =
-					viewState.terminalCoordinates.getMatchingTerminals(terminal);
+					viewState.terminalsCoordinates.getMatchingTerminals(terminal);
 
 				let anyConnected = false;
 
 				for (const targetTerminal of targetTerminals) {
 					// expanding the rect
-					const terminalCoordinates = get(
-						viewState.terminalCoordinates.getCoordinates(
+					const terminalsCoordinates = get(
+						viewState.terminalsCoordinates.getCoordinates(
 							targetTerminal.connectionUuid,
 							targetTerminal.direction
 						)
 					);
 
-					if (terminalCoordinates) {
-						const left = terminalCoordinates.x - (terminalHeight / 2 + nearTerminalDistance);
-						const top = terminalCoordinates.y - (terminalHeight / 2 + nearTerminalDistance);
-						const right = terminalCoordinates.x + (terminalHeight / 2 + nearTerminalDistance);
-						const bottom = terminalCoordinates.y + (terminalHeight / 2 + nearTerminalDistance);
+					if (terminalsCoordinates) {
+						const left = terminalsCoordinates.x - (terminalHeight / 2 + nearTerminalDistance);
+						const top = terminalsCoordinates.y - (terminalHeight / 2 + nearTerminalDistance);
+						const right = terminalsCoordinates.x + (terminalHeight / 2 + nearTerminalDistance);
+						const bottom = terminalsCoordinates.y + (terminalHeight / 2 + nearTerminalDistance);
 
 						if (
 							checkPointWithinBox(

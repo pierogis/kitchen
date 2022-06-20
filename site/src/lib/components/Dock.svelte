@@ -2,14 +2,14 @@
 	import { getContext } from 'svelte';
 	import { derived } from 'svelte/store';
 
-	import { Direction, type Flavor } from '$lib/common/types';
-	import { viewStateContextKey } from '$lib/state';
-	import type { ViewState } from '$lib/state/stores/view';
-
+	import { Direction, type Flavor } from '@types';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 
-	import FlavorComponent from './Flavor.svelte';
-	import Pane from './tweakpane/Pane.svelte';
+	import { viewStateContextKey } from '@state';
+	import type { ViewState } from '@view';
+
+	import FlavorComponent from '@components/Flavor.svelte';
+	import Pane from '@components/tweakpane/Pane.svelte';
 
 	export let direction: Direction;
 	export let flavors: Flavor[];

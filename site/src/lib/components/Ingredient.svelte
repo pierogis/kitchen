@@ -2,17 +2,16 @@
 	import { getContext } from 'svelte';
 	import { derived } from 'svelte/store';
 
-	import type { CallFor, Flavor, Ingredient, Location } from '$lib/common/types';
+	import type { CallFor, Flavor, Ingredient, Location } from '@types';
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 
-	import { recipeStateContextKey, viewStateContextKey } from '$lib/state';
+	import { recipeStateContextKey, viewStateContextKey } from '@state';
+	import type { RecipeState } from '@recipe';
+	import type { ViewState } from '@view';
+	import { dispatchDeleteCallForActions } from '@state/batch/callFor';
 
-	import type { RecipeState } from '$lib/state/stores/recipe';
-	import type { ViewState } from '$lib/state/stores/view';
-	import { dispatchDeleteCallForActions } from '$lib/state/batch/callFor';
-
-	import Pane from './tweakpane/Pane.svelte';
-	import FlavorComponent from './Flavor.svelte';
+	import Pane from '@components/tweakpane/Pane.svelte';
+	import FlavorComponent from '@components/Flavor.svelte';
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 	const viewState: ViewState = getContext(viewStateContextKey);
@@ -24,11 +23,6 @@
 
 	let grabTarget: HTMLElement;
 	let dragging = false;
-
-	function centerOnInitialLocationAction(element: HTMLElement) {
-		const midpoint = element.getBoundingClientRect().width / 2;
-		element.style.left = location.x - midpoint + 'px';
-	}
 
 	// delete node on close button
 	function handleRemove(_event: MouseEvent) {

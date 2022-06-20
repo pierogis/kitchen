@@ -1,15 +1,9 @@
-import type {
-	CallFor,
-	Connection,
-	Flavor,
-	Ingredient,
-	Parameter,
-	Shader,
-	Location
-} from '$lib/common/types';
-import type { Action, ActionHandler, ActionType } from '$lib/state/actions';
 import { writable, type Readable, derived } from 'svelte/store';
-import { dispatcher } from '$lib/state/dispatcher';
+
+import type { CallFor, Connection, Flavor, Ingredient, Parameter, Shader, Location } from '@types';
+
+import type { Action, ActionHandler, ActionType } from '@state/actions';
+import { dispatcher } from '@state/dispatcher';
 
 export interface FlatRecipe {
 	recipeUuid: string;

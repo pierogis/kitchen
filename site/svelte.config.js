@@ -8,7 +8,17 @@ const config = {
 	preprocess: preprocess(),
 
 	kit: {
-		adapter: adapter()
+		adapter: adapter(),
+		alias: {
+			'@types': 'src/lib/common/types.ts',
+			'@state': 'src/lib/state',
+			'@state/*': 'src/lib/state/*',
+			'@recipe': 'src/lib/state/stores/recipe.ts',
+			'@view': 'src/lib/state/stores/view',
+			'@view/*': 'src/lib/state/stores/view/*',
+			'@components': 'src/lib/components',
+			'@components/*': 'src/lib/components/*'
+		}
 	}
 };
 

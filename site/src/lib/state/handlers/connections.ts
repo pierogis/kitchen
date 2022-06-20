@@ -1,4 +1,4 @@
-import { ActionType, type ActionHandler } from '$lib/state/actions';
+import { ActionType, type ActionHandler } from '@state/actions';
 
 export const createConnection: ActionHandler<
 	ActionType.CreateConnection,

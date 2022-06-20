@@ -1,4 +1,4 @@
-import { type ActionHandler, ActionType } from '../actions';
+import { type ActionHandler, ActionType } from '@state/actions';
 
 export const createFlavor: ActionHandler<ActionType.CreateFlavor, ActionType.DeleteFlavor> = (
 	state,

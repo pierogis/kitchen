@@ -2,10 +2,10 @@
 	import { onMount } from 'svelte';
 	import type { Writable } from 'svelte/store';
 
-	import type { FlavorType, Payload } from '$lib/common/types';
-
 	import type { FolderApi, MonitorParams } from 'tweakpane';
 	import type { BladeApi, MonitorBindingController } from '@tweakpane/core';
+
+	import type { FlavorType, Payload } from '@types';
 
 	export let folder: FolderApi;
 	export let payloadStore: Writable<Payload<FlavorType>>;

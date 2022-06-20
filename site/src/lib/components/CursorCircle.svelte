@@ -1,11 +1,10 @@
 <script lang="ts">
-	import type { Coordinates } from '$lib/state/stores/view';
-
 	import { spring } from 'svelte/motion';
-	import { derived, type Readable } from 'svelte/store';
+	import { derived } from 'svelte/store';
 
-	// define svelte sping animation effects
+	import type { Coordinates } from '@view';
 
+	// define sping animation effects
 	export let cursorCoordinates: Coordinates;
 	export let pressing: boolean;
 

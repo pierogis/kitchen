@@ -6,7 +6,7 @@ import {
 	Direction,
 	type Parameter,
 	type Shader
-} from '$lib/common/types';
+} from '@types';
 
 export function createTexture(gl: WebGLRenderingContext): WebGLTexture {
 	// create a texture to sequentially draw on

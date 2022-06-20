@@ -5,7 +5,7 @@
 	import type { BladeApi, InputBindingController } from '@tweakpane/core';
 	import type { FolderApi, InputParams } from 'tweakpane';
 
-	import { FlavorType, type Payload } from '$lib/common/types';
+	import { FlavorType, type Payload } from '@types';
 
 	export let folder: FolderApi;
 	export let payloadStore: Writable<Payload<FlavorType> | undefined>;

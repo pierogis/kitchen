@@ -1,12 +1,5 @@
-import type {
-	CallFor,
-	Connection,
-	Flavor,
-	Ingredient,
-	Location,
-	Parameter
-} from '$lib/common/types';
-import type { FlatRecipe } from './stores/recipe';
+import type { CallFor, Connection, Flavor, Ingredient, Location, Parameter } from '@types';
+import type { FlatRecipe } from '@recipe';
 
 export enum ActionType {
 	CreateIngredient,

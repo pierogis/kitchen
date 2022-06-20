@@ -3,13 +3,13 @@
 
 	import type { FolderApi } from 'tweakpane';
 
-	import { type Payload, type Flavor, FlavorType, Direction } from '$lib/common/types';
+	import { type Payload, type Flavor, FlavorType, Direction } from '@types';
 
-	import type { Terminal } from '$lib/state/stores/view';
+	import type { Terminal } from '@view';
 
-	import Monitor from './tweakpane/Monitor.svelte';
-	import Input from './tweakpane/Input.svelte';
-	import TerminalRack from '$lib/components/TerminalRack.svelte';
+	import Monitor from '@components/tweakpane/Monitor.svelte';
+	import Input from '@components/tweakpane/Input.svelte';
+	import TerminalRack from '@components/TerminalRack.svelte';
 
 	export let index: number;
 	export let flavor: Flavor;

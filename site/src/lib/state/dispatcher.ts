@@ -1,7 +1,7 @@
-import type { ActionType, Action, ActionHandler } from './actions';
-
-import type { FlatRecipe } from '$lib/state/stores/recipe';
 import type { Writable } from 'svelte/store';
+
+import type { ActionType, Action, ActionHandler } from '@state/actions';
+import type { FlatRecipe } from '@recipe';
 
 export function dispatcher(recipeState: Writable<FlatRecipe>) {
 	let undoActions: Action<ActionType>[][] = [];

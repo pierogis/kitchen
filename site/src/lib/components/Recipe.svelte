@@ -1,22 +1,22 @@
 <script lang="ts">
 	import type { Readable } from 'svelte/store';
 
-	import { Direction, type Flavor } from '$lib/common/types';
+	import { Direction, type Flavor } from '@types';
 
-	import type { Terminal, Node, Cable } from '$lib/state/stores/view';
-	import type { TerminalCoordinatesState } from '$lib/state/stores/view/terminals';
+	import type { Terminal, Node, Cable } from '@view';
+	import type { TerminalsCoordinatesState } from '@view/terminals';
 
 	import {} from '$lib/flavors/plugins';
 
-	import IngredientComponent from '$lib/components/Ingredient.svelte';
-	import Dock from '$lib/components/Dock.svelte';
-	import CableComponent from './Cable.svelte';
-	import LiveTerminal from './LiveTerminal.svelte';
+	import IngredientComponent from '@components/Ingredient.svelte';
+	import Dock from '@components/Dock.svelte';
+	import CableComponent from '@components/Cable.svelte';
+	import LiveTerminal from '@components/LiveTerminal.svelte';
 
 	export let dockedFlavors: Readable<Flavor[]>;
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
-	export let terminalCoordinates: TerminalCoordinatesState;
+	export let terminalsCoordinates: TerminalsCoordinatesState;
 	export let liveTerminal: Readable<Terminal | undefined>;
 </script>
 
@@ -43,8 +43,8 @@
 
 {#each $cables as cable (cable.connectionUuid)}
 	<CableComponent
-		outCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
-		inCoordinates={terminalCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
+		outCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
+		inCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
 	/>
 {/each}
 

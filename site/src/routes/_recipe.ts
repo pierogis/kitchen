@@ -1,4 +1,4 @@
-import { Direction, type FullRecipe, FlavorType } from '$lib/common/types';
+import { Direction, type FullRecipe, FlavorType } from '@types';
 
 export const defaultRecipe: FullRecipe = {
 	uuid: '0',

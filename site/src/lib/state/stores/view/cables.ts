@@ -1,9 +1,9 @@
 import { derived, writable, type Readable, type Writable } from 'svelte/store';
 
-import { Direction, type FlavorType, type Payload } from '$lib/common/types';
+import { Direction, type FlavorType, type Payload } from '@types';
 
-import type { RecipeState } from '$lib/state/stores/recipe';
-import type { Terminal } from '.';
+import type { RecipeState } from '@recipe';
+import type { Terminal } from '@view';
 
 export interface Cable {
 	connectionUuid: string;

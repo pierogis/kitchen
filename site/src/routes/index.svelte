@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	import { defaultRecipe } from './_recipe';
-	import { recipeStateContextKey, storeRecipe, viewStateContextKey } from '$lib/state';
+	import { recipeStateContextKey, storeRecipe, viewStateContextKey } from '@state';
 
 	/** @type {import('./index').Load} */
 	export async function load() {
@@ -13,11 +13,13 @@
 </script>
 
 <script lang="ts">
-	import Pan from '$lib/components/Pan.svelte';
-	import Recipe from '$lib/components/Recipe.svelte';
-	import type { FullRecipe } from '$lib/common/types';
-	import { readableViewState } from '$lib/state/stores/view';
 	import { setContext } from 'svelte';
+
+	import type { FullRecipe } from '@types';
+	import { readableViewState } from '@view';
+
+	import Pan from '@components/Pan.svelte';
+	import Recipe from '@components/Recipe.svelte';
 
 	let innerWidth = 0,
 		innerHeight = 0;
@@ -46,7 +48,7 @@
 	dockedFlavors={viewState.dockedFlavors}
 	nodes={viewState.nodes}
 	cables={viewState.cables}
-	terminalCoordinates={viewState.terminalCoordinates}
+	terminalsCoordinates={viewState.terminalsCoordinates}
 	liveTerminal={viewState.liveTerminal}
 />
 

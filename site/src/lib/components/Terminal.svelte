@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 
-	import { Direction } from '$lib/common/types';
+	import { Direction } from '@types';
 	import { calculateCenter } from '$lib/common/utils';
 
-	import type { LiveConnection, ViewState } from '$lib/state/stores/view';
-	import { viewStateContextKey } from '$lib/state';
-	import type { Terminal } from '$lib/state/stores/view/terminals';
+	import type { LiveConnection, ViewState } from '@view';
+	import { viewStateContextKey } from '@state';
+	import type { Terminal } from '@view/terminals';
 	import { derived } from 'svelte/store';
 
 	import { useActions, type ActionDescription } from '$lib/common/actions/useActions';
@@ -37,14 +37,14 @@
 		const updateRect = () => {
 			const center = getPosition();
 			// update central store
-			viewState.terminalCoordinates.updateCoordinates(terminal, {
+			viewState.terminalsCoordinates.updateCoordinates(terminal, {
 				x: center.x,
 				y: center.y
 			});
 		};
 
 		// register this terminal
-		viewState.terminalCoordinates.addTerminal(terminal, getPosition());
+		viewState.terminalsCoordinates.addTerminal(terminal, getPosition());
 
 		// callback every n ms to update the coordinates
 		const rectUpdateInterval = 10;
@@ -52,7 +52,7 @@
 
 		return {
 			destroy: () => {
-				viewState.terminalCoordinates.deleteTerminal(terminal);
+				viewState.terminalsCoordinates.deleteTerminal(terminal);
 
 				clearInterval(rectUpdateTimer);
 			}

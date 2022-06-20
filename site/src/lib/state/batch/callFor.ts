@@ -1,8 +1,9 @@
 import { get } from 'svelte/store';
 
-import type { Ingredient, CallFor, Flavor, Location } from '$lib/common/types';
-import { type Action, ActionType } from '../actions';
-import type { RecipeState } from '../stores/recipe';
+import type { Ingredient, CallFor, Flavor, Location } from '@types';
+
+import { type Action, ActionType } from '@state/actions';
+import type { RecipeState } from '@recipe';
 
 export function dispatchDeleteCallForActions(recipeState: RecipeState, callFor: CallFor) {
 	const callForAction: Action<ActionType.DeleteCallFor> = {

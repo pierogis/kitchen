@@ -1,4 +1,4 @@
-import type { Connection, Flavor, FullRecipe } from '$lib/common/types';
+import type { Connection, Flavor, FullRecipe } from '@types';
 import { ActionType } from './actions';
 
 import { createCallFor, deleteCallFor } from './handlers/callsFor';

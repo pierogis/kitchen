@@ -1,4 +1,4 @@
-import { type ActionHandler, ActionType } from '../actions';
+import { type ActionHandler, ActionType } from '@state/actions';
 
 export const createLocation: ActionHandler<ActionType.CreateLocation, ActionType.DeleteLocation> = (
 	state,

@@ -1,11 +1,11 @@
-import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
+import { derived, type Readable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
-import { Direction, FlavorType, type Connection, type Flavor } from '$lib/common/types';
+import { Direction, FlavorType, type Connection, type Flavor } from '@types';
 
-import type { Coordinates } from '.';
+import type { LiveConnectionState } from '@view';
 
-import type { LiveConnectionState } from './liveConnection';
+export { createTerminalsCoordinates, type TerminalsCoordinatesState } from './coordinates';
 
 export const terminalHeight = 10;
 
@@ -16,76 +16,6 @@ export type Terminal = {
 	cabled: boolean;
 	flavorType: FlavorType;
 };
-
-export type TerminalCoordinatesState = {
-	getCoordinates: (connectionUuid: string, direction: Direction) => Readable<Coordinates>;
-	getMatchingTerminals: (terminal: Terminal) => Terminal[];
-	addTerminal: (terminal: Terminal, newCoordinates: Coordinates) => void;
-	updateCoordinates: (terminal: Terminal, newCoordinates: Coordinates) => void;
-	deleteTerminal: (terminal: Terminal) => void;
-};
-
-export function createTerminalCoordinates(
-	terminals: Readable<Terminal[]>,
-	liveConnection: LiveConnectionState
-): TerminalCoordinatesState {
-	const coordinates: Map<string, Writable<Coordinates>> = new Map();
-
-	function getCoordinates(connectionUuid: string, direction: Direction): Readable<Coordinates> {
-		const store = coordinates.get(connectionUuid + direction);
-		if (store) {
-			return { subscribe: store.subscribe };
-		} else {
-			throw `Couldn't find coordinates store for ${connectionUuid} ${direction}`;
-		}
-	}
-
-	function addTerminal(terminal: Terminal, newCoordinates: Coordinates) {
-		const terminalCoordinates = coordinates.get(terminal.connectionUuid + terminal.direction);
-		if (terminalCoordinates) {
-			terminalCoordinates.set(newCoordinates);
-		} else {
-			coordinates.set(terminal.connectionUuid + terminal.direction, writable(newCoordinates));
-		}
-	}
-	function getMatchingTerminals(terminal: Terminal) {
-		return get(terminals).filter(
-			(candidateTerminal) =>
-				candidateTerminal.direction == terminal.direction &&
-				terminal.flavorType == candidateTerminal.flavorType &&
-				terminal.flavorUuid != candidateTerminal.flavorUuid
-		);
-	}
-	function updateCoordinates(terminal: Terminal, newCoordinates: Coordinates) {
-		const store = coordinates.get(terminal.connectionUuid + terminal.direction);
-		store?.set(newCoordinates);
-	}
-	function deleteTerminal(terminal: Terminal) {
-		// this function is called when Terminals die
-		// if the terminal still exists (live terminal died), don't delete
-		const existingTerminal = get(terminals).find(
-			(existingTerminal) =>
-				terminal.connectionUuid == existingTerminal.connectionUuid &&
-				terminal.direction == existingTerminal.direction
-		);
-		if (!existingTerminal) {
-			// also don't delete if the live terminal is using the terminal that died
-			const currentLiveConnection = get(liveConnection);
-			if (
-				currentLiveConnection?.connectionUuid != terminal.connectionUuid ||
-				currentLiveConnection.dragDirection != terminal.direction
-			)
-				coordinates.delete(terminal.connectionUuid + terminal.direction);
-		}
-	}
-	return {
-		getCoordinates,
-		getMatchingTerminals,
-		addTerminal,
-		updateCoordinates,
-		deleteTerminal
-	};
-}
 
 export function createTerminals(
 	focusedConnections: Readable<Connection[]>,

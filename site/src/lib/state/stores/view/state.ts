@@ -1,14 +1,15 @@
 import { derived, writable, type Writable, type Readable } from 'svelte/store';
 
-import { Direction, type Flavor } from '$lib/common/types';
-import type { RecipeState } from '$lib/state/stores/recipe';
+import { Direction, type Flavor } from '@types';
+import type { RecipeState } from '@recipe';
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
 import { createCables, type Cable } from './cables';
 import { createNodes, type Node } from './nodes';
+
 import {
-	createTerminalCoordinates,
 	type Terminal,
-	type TerminalCoordinatesState
+	createTerminalsCoordinates,
+	type TerminalsCoordinatesState
 } from './terminals';
 import { createTerminals } from '.';
 
@@ -22,7 +23,7 @@ export interface ViewState {
 	liveConnection: LiveConnectionState;
 	liveTerminal: Readable<Terminal | undefined>;
 	terminals: Readable<Terminal[]>;
-	terminalCoordinates: TerminalCoordinatesState;
+	terminalsCoordinates: TerminalsCoordinatesState;
 }
 
 export function readableViewState(recipeState: RecipeState): ViewState {
@@ -124,7 +125,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	// callsFor/ingredients/nodes in the current view and their components
 	const nodes = createNodes(recipeState, focusedSubIngredients);
 
-	const terminalCoordinates = createTerminalCoordinates(terminals, liveConnection);
+	const terminalsCoordinates = createTerminalsCoordinates(terminals, liveConnection);
 
 	return {
 		cables,
@@ -134,6 +135,6 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		liveConnection,
 		liveTerminal,
 		terminals,
-		terminalCoordinates
+		terminalsCoordinates
 	};
 }

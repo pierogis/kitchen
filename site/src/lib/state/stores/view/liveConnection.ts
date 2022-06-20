@@ -1,9 +1,9 @@
 import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
 
-import { Direction, type FlavorType, type Ingredient, type Payload } from '$lib/common/types';
-import { ActionType, type ActionParams } from '$lib/state/actions';
+import { Direction, type FlavorType, type Ingredient, type Payload } from '@types';
 
-import type { RecipeState } from '$lib/state/stores/recipe';
+import { ActionType, type ActionParams } from '@state/actions';
+import type { RecipeState } from '@recipe';
 import type { Terminal } from '.';
 
 export type LiveConnection = {
