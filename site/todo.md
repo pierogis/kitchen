@@ -13,6 +13,7 @@
   - [x] add liveConnection to terminals derived
   - [x] detect near terminals and take the closest non live
   - [x] fix live cable undefined initial coordinates
+  - [ ] flavors should not reorder when one becomes a monitor
   - [ ] image input
     - [ ] canvas when monitor
     - [ ] file input when input

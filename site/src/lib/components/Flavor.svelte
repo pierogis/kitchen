@@ -5,25 +5,24 @@
 
 	import { type Payload, type Flavor, FlavorType, Direction } from '$lib/common/types';
 
-	import type { Cable, Terminal } from '$lib/state/stores/view';
+	import type { Terminal } from '$lib/state/stores/view';
 
 	import Monitor from './tweakpane/Monitor.svelte';
 	import Input from './tweakpane/Input.svelte';
 	import TerminalRack from '$lib/components/TerminalRack.svelte';
 
 	export let flavor: Flavor;
-	export let cables: Readable<Cable[]>;
 	export let terminals: Readable<Terminal[]>;
 
 	$: inTerminals = $terminals.filter((terminal) => terminal.direction == Direction.In);
 	$: outTerminals = $terminals.filter((terminal) => terminal.direction == Direction.Out);
 
-	let inCable = $cables.find((cable) => cable.inFlavorUuid == flavor.uuid);
-	let outCables = $cables.filter((cable) => cable.outFlavorUuid == flavor.uuid);
+	export let inPayload: Readable<Payload<FlavorType>> | undefined;
+	export let outPayloads: Writable<Payload<FlavorType>>[];
 
 	export let folder: FolderApi;
 
-	let initialPayload = inCable ? get(inCable.payload) : undefined;
+	let initialPayload = inPayload ? get(inPayload) : undefined;
 
 	if (!initialPayload || !initialPayload.params) {
 		switch (flavor.type) {
@@ -46,7 +45,7 @@
 	const payloadStore: Writable<Payload<FlavorType>> = writable(initialPayload);
 
 	// update ui paramsStore with new inCable payloads
-	inCable?.payload.subscribe((newPayload) => {
+	inPayload?.subscribe((newPayload) => {
 		payloadStore.update((currentPayload) => {
 			currentPayload = newPayload;
 			return currentPayload;
@@ -55,8 +54,8 @@
 
 	// update outCables' payloads with new params (from Monitor/Input)
 	payloadStore.subscribe((newPayload) => {
-		outCables.forEach((cable) => {
-			cable.payload.update((currentPayload) => {
+		outPayloads.forEach((payload) => {
+			payload.update((currentPayload) => {
 				currentPayload = newPayload;
 				return currentPayload;
 			});
@@ -64,7 +63,7 @@
 	});
 </script>
 
-{#if inCable && $payloadStore}
+{#if inPayload && payloadStore}
 	<Monitor {folder} {payloadStore} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack

@@ -43,6 +43,7 @@
 />
 
 <Recipe
+	dockedFlavors={viewState.dockedFlavors}
 	nodes={viewState.nodes}
 	cables={viewState.cables}
 	terminalCoordinates={viewState.terminalCoordinates}

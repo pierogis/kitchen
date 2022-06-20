@@ -2,7 +2,7 @@
 	import { registerPlugins } from '$lib/flavors/plugins';
 	import { Pane } from 'tweakpane';
 
-	export let title: string;
+	export let title: string | undefined = undefined;
 
 	let pane: Pane;
 

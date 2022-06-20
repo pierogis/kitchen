@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { Readable } from 'svelte/store';
 
-	import { Direction } from '$lib/common/types';
+	import { Direction, type Flavor } from '$lib/common/types';
 
-	import type { Node } from '$lib/state/stores/view/nodes';
-	import type { Cable } from '$lib/state/stores/view/cables';
+	import type { Terminal, Node, Cable } from '$lib/state/stores/view';
+	import type { TerminalCoordinatesState } from '$lib/state/stores/view/terminals';
 
 	import {} from '$lib/flavors/plugins';
 
@@ -13,9 +13,7 @@
 	import CableComponent from './Cable.svelte';
 	import LiveTerminal from './LiveTerminal.svelte';
 
-	import type { Terminal } from '$lib/state/stores/view';
-	import type { TerminalCoordinatesState } from '$lib/state/stores/view/terminals';
-
+	export let dockedFlavors: Readable<Flavor[]>;
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
 	export let terminalCoordinates: TerminalCoordinatesState;
@@ -50,5 +48,11 @@
 	/>
 {/each}
 
-<Dock direction={Direction.In} />
-<Dock direction={Direction.Out} />
+<Dock
+	direction={Direction.In}
+	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.Out))}
+/>
+<Dock
+	direction={Direction.Out}
+	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.In))}
+/>

@@ -59,11 +59,10 @@
 		{#if pane}
 			{#each flavors as flavor, i (i)}
 				<FlavorComponent
-					cables={derived(cables, (currentCables) =>
-						currentCables.filter(
-							(cable) => cable.outFlavorUuid == flavor.uuid || cable.inFlavorUuid == flavor.uuid
-						)
-					)}
+					inPayload={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)?.payload}
+					outPayloads={$cables
+						.filter((cable) => cable.outFlavorUuid == flavor.uuid)
+						.map((cable) => cable.payload)}
 					terminals={derived(terminals, (currentTerminals) =>
 						currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
 					)}

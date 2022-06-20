@@ -1,6 +1,6 @@
 import { derived, writable, type Writable, type Readable } from 'svelte/store';
 
-import type { Flavor } from '$lib/common/types';
+import { Direction, type Flavor } from '$lib/common/types';
 import type { RecipeState } from '$lib/state/stores/recipe';
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
 import { createCables, type Cable } from './cables';
@@ -75,7 +75,33 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	);
 
-	const terminals = createTerminals(focusedConnections, focusedFlavors, liveConnection);
+	// flavors belonging to the focused ingredient
+	const dockedFlavors: Readable<Flavor[]> = derived(
+		[recipeState.flavors, focusedIngredient],
+		([currentFlavors, currentFocusedIngredient]) => {
+			return Array.from(currentFlavors.values())
+				.filter((flavor) => flavor.ingredientUuid == currentFocusedIngredient.uuid)
+				.flatMap((flavor) =>
+					flavor.directions.map<Flavor>((direction) => {
+						return {
+							uuid: flavor.uuid,
+							ingredientUuid: flavor.ingredientUuid,
+							type: flavor.type,
+							name: flavor.name,
+							options: flavor.options,
+							directions: direction == Direction.In ? [Direction.Out] : [Direction.In]
+						};
+					})
+				);
+		}
+	);
+
+	const terminals = createTerminals(
+		focusedConnections,
+		focusedFlavors,
+		liveConnection,
+		dockedFlavors
+	);
 
 	const liveTerminal: Readable<Terminal | undefined> = derived(
 		[liveConnection],
@@ -97,16 +123,6 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 
 	// callsFor/ingredients/nodes in the current view and their components
 	const nodes = createNodes(recipeState, focusedSubIngredients);
-
-	// flavors belonging to the focused ingredient
-	const dockedFlavors = derived(
-		[recipeState.flavors, focusedIngredient],
-		([currentFlavors, currentFocusedIngredient]) => {
-			return Array.from(currentFlavors.values()).filter(
-				(flavor) => flavor.ingredientUuid == currentFocusedIngredient.uuid
-			);
-		}
-	);
 
 	const terminalCoordinates = createTerminalCoordinates(terminals, liveConnection);
 
