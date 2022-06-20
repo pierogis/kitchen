@@ -13,7 +13,7 @@
   - [x] add liveConnection to terminals derived
   - [x] detect near terminals and take the closest non live
   - [x] fix live cable undefined initial coordinates
-  - [ ] flavors should not reorder when one becomes a monitor
+  - [x] flavors should not reorder when one becomes a monitor
   - [ ] image input
     - [ ] canvas when monitor
     - [ ] file input when input
@@ -23,6 +23,7 @@
   - [ ] change focused flavor
   - [ ] edit ingredient name
   - [ ] propagate parameter/cable payloads
+  - [ ] update location state
   - [ ] shader editor tab (if focused ingredient has shader)
   - [ ] undo and redo interaction
     - [ ] test action redo and undo in state

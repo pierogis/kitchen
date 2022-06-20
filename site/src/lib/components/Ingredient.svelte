@@ -57,7 +57,7 @@
 	</div>
 	<Pane let:pane title={ingredient.name}>
 		{#if pane}
-			{#each flavors as flavor, i (i)}
+			{#each flavors as flavor, i (flavor.uuid)}
 				<FlavorComponent
 					inPayload={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)?.payload}
 					outPayloads={$cables
@@ -66,6 +66,7 @@
 					terminals={derived(terminals, (currentTerminals) =>
 						currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
 					)}
+					index={i}
 					{flavor}
 					folder={pane}
 				/>

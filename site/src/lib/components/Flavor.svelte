@@ -11,6 +11,7 @@
 	import Input from './tweakpane/Input.svelte';
 	import TerminalRack from '$lib/components/TerminalRack.svelte';
 
+	export let index: number;
 	export let flavor: Flavor;
 	export let terminals: Readable<Terminal[]>;
 
@@ -64,7 +65,7 @@
 </script>
 
 {#if inPayload && payloadStore}
-	<Monitor {folder} {payloadStore} key={flavor.name} let:monitorElement>
+	<Monitor {index} {folder} {payloadStore} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack
 				parentElement={monitorElement}
@@ -74,7 +75,7 @@
 		{/each}
 	</Monitor>
 {:else}
-	<Input {folder} {payloadStore} key={flavor.name} let:inputElement>
+	<Input {index} {folder} {payloadStore} key={flavor.name} let:inputElement>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack
 				parentElement={inputElement}

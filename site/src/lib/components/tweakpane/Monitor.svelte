@@ -8,10 +8,10 @@
 	import type { BladeApi, MonitorBindingController } from '@tweakpane/core';
 
 	export let folder: FolderApi;
-
 	export let payloadStore: Writable<Payload<FlavorType>>;
 	export let key: string;
 	export let options: MonitorParams | undefined = undefined;
+	export let index: number | undefined = undefined;
 
 	let monitorElement: HTMLElement;
 
@@ -35,7 +35,7 @@
 			fired = true;
 		});
 
-		bladeApi = folder.addMonitor(params, key, options);
+		bladeApi = folder.addMonitor(params, key, { ...options, index });
 
 		const element = bladeApi.controller_.valueController.view.element.parentElement;
 		if (element) {

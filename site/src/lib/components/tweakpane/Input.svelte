@@ -8,10 +8,10 @@
 	import { FlavorType, type Payload } from '$lib/common/types';
 
 	export let folder: FolderApi;
-
 	export let payloadStore: Writable<Payload<FlavorType> | undefined>;
 	export let key: string;
 	export let options: InputParams | undefined = undefined;
+	export let index: number | undefined = undefined;
 
 	let inputElement: HTMLElement;
 
@@ -39,7 +39,7 @@
 			options = { ...options, view: 'color', color: { alpha: true } };
 		}
 
-		bladeApi = folder.addInput(params, key, options).on('change', (ev) => {
+		bladeApi = folder.addInput(params, key, { ...options, index }).on('change', (ev) => {
 			if (payload) {
 				$payloadStore = {
 					type: payload.type,

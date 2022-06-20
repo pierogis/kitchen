@@ -31,9 +31,10 @@
 	}}
 >
 	<Pane let:pane>
-		{#each flavors as flavor (flavor.uuid)}
+		{#each flavors as flavor, index (flavor.uuid)}
 			<!-- inPayload could have a  not necessarily based on cables -->
 			<FlavorComponent
+				{index}
 				{flavor}
 				inPayload={direction == Direction.In
 					? undefined
