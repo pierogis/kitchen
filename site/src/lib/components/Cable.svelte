@@ -85,7 +85,7 @@
 		}
 	});
 
-	const pathStrokeWidth = 4;
+	const pathStrokeWidth = 2;
 </script>
 
 {#if $pathString && $pathDescription}
@@ -113,5 +113,7 @@
 		opacity: 0.9;
 		stroke-width: var(--path-stroke-width);
 		fill: transparent;
+
+		cursor: grab;
 	}
 </style>

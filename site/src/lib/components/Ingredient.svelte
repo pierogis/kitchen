@@ -76,12 +76,6 @@
 </div>
 
 <style>
-	.no-select {
-		-webkit-user-select: none;
-		-moz-user-select: none;
-		-ms-user-select: none;
-		user-select: none;
-	}
 	.node {
 		position: absolute;
 		z-index: 1;

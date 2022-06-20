@@ -19,7 +19,7 @@
 	}
 </script>
 
-<div use:attachPaneAction>
+<div use:attachPaneAction class="no-select">
 	<slot {pane} />
 </div>
 

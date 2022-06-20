@@ -2,8 +2,8 @@
 	<slot />
 </div>
 
-<style>
-	:global(:root) {
+<style global>
+	:root {
 		--primary-color: hsla(160, 20%, 75%, 0.8);
 		--shadow-color: hsla(0, 0%, 0%, 0.2);
 		--label-color: hsla(230, 5%, 30%, 0.7);
@@ -22,12 +22,19 @@
 		--remove-color: hsla(0, 80%, 70%, 0.8);
 		--cable-color-number: rgba(120, 150, 190, 1);
 	}
-	:global(body) {
+	body {
 		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
 			'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 		background-color: #282c34;
 		margin: 0px;
+	}
+
+	.no-select {
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
 	}
 </style>
