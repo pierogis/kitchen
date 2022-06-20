@@ -47,7 +47,7 @@
 		viewState.terminalsCoordinates.addTerminal(terminal, getPosition());
 
 		// callback every n ms to update the coordinates
-		const rectUpdateInterval = 10;
+		const rectUpdateInterval = 5;
 		let rectUpdateTimer = setInterval(updateRect, rectUpdateInterval);
 
 		return {

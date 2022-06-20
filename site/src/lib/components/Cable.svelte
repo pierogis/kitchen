@@ -7,8 +7,6 @@
 	export let outCoordinates: Readable<Coordinates>;
 	export let inCoordinates: Readable<Coordinates>;
 
-	let dragging = false;
-
 	let left: number, top: number;
 
 	let startY: number;
@@ -75,8 +73,8 @@
 		}
 	);
 
-	const tweenedPartwayWidth = tweened($pathDescription.width, { duration: 150 });
-	const tweenedPartwayHeight = tweened($pathDescription.height, { duration: 150 });
+	const tweenedPartwayWidth = tweened($pathDescription.width, { duration: 20 });
+	const tweenedPartwayHeight = tweened($pathDescription.height, { duration: 20 });
 	$: $tweenedPartwayWidth = $pathDescription.width;
 	$: $tweenedPartwayHeight = $pathDescription.height;
 
@@ -102,20 +100,16 @@
 {#if $pathString && $pathDescription}
 	<svg
 		style:--path-stroke-width="{pathStrokeWidth}px"
-		style="width: {Math.max($pathDescription.width, $tweenedPartwayWidth)}px; height: {Math.max(
-			$pathDescription.height,
-			$tweenedPartwayHeight
-		)}px; left: {left}px; top: {top}px;"
-		class:dragging
+		style:width="{Math.max($pathDescription.width, $tweenedPartwayWidth)}px"
+		style:height="{Math.max($pathDescription.height, $tweenedPartwayHeight)}px"
+		style:left="{left}px"
+		style:top="{top}px"
 	>
 		<path d={$pathString} />
 	</svg>
 {/if}
 
 <style>
-	.dragging {
-		cursor: grabbing;
-	}
 	svg {
 		position: absolute;
 		padding: var(--path-stroke-width);

@@ -55,10 +55,10 @@
 
 	// update outCables' payloads with new params (from Monitor/Input)
 	payloadStore.subscribe((newPayload) => {
-		outPayloads.forEach((payload) => {
-			payload.update((currentPayload) => {
-				currentPayload = newPayload;
-				return currentPayload;
+		outPayloads.forEach((outPayload) => {
+			outPayload.update((currentOutPayload) => {
+				currentOutPayload = newPayload;
+				return currentOutPayload;
 			});
 		});
 	});

@@ -20,7 +20,7 @@
 		let tweenedUnsub: (() => void) | null = null;
 
 		const follow = () => {
-			const tweenedCursorCoordinates = tweened(get(viewState.cursorCoordinates), { duration: 150 });
+			const tweenedCursorCoordinates = tweened(get(viewState.cursorCoordinates), { duration: 100 });
 			cursorUnsub = viewState.cursorCoordinates.subscribe((currentCursorCoordinates) => {
 				if (currentCursorCoordinates) {
 					tweenedCursorCoordinates.set(currentCursorCoordinates);
@@ -110,7 +110,7 @@
 		element.addEventListener('mousedown', handleMouseDown);
 
 		return {
-			destroy() {
+			destroy: () => {
 				element.removeEventListener('mousedown', handleMouseDown);
 			}
 		};
