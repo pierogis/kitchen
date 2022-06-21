@@ -71,18 +71,18 @@
 
 				for (const targetTerminal of targetTerminals) {
 					// expanding the rect
-					const terminalsCoordinates = get(
+					const terminalCoordinates = get(
 						viewState.terminalsCoordinates.getCoordinates(
 							targetTerminal.connectionUuid,
 							targetTerminal.direction
 						)
 					);
 
-					if (terminalsCoordinates) {
-						const left = terminalsCoordinates.x - (terminalHeight / 2 + nearTerminalDistance);
-						const top = terminalsCoordinates.y - (terminalHeight / 2 + nearTerminalDistance);
-						const right = terminalsCoordinates.x + (terminalHeight / 2 + nearTerminalDistance);
-						const bottom = terminalsCoordinates.y + (terminalHeight / 2 + nearTerminalDistance);
+					if (terminalCoordinates) {
+						const left = terminalCoordinates.x - (terminalHeight / 2 + nearTerminalDistance);
+						const top = terminalCoordinates.y - (terminalHeight / 2 + nearTerminalDistance);
+						const right = terminalCoordinates.x + (terminalHeight / 2 + nearTerminalDistance);
+						const bottom = terminalCoordinates.y + (terminalHeight / 2 + nearTerminalDistance);
 
 						if (
 							checkPointWithinBox(

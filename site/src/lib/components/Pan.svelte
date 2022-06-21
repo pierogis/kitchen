@@ -106,3 +106,9 @@
 {#if $cursorCoordinates}
 	<CursorCircle cursorCoordinates={$cursorCoordinates} pressing={$pressing} />
 {/if}
+
+<style>
+	canvas {
+		display: block;
+	}
+</style>

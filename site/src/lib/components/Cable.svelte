@@ -73,8 +73,8 @@
 		}
 	);
 
-	const tweenedPartwayWidth = tweened($pathDescription.width, { duration: 20 });
-	const tweenedPartwayHeight = tweened($pathDescription.height, { duration: 20 });
+	const tweenedPartwayWidth = tweened($pathDescription.width, { delay: 40, duration: 500 });
+	const tweenedPartwayHeight = tweened($pathDescription.height, { delay: 40, duration: 500 });
 	$: $tweenedPartwayWidth = $pathDescription.width;
 	$: $tweenedPartwayHeight = $pathDescription.height;
 
@@ -85,11 +85,10 @@
 				const { startY, endY, width, height } = { ...currentPathDescription };
 
 				// making bezier with 4 points (start, [0, height/2], [width, height/2], end)
-				return `M ${0} ${startY} C ${currentTweenedPartwayWidth * 0.2} ${
-					currentTweenedPartwayHeight / 2
-				}, ${currentTweenedPartwayWidth * 0.8} ${
-					currentTweenedPartwayHeight / 2
-				}, ${width} ${endY}`;
+				return `M ${0} ${startY} C ${0} ${currentTweenedPartwayHeight / 2}, ${Math.min(
+					currentTweenedPartwayWidth,
+					width
+				)} ${currentTweenedPartwayHeight / 2}, ${width} ${endY}`;
 			}
 		}
 	);

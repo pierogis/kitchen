@@ -20,6 +20,7 @@ export function createTerminalsCoordinates(
 
 	function getCoordinates(connectionUuid: string, direction: Direction): Readable<Coordinates> {
 		const store = coordinates.get(connectionUuid + direction);
+
 		if (store) {
 			return { subscribe: store.subscribe };
 		} else {
@@ -29,9 +30,7 @@ export function createTerminalsCoordinates(
 
 	function addTerminal(terminal: Terminal, newCoordinates: Coordinates) {
 		const terminalCoordinates = coordinates.get(terminal.connectionUuid + terminal.direction);
-		if (terminalCoordinates) {
-			terminalCoordinates.set(newCoordinates);
-		} else {
+		if (!terminalCoordinates) {
 			coordinates.set(terminal.connectionUuid + terminal.direction, writable(newCoordinates));
 		}
 	}
