@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { get, writable } from 'svelte/store';
+	import { derived, get, writable, type Readable } from 'svelte/store';
 
-	import { type Terminal, terminalHeight, type ViewState } from '@view';
+	import { type Terminal, terminalHeight, type ViewState, type Coordinates } from '@view';
 	import { viewStateContextKey } from '@state';
 	import { checkPointWithinBox } from '$lib/common/utils';
 
@@ -11,45 +11,47 @@
 
 	export let terminal: Terminal;
 
-	const followCursor = writable(true);
-
 	const viewState: ViewState = getContext(viewStateContextKey);
 
-	function followCursorAction(element: HTMLElement, followCursor: boolean) {
-		let cursorUnsub: (() => void) | null = null;
+	let followCoordinates: Readable<Coordinates | undefined> = viewState.cursorCoordinates;
+	let tweenDuration: number = 100;
+
+	const tweenedFollowCoordinates = tweened(get(followCoordinates), {
+		duration: tweenDuration
+	});
+
+	function followCoordinatesAction(
+		element: HTMLElement,
+		followCoordinates: Readable<Coordinates | undefined>
+	) {
+		let inputCoordinatesUnsub: (() => void) | null = null;
 		let tweenedUnsub: (() => void) | null = null;
 
-		const follow = () => {
-			const tweenedCursorCoordinates = tweened(get(viewState.cursorCoordinates), { duration: 100 });
-			cursorUnsub = viewState.cursorCoordinates.subscribe((currentCursorCoordinates) => {
-				if (currentCursorCoordinates) {
-					tweenedCursorCoordinates.set(currentCursorCoordinates);
-				}
-			});
+		inputCoordinatesUnsub = followCoordinates.subscribe((currentCursorCoordinates) => {
+			if (currentCursorCoordinates) {
+				tweenedFollowCoordinates.set(currentCursorCoordinates, { duration: tweenDuration });
+			}
+		});
 
-			tweenedUnsub = tweenedCursorCoordinates.subscribe((currentTweenedCursorCoordinates) => {
-				element.style.left = currentTweenedCursorCoordinates.x + 'px';
-				element.style.top = currentTweenedCursorCoordinates.y + 'px';
-			});
-		};
-
-		if (followCursor) {
-			follow();
-		}
+		tweenedUnsub = tweenedFollowCoordinates.subscribe((currentTweenedCursorCoordinates) => {
+			element.style.left = currentTweenedCursorCoordinates.x + 'px';
+			element.style.top = currentTweenedCursorCoordinates.y + 'px';
+		});
 
 		return {
-			update(newFollowCursor: boolean) {
-				if (followCursor != newFollowCursor) {
-					if (cursorUnsub) cursorUnsub();
-					if (tweenedUnsub) tweenedUnsub();
-					if (newFollowCursor) {
-						follow();
+			update(newFollowCoordinates: Readable<Coordinates | undefined>) {
+				if (inputCoordinatesUnsub) inputCoordinatesUnsub();
+
+				inputCoordinatesUnsub = newFollowCoordinates.subscribe((currentCursorCoordinates) => {
+					if (currentCursorCoordinates) {
+						tweenedFollowCoordinates.set(currentCursorCoordinates, {
+							duration: tweenDuration
+						});
 					}
-				}
-				followCursor = newFollowCursor;
+				});
 			},
 			destroy() {
-				if (cursorUnsub) cursorUnsub();
+				if (inputCoordinatesUnsub) inputCoordinatesUnsub();
 				if (tweenedUnsub) tweenedUnsub();
 			}
 		};
@@ -102,7 +104,15 @@
 					}
 				}
 				if (!anyConnected) {
-					liveConnection.drop();
+					followCoordinates = viewState.terminalsCoordinates.getCoordinates(
+						liveConnection.connectionUuid,
+						liveConnection.anchorDirection
+					);
+					tweenDuration = 300;
+
+					setTimeout(() => {
+						liveConnection.drop();
+					}, tweenDuration * 2.5);
 				}
 			}
 		};
@@ -119,7 +129,10 @@
 
 <TerminalComponent
 	actionDescriptions={[
-		{ action: followCursorAction, params: $followCursor },
+		{
+			action: followCoordinatesAction,
+			params: followCoordinates
+		},
 		{ action: dropTerminalAction }
 	]}
 	{terminal}

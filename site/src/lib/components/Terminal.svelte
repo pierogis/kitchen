@@ -37,10 +37,14 @@
 		const updateRect = () => {
 			const center = getPosition();
 			// update central store
-			viewState.terminalsCoordinates.updateCoordinates(terminal, {
-				x: center.x,
-				y: center.y
-			});
+			viewState.terminalsCoordinates.updateCoordinates(
+				terminal.connectionUuid,
+				terminal.direction,
+				{
+					x: center.x,
+					y: center.y
+				}
+			);
 		};
 
 		// register this terminal

@@ -8,7 +8,11 @@ export type TerminalsCoordinatesState = {
 	getCoordinates: (connectionUuid: string, direction: Direction) => Readable<Coordinates>;
 	getMatchingTerminals: (terminal: Terminal) => Terminal[];
 	addTerminal: (terminal: Terminal, newCoordinates: Coordinates) => void;
-	updateCoordinates: (terminal: Terminal, newCoordinates: Coordinates) => void;
+	updateCoordinates: (
+		connectionUuid: string,
+		direction: Direction,
+		newCoordinates: Coordinates
+	) => void;
 	deleteTerminal: (terminal: Terminal) => void;
 };
 
@@ -42,8 +46,12 @@ export function createTerminalsCoordinates(
 				terminal.flavorUuid != candidateTerminal.flavorUuid
 		);
 	}
-	function updateCoordinates(terminal: Terminal, newCoordinates: Coordinates) {
-		const store = coordinates.get(terminal.connectionUuid + terminal.direction);
+	function updateCoordinates(
+		connectionUuid: string,
+		direction: Direction,
+		newCoordinates: Coordinates
+	) {
+		const store = coordinates.get(connectionUuid + direction);
 		store?.set(newCoordinates);
 	}
 	function deleteTerminal(terminal: Terminal) {
