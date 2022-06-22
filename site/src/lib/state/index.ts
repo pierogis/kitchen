@@ -6,6 +6,7 @@ import { createConnection, deleteConnection, updateConnection } from './handlers
 import { createFlavor, deleteFlavor } from './handlers/flavors';
 import { createIngredient, deleteIngredient } from './handlers/ingredients';
 import { createLocation, deleteLocation } from './handlers/locations';
+import { createUsage, deleteUsage } from './handlers/usages';
 
 import { createRecipeState } from './stores/recipe';
 
@@ -80,6 +81,9 @@ export function storeRecipe(recipe: FullRecipe) {
 
 	recipeState.register(ActionType.CreateLocation, createLocation);
 	recipeState.register(ActionType.DeleteLocation, deleteLocation);
+
+	recipeState.register(ActionType.CreateUsage, createUsage);
+	recipeState.register(ActionType.DeleteUsage, deleteUsage);
 
 	return recipeState;
 }

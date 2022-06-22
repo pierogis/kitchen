@@ -85,10 +85,11 @@
 				const { startY, endY, width } = { ...currentPathDescription };
 
 				// making bezier with 4 points (start, [0, height/2], [width, height/2], end)
-				return `M ${0} ${startY} C ${0} ${currentTweenedPartwayHeight / 2}, ${Math.min(
-					currentTweenedPartwayWidth,
-					width
-				)} ${currentTweenedPartwayHeight / 2}, ${width} ${endY}`;
+				return `M ${0} ${startY} C ${Math.min(currentTweenedPartwayWidth, width) * 0.2} ${
+					currentTweenedPartwayHeight / 2
+				}, ${Math.min(currentTweenedPartwayWidth, width) * 0.8} ${
+					currentTweenedPartwayHeight / 2
+				}, ${width} ${endY}`;
 			}
 		}
 	);
