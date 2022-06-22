@@ -70,16 +70,10 @@
 	) {
 		const handleMouseDown = (event: MouseEvent) => {
 			if (event.button == 0 && terminal.flavorUuid) {
-				const dragDirection = terminal.direction == Direction.In ? Direction.Out : Direction.In;
 				if (params.cabled) {
 					viewState.liveConnection.disconnect(terminal);
 				} else {
-					viewState.liveConnection.anchor(
-						terminal.connectionUuid,
-						terminal.flavorUuid,
-						terminal.direction,
-						dragDirection
-					);
+					viewState.liveConnection.anchor(terminal);
 				}
 
 				element.style.cursor = 'grabbing';

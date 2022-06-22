@@ -8,11 +8,12 @@ import {
 	type CallFor,
 	type Flavor,
 	type Ingredient,
-	type Location
+	type Location,
+	type Usage
 } from '@types';
 
 import type { RecipeState } from '@recipe';
-import type { Coordinates } from '@view';
+import type { Coordinates, ViewState } from '@view';
 import { type Action, ActionType } from '@state/actions';
 
 export function dispatchCreateIngredientActions(
@@ -31,10 +32,22 @@ export function dispatchCreateIngredientActions(
 		}
 	};
 
+	const usage: Usage = {
+		uuid: uuid(),
+		ingredientUuid: ingredient.uuid,
+		parentUsageUuid: get(recipeState.focusedUsageUuid)
+	};
+	const usageAction: Action<ActionType.CreateUsage> = {
+		type: ActionType.CreateUsage,
+		params: {
+			usage
+		}
+	};
+
 	const callFor: CallFor = {
 		uuid: uuid(),
 		recipeUuid: get(recipeState.recipeUuid),
-		ingredientUuid: ingredient.uuid
+		usageUuid: usage.uuid
 	};
 	const callForAction: Action<ActionType.CreateCallFor> = {
 		type: ActionType.CreateCallFor,
@@ -66,5 +79,11 @@ export function dispatchCreateIngredientActions(
 		}
 	};
 
-	recipeState.batchDispatch([ingredientAction, callForAction, flavorAction, locationAction]);
+	recipeState.batchDispatch([
+		ingredientAction,
+		usageAction,
+		callForAction,
+		flavorAction,
+		locationAction
+	]);
 }

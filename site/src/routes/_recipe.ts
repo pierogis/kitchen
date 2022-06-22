@@ -3,60 +3,131 @@ import { Direction, type FullRecipe, FlavorType } from '@types';
 export const defaultRecipe: FullRecipe = {
 	uuid: '0',
 	mainCallForUuid: '0',
+	ingredients: [
+		{
+			uuid: '0',
+			parentIngredientUuid: undefined,
+			name: 'sort',
+			flavors: [
+				{
+					uuid: '0',
+					ingredientUuid: '0',
+					name: 'image',
+					type: FlavorType.Image,
+					directions: [Direction.In, Direction.Out],
+					options: null
+				},
+				{
+					uuid: '1',
+					ingredientUuid: '0',
+					name: 'angle',
+					type: FlavorType.Number,
+					directions: [Direction.In],
+					options: {
+						min: 0,
+						max: 360
+					}
+				},
+				{
+					uuid: '2',
+					ingredientUuid: '0',
+					name: 'lower',
+					type: FlavorType.Number,
+					directions: [Direction.In],
+					options: {
+						min: 0,
+						max: 255
+					}
+				},
+				{
+					uuid: '3',
+					ingredientUuid: '0',
+					name: 'upper',
+					type: FlavorType.Number,
+					directions: [Direction.In],
+					options: {
+						min: 0,
+						max: 255
+					}
+				}
+			],
+			connections: [],
+			usages: [
+				{
+					id: 0,
+					uuid: '0',
+					ingredientUuid: '0'
+				}
+			]
+		},
+		{
+			uuid: '1',
+			parentIngredientUuid: '0',
+			name: 'code',
+			flavors: [
+				{
+					uuid: '4',
+					ingredientUuid: '1',
+					name: 'code',
+					type: FlavorType.Text,
+					directions: [Direction.Out],
+					options: null
+				}
+			],
+			connections: [],
+			usages: [
+				{
+					id: 1,
+					uuid: '1',
+					ingredientUuid: '1'
+				}
+			]
+		},
+		{
+			uuid: '2',
+			parentIngredientUuid: '0',
+			name: 'shader',
+			flavors: [
+				{
+					uuid: '5',
+					ingredientUuid: '2',
+					name: 'texture',
+					type: FlavorType.Image,
+					directions: [Direction.In, Direction.Out],
+					options: null
+				},
+				{
+					uuid: '6',
+					ingredientUuid: '2',
+					name: 'code',
+					type: FlavorType.Text,
+					directions: [Direction.In],
+					options: null
+				},
+				{
+					uuid: '7',
+					ingredientUuid: '2',
+					name: 'color',
+					type: FlavorType.Color,
+					directions: [Direction.In],
+					options: { view: 'color', color: { alpha: true } }
+				}
+			],
+			connections: [],
+			usages: [
+				{
+					id: 2,
+					uuid: '2',
+					ingredientUuid: '2'
+				}
+			]
+		}
+	],
 	callsFor: [
 		{
 			uuid: '0',
 			recipeUuid: '0',
-			ingredientUuid: '0',
-			ingredient: {
-				uuid: '0',
-				parentIngredientUuid: undefined,
-				name: 'sort',
-				flavors: [
-					{
-						uuid: '0',
-						ingredientUuid: '0',
-						name: 'image',
-						type: FlavorType.Image,
-						directions: [Direction.In, Direction.Out],
-						options: null
-					},
-					{
-						uuid: '1',
-						ingredientUuid: '0',
-						name: 'angle',
-						type: FlavorType.Number,
-						directions: [Direction.In],
-						options: {
-							min: 0,
-							max: 360
-						}
-					},
-					{
-						uuid: '2',
-						ingredientUuid: '0',
-						name: 'lower',
-						type: FlavorType.Number,
-						directions: [Direction.In],
-						options: {
-							min: 0,
-							max: 255
-						}
-					},
-					{
-						uuid: '3',
-						ingredientUuid: '0',
-						name: 'upper',
-						type: FlavorType.Number,
-						directions: [Direction.In],
-						options: {
-							min: 0,
-							max: 255
-						}
-					}
-				],
-				connections: []
-			},
+			usageUuid: '0',
 			location: {
 				uuid: '0',
 				callForUuid: '0',
@@ -67,23 +138,7 @@ export const defaultRecipe: FullRecipe = {
 		{
 			uuid: '1',
 			recipeUuid: '0',
-			ingredientUuid: '1',
-			ingredient: {
-				uuid: '1',
-				parentIngredientUuid: '0',
-				name: 'code',
-				flavors: [
-					{
-						uuid: '4',
-						ingredientUuid: '1',
-						name: 'code',
-						type: FlavorType.Text,
-						directions: [Direction.Out],
-						options: null
-					}
-				],
-				connections: []
-			},
+			usageUuid: '1',
 			location: {
 				uuid: '1',
 				callForUuid: '1',
@@ -94,39 +149,8 @@ export const defaultRecipe: FullRecipe = {
 		{
 			uuid: '2',
 			recipeUuid: '0',
-			ingredientUuid: '2',
-			ingredient: {
-				uuid: '2',
-				parentIngredientUuid: '0',
-				name: 'shader',
-				flavors: [
-					{
-						uuid: '5',
-						ingredientUuid: '2',
-						name: 'texture',
-						type: FlavorType.Image,
-						directions: [Direction.In, Direction.Out],
-						options: null
-					},
-					{
-						uuid: '6',
-						ingredientUuid: '2',
-						name: 'code',
-						type: FlavorType.Text,
-						directions: [Direction.In],
-						options: null
-					},
-					{
-						uuid: '7',
-						ingredientUuid: '2',
-						name: 'color',
-						type: FlavorType.Color,
-						directions: [Direction.In],
-						options: { view: 'color', color: { alpha: true } }
-					}
-				],
-				connections: []
-			},
+			usageUuid: '2',
+
 			location: {
 				uuid: '2',
 				callForUuid: '2',

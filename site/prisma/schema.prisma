@@ -28,8 +28,8 @@ model Flavor {
   options        Json?
   ingredient     Ingredient   @relation(fields: [ingredientUuid], references: [uuid])
   directions     Direction[]
-  inConnection   Connection?  @relation("Flavor_inConnection")
-  outConnections Connection[] @relation("Flavor_outConnections")
+  inConnection   Connection?  @relation("Connection_inFlavor")
+  outConnections Connection[] @relation("Connection_outFlavor")
   shader         Shader?      @relation("Shader_imageFlavor")
   parameter      Parameter?   @relation("Parameter_flavor")
 }
@@ -41,10 +41,23 @@ model Ingredient {
   flavors              Flavor[]
   connections          Connection[]
   shader               Shader?      @relation("Shader_ingredient")
-  callsFor             CallFor[]    @relation("CallFor_ingredient")
-  parentIngredientUuid String       @db.Uuid
+  parentIngredientUuid String?      @db.Uuid
   parentIngredient     Ingredient?  @relation("Ingredient_parentIngredient", fields: [parentIngredientUuid], references: [uuid])
-  subCallsFor          Ingredient[] @relation("Ingredient_parentIngredient")
+  subIngredients       Ingredient[] @relation("Ingredient_parentIngredient")
+  usages               Usage[]      @relation("Usage_ingredient")
+}
+
+model Usage {
+  id              Int          @id @default(autoincrement())
+  uuid            String       @unique @db.Uuid
+  ingredientUuid  String       @db.Uuid
+  ingredient      Ingredient   @relation("Usage_ingredient", fields: [ingredientUuid], references: [uuid])
+  outConnections  Connection[] @relation("Connection_outUsage")
+  inConnections   Connection[] @relation("Connection_inUsage")
+  parentUsageUuid String?      @db.Uuid
+  parentUsage     Usage?       @relation("Usage_parentUsage", fields: [parentUsageUuid], references: [uuid])
+  subUsages       Usage[]      @relation("Usage_parentUsage")
+  callFor             CallFor?    @relation("CallFor_usage")
 }
 
 model Connection {
@@ -53,12 +66,16 @@ model Connection {
   parentIngredientUuid String     @db.Uuid
   parentIngredient     Ingredient @relation(fields: [parentIngredientUuid], references: [uuid])
   inFlavorUuid         String     @unique @db.Uuid
-  inFlavor             Flavor     @relation("Flavor_inConnection", fields: [inFlavorUuid], references: [uuid])
+  inFlavor             Flavor     @relation("Connection_inFlavor", fields: [inFlavorUuid], references: [uuid])
   outFlavorUuid        String     @db.Uuid
-  outFlavor            Flavor     @relation("Flavor_outConnections", fields: [outFlavorUuid], references: [uuid])
+  outFlavor            Flavor     @relation("Connection_outFlavor", fields: [outFlavorUuid], references: [uuid])
+  inUsageUuid          String     @unique @db.Uuid
+  inUsage              Usage      @relation("Connection_inUsage", fields: [inUsageUuid], references: [uuid])
+  outUsageUuid         String     @db.Uuid
+  outUsage             Usage      @relation("Connection_outUsage", fields: [outUsageUuid], references: [uuid])
   flavorType           FlavorType
 
-  @@unique([parentIngredientUuid, inFlavorUuid, outFlavorUuid])
+  @@unique([parentIngredientUuid, inFlavorUuid, outFlavorUuid, inUsageUuid, outUsageUuid])
 }
 
 model Recipe {
@@ -107,8 +124,8 @@ model CallFor {
   mainRecipe     Recipe?     @relation("Recipe_mainCallFor")
   recipeUuid     String      @db.Uuid
   recipe         Recipe      @relation("CallFor_recipe", fields: [recipeUuid], references: [uuid], onDelete: Cascade)
-  ingredientUuid String      @db.Uuid
-  ingredient     Ingredient  @relation("CallFor_ingredient", fields: [ingredientUuid], references: [uuid])
+  usageUuid String      @db.Uuid
+  usage     Usage  @relation("CallFor_usage", fields: [usageUuid], references: [uuid])
   parameters     Parameter[] @relation("Parameter_callFor")
   location       Location?   @relation("Location_callFor")
 }

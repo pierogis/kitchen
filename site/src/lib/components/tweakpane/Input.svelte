@@ -41,6 +41,7 @@
 
 		bladeApi = folder.addInput(params, key, { ...options, index }).on('change', (ev) => {
 			if (payload) {
+				console.log(ev.value);
 				$payloadStore = {
 					type: payload.type,
 					params: ev.value

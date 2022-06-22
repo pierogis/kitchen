@@ -1,4 +1,4 @@
-import type { CallFor, Connection, Flavor, Ingredient, Location, Parameter } from '@types';
+import type { CallFor, Connection, Flavor, Ingredient, Location, Parameter, Usage } from '@types';
 import type { FlatRecipe } from '@recipe';
 
 export enum ActionType {
@@ -6,6 +6,8 @@ export enum ActionType {
 	DeleteIngredient,
 	CreateFlavor,
 	DeleteFlavor,
+	CreateUsage,
+	DeleteUsage,
 	CreateCallFor,
 	DeleteCallFor,
 	CreateLocation,
@@ -14,6 +16,7 @@ export enum ActionType {
 	UpdateConnection,
 	DeleteConnection,
 	CreateParameter,
+	UpdateParameter,
 	DeleteParameter
 }
 
@@ -22,6 +25,8 @@ type ActionParamsMapper = {
 	[ActionType.DeleteIngredient]: { uuid: string };
 	[ActionType.CreateFlavor]: { flavor: Flavor };
 	[ActionType.DeleteFlavor]: { uuid: string };
+	[ActionType.CreateUsage]: { usage: Usage };
+	[ActionType.DeleteUsage]: { uuid: string };
 	[ActionType.CreateCallFor]: { callFor: CallFor };
 	[ActionType.DeleteCallFor]: { uuid: string };
 	[ActionType.CreateLocation]: { location: Location };
@@ -30,6 +35,7 @@ type ActionParamsMapper = {
 	[ActionType.UpdateConnection]: { connection: Connection };
 	[ActionType.DeleteConnection]: { uuid: string };
 	[ActionType.CreateParameter]: { parameter: Parameter };
+	[ActionType.UpdateParameter]: { parameter: Parameter };
 	[ActionType.DeleteParameter]: { uuid: string };
 };
 

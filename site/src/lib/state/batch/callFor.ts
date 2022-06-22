@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
 
-import type { Ingredient, CallFor, Flavor, Location } from '@types';
+import type { Ingredient, CallFor, Flavor, Location, Usage } from '@types';
 
 import { type Action, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
@@ -10,7 +10,13 @@ export function dispatchDeleteCallForActions(recipeState: RecipeState, callFor: 
 		type: ActionType.DeleteCallFor,
 		params: { uuid: callFor.uuid }
 	};
-	const actions: Action<ActionType>[] = [callForAction];
+
+	const usageAction: Action<ActionType.DeleteUsage> = {
+		type: ActionType.DeleteUsage,
+		params: { uuid: callFor.usageUuid }
+	};
+
+	const actions: Action<ActionType>[] = [callForAction, usageAction];
 
 	const location: Location | undefined = Array.from(get(recipeState.locations).values()).find(
 		(location) => location.callForUuid == callFor.uuid
@@ -24,42 +30,6 @@ export function dispatchDeleteCallForActions(recipeState: RecipeState, callFor: 
 		};
 
 		actions.push(locationAction);
-	}
-
-	// location
-	const ingredient: Ingredient | undefined = Array.from(get(recipeState.ingredients).values()).find(
-		(ingredient) => ingredient.uuid == callFor.ingredientUuid
-	);
-
-	if (ingredient) {
-		const callsFor: CallFor[] = Array.from(get(recipeState.callsFor).values()).filter(
-			(callFor) => ingredient.uuid == callFor.ingredientUuid
-		);
-
-		if (callsFor.length <= 1) {
-			const ingredientAction: Action<ActionType.DeleteIngredient> = {
-				type: ActionType.DeleteIngredient,
-				params: {
-					uuid: ingredient.uuid
-				}
-			};
-
-			actions.push(ingredientAction);
-
-			const flavors: Flavor[] = Array.from(get(recipeState.flavors).values()).filter(
-				(flavor) => ingredient.uuid == flavor.ingredientUuid
-			);
-
-			flavors.map((flavor) => {
-				const flavorAction: Action<ActionType.DeleteFlavor> = {
-					type: ActionType.DeleteFlavor,
-					params: {
-						uuid: flavor.uuid
-					}
-				};
-				actions.push(flavorAction);
-			});
-		}
 	}
 
 	recipeState.batchDispatch(actions);

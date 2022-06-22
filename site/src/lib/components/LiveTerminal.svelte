@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { derived, get, writable, type Readable } from 'svelte/store';
+	import { get, type Readable } from 'svelte/store';
 
 	import { type Terminal, terminalHeight, type ViewState, type Coordinates } from '@view';
 	import { viewStateContextKey } from '@state';
@@ -92,9 +92,10 @@
 								{ top: top, bottom: bottom, left: left, right: right }
 							)
 						) {
-							if (targetTerminal.flavorUuid) {
+							if (targetTerminal.flavorUuid && targetTerminal.usageUuid) {
 								liveConnection.connect(
 									targetTerminal.flavorUuid,
+									targetTerminal.usageUuid,
 									targetTerminal.cabled ? targetTerminal.connectionUuid : undefined
 								);
 								anyConnected = true;
@@ -112,7 +113,7 @@
 
 					setTimeout(() => {
 						liveConnection.drop();
-					}, tweenDuration * 2.5);
+					}, tweenDuration * 2);
 				}
 			}
 		};

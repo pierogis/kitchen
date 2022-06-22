@@ -29,6 +29,7 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 		const currentParameters = Array.from(get(recipeState.parameters).values());
 		const currentConnections = Array.from(get(recipeState.connections).values());
 		const currentFlavors = Array.from(get(recipeState.flavors).values());
+		const currentUsages = get(recipeState.usages);
 
 		function addPayload(flavor: Flavor, callFor: CallFor) {
 			// add flavor to map with params/default
@@ -46,8 +47,9 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 				(connection) => connection.inFlavorUuid == flavor.uuid
 			);
 
+			let fired = false;
 			payload.subscribe((newPayload) => {
-				if (!monitor) {
+				if (fired && !monitor) {
 					if (!parameter) {
 						const createParameterAction: Action<ActionType.CreateParameter> = {
 							type: ActionType.CreateParameter,
@@ -63,6 +65,7 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 						};
 						recipeState.dispatch(createParameterAction);
 					} else {
+						console.log('go!');
 						const updateParameterAction: Action<ActionType.UpdateParameter> = {
 							type: ActionType.UpdateParameter,
 							params: {
@@ -75,6 +78,8 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 						recipeState.dispatch(updateParameterAction);
 					}
 				}
+
+				fired = true;
 			});
 
 			payloads.set(flavor.uuid, { payload, monitor });
@@ -82,8 +87,10 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 
 		// if a entry does not exist for every flavor in current flavors, add
 		for (const callFor of currentCallsFor.values()) {
+			const usage = currentUsages.get(callFor.usageUuid);
+			if (!usage) throw `usage ${callFor.usageUuid} not found`;
 			for (const flavor of currentFlavors.values()) {
-				if (flavor.ingredientUuid == callFor.ingredientUuid) {
+				if (flavor.ingredientUuid == usage.ingredientUuid) {
 					addPayload(flavor, callFor);
 				}
 			}

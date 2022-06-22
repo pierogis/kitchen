@@ -1,7 +1,7 @@
 import { derived, type Readable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
-import { Direction, FlavorType, type Connection, type Flavor } from '@types';
+import { Direction, FlavorType, type Connection, type FlavorUsage } from '@types';
 
 import type { LiveConnectionState } from '@view';
 
@@ -13,15 +13,16 @@ export type Terminal = {
 	flavorUuid?: string;
 	direction: Direction;
 	connectionUuid: string;
+	usageUuid?: string;
 	cabled: boolean;
 	flavorType: FlavorType;
 };
 
 export function createTerminals(
 	focusedConnections: Readable<Connection[]>,
-	focusedFlavors: Readable<Flavor[]>,
+	focusedFlavorUsages: Readable<FlavorUsage[]>,
 	liveConnection: LiveConnectionState,
-	dockedFlavors: Readable<Flavor[]>
+	dockedFlavors: Readable<FlavorUsage[]>
 ): Readable<Terminal[]> {
 	const flavorNovelConnectionUuids: Map<string, string> = new Map();
 	// track connectionIds that have already been used
@@ -49,14 +50,16 @@ export function createTerminals(
 						direction: Direction.In,
 						connectionUuid: connection.uuid,
 						cabled: true,
-						flavorType: connection.flavorType
+						flavorType: connection.flavorType,
+						usageUuid: connection.inUsageUuid
 					},
 					{
 						flavorUuid: connection.outFlavorUuid,
 						direction: Direction.Out,
 						connectionUuid: connection.uuid,
 						cabled: true,
-						flavorType: connection.flavorType
+						flavorType: connection.flavorType,
+						usageUuid: connection.outUsageUuid
 					}
 				];
 			});
@@ -79,7 +82,8 @@ export function createTerminals(
 					direction: currentLiveConnection.anchorDirection,
 					connectionUuid: currentLiveConnection.connectionUuid,
 					cabled: true,
-					flavorType: currentLiveConnection.flavorType
+					flavorType: currentLiveConnection.flavorType,
+					usageUuid: currentLiveConnection.anchorUsageUuid
 				});
 			}
 
@@ -88,14 +92,14 @@ export function createTerminals(
 	);
 
 	const novelTerminals: Readable<Terminal[]> = derived(
-		[focusedFlavors, dockedFlavors, connectedTerminals, liveConnection],
+		[focusedFlavorUsages, dockedFlavors, connectedTerminals, liveConnection],
 		([
 			currentFocusedFlavors,
 			currentDockedFlavors,
 			currentConnectedTerminals,
 			currentLiveConnection
 		]) => {
-			const novelTerminals = [];
+			const novelTerminals: Terminal[] = [];
 			// maintain terminal for a disconnected flavor
 			if (currentLiveConnection && currentLiveConnection.disconnectedFlavorUuid) {
 				novelTerminals.push({
@@ -103,16 +107,17 @@ export function createTerminals(
 					direction: currentLiveConnection.dragDirection,
 					connectionUuid: uuid(),
 					cabled: false,
-					flavorType: currentLiveConnection.flavorType
+					flavorType: currentLiveConnection.flavorType,
+					usageUuid: currentLiveConnection.disconnectedUsageUuid
 				});
 			}
 
 			// creating novel terminals for each flavor
-			currentFocusedFlavors.concat(currentDockedFlavors).forEach((flavor) => {
-				flavor.directions.forEach((direction) => {
+			currentFocusedFlavors.concat(currentDockedFlavors).forEach((flavorUsage) => {
+				flavorUsage.directions.forEach((direction) => {
 					// don't create a novel terminal in place of the live connection's disconnected terminal
 					if (
-						currentLiveConnection?.disconnectedFlavorUuid != flavor.uuid ||
+						currentLiveConnection?.disconnectedFlavorUuid != flavorUsage.uuid ||
 						currentLiveConnection?.dragDirection != direction
 					) {
 						// there should only be one in terminal on each flavor
@@ -120,44 +125,52 @@ export function createTerminals(
 							if (
 								!currentConnectedTerminals.find(
 									(terminal) =>
-										terminal.flavorUuid == flavor.uuid && terminal.direction == Direction.In
+										terminal.flavorUuid == flavorUsage.uuid && terminal.direction == Direction.In
 								)
 							) {
 								// preserve the flavor's novel connection uuids
 								let inNovelConnectionUuid = flavorNovelConnectionUuids.get(
-									flavor.uuid + Direction.In
+									flavorUsage.uuid + Direction.In
 								);
 
 								// make a new one if it doesnt exist
 								if (!inNovelConnectionUuid) {
 									inNovelConnectionUuid = uuid();
-									flavorNovelConnectionUuids.set(flavor.uuid + Direction.In, inNovelConnectionUuid);
+									flavorNovelConnectionUuids.set(
+										flavorUsage.uuid + Direction.In,
+										inNovelConnectionUuid
+									);
 								}
 
 								novelTerminals.push({
-									flavorUuid: flavor.uuid,
+									flavorUuid: flavorUsage.uuid,
 									direction: Direction.In,
 									connectionUuid: inNovelConnectionUuid,
 									cabled: false,
-									flavorType: flavor.type
+									flavorType: flavorUsage.type,
+									usageUuid: flavorUsage.usageUuid
 								});
 							}
 						} else {
 							// do the same for out terminal
 							let outNovelConnectionUuid = flavorNovelConnectionUuids.get(
-								flavor.uuid + Direction.Out
+								flavorUsage.uuid + Direction.Out
 							);
 							if (!outNovelConnectionUuid) {
 								outNovelConnectionUuid = uuid();
-								flavorNovelConnectionUuids.set(flavor.uuid + Direction.Out, outNovelConnectionUuid);
+								flavorNovelConnectionUuids.set(
+									flavorUsage.uuid + Direction.Out,
+									outNovelConnectionUuid
+								);
 							}
 
 							novelTerminals.push({
-								flavorUuid: flavor.uuid,
+								flavorUuid: flavorUsage.uuid,
 								direction: Direction.Out,
 								connectionUuid: outNovelConnectionUuid,
 								cabled: false,
-								flavorType: flavor.type
+								flavorType: flavorUsage.type,
+								usageUuid: flavorUsage.usageUuid
 							});
 						}
 					}

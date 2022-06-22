@@ -11,6 +11,10 @@ export interface Flavor {
 	directions: Direction[];
 }
 
+export type FlavorUsage = Flavor & {
+	usageUuid: string;
+};
+
 export interface Ingredient {
 	uuid: string;
 	name: string;
@@ -20,9 +24,17 @@ export interface Ingredient {
 export interface Connection {
 	uuid: string;
 	parentIngredientUuid: string;
+	flavorType: FlavorType;
 	inFlavorUuid: string;
 	outFlavorUuid: string;
-	flavorType: FlavorType;
+	inUsageUuid: string;
+	outUsageUuid: string;
+}
+
+export interface Usage {
+	uuid: string;
+	ingredientUuid: string;
+	parentUsageUuid?: string;
 }
 
 export interface Recipe {
@@ -31,6 +43,7 @@ export interface Recipe {
 }
 
 export type FullRecipe = Recipe & {
+	ingredients: FullIngredient[];
 	callsFor: FullCallFor[];
 	parameters: Parameter[];
 	shaders: Shader[];
@@ -39,7 +52,7 @@ export type FullRecipe = Recipe & {
 export interface CallFor {
 	uuid: string;
 	recipeUuid: string;
-	ingredientUuid: string;
+	usageUuid: string;
 }
 
 export interface Shader {
@@ -84,9 +97,9 @@ export interface Location {
 export type FullIngredient = Ingredient & {
 	flavors: Flavor[];
 	connections: Connection[];
+	usages: Usage[];
 };
 
 export type FullCallFor = CallFor & {
-	ingredient: FullIngredient;
 	location: Location;
 };

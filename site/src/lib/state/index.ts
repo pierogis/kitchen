@@ -1,4 +1,4 @@
-import type { Connection, Flavor, FullRecipe } from '@types';
+import type { Connection, Flavor, FullRecipe, Usage } from '@types';
 import { ActionType } from './actions';
 
 import { createCallFor, deleteCallFor } from './handlers/callsFor';
@@ -12,19 +12,26 @@ import { createRecipeState } from './stores/recipe';
 export function storeRecipe(recipe: FullRecipe) {
 	const initialCallsFor = new Map(recipe.callsFor.map((callFor) => [callFor.uuid, callFor]));
 	const initialIngredients = new Map(
-		recipe.callsFor.map((callFor) => [callFor.ingredientUuid, callFor.ingredient])
+		recipe.ingredients.map((ingredient) => [ingredient.uuid, ingredient])
+	);
+	const initialUsages = new Map(
+		recipe.ingredients.reduce<[string, Usage][]>((previous, ingredient) => {
+			previous = previous.concat(ingredient.usages.map((usage) => [usage.uuid, usage]));
+
+			return previous;
+		}, [])
 	);
 	const initialFlavors = new Map(
-		recipe.callsFor.reduce<[string, Flavor][]>((previous, callFor) => {
-			previous = previous.concat(callFor.ingredient.flavors.map((flavor) => [flavor.uuid, flavor]));
+		recipe.ingredients.reduce<[string, Flavor][]>((previous, ingredient) => {
+			previous = previous.concat(ingredient.flavors.map((flavor) => [flavor.uuid, flavor]));
 
 			return previous;
 		}, [])
 	);
 	const initialConnections = new Map(
-		recipe.callsFor.reduce<[string, Connection][]>((previous, callFor) => {
+		recipe.ingredients.reduce<[string, Connection][]>((previous, ingredient) => {
 			previous = previous.concat(
-				callFor.ingredient.connections.map((connection) => [connection.uuid, connection])
+				ingredient.connections.map((connection) => [connection.uuid, connection])
 			);
 
 			return previous;
@@ -39,19 +46,23 @@ export function storeRecipe(recipe: FullRecipe) {
 	);
 
 	const mainCallFor = initialCallsFor.get(recipe.mainCallForUuid);
+	if (!mainCallFor) throw `main callFor ${recipe.mainCallForUuid} not found`;
 
-	if (!mainCallFor) throw `Main CallFor ${recipe.mainCallForUuid} not found`;
+	const mainUsage = initialUsages.get(mainCallFor.usageUuid);
+	if (!mainUsage) throw `main usage ${recipe.mainCallForUuid} not found`;
 
 	const recipeState = createRecipeState({
 		recipeUuid: recipe.uuid,
-		focusedIngredientUuid: mainCallFor.ingredientUuid,
+		focusedIngredientUuid: mainUsage.ingredientUuid,
+		focusedUsageUuid: mainUsage.uuid,
 		ingredients: initialIngredients,
 		flavors: initialFlavors,
 		callsFor: initialCallsFor,
 		connections: initialConnections,
 		shaders: initialShaders,
 		parameters: initialParameters,
-		locations: initialLocations
+		locations: initialLocations,
+		usages: initialUsages
 	});
 
 	recipeState.register(ActionType.CreateIngredient, createIngredient);

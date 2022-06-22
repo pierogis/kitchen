@@ -1,6 +1,6 @@
-import { derived, writable, type Writable, type Readable } from 'svelte/store';
+import { derived, writable, type Writable, type Readable, get } from 'svelte/store';
 
-import { Direction, type Flavor } from '@types';
+import { Direction, type Flavor, type FlavorUsage } from '@types';
 import type { RecipeState } from '@recipe';
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
 import { createCables, type Cable } from './cables';
@@ -60,9 +60,34 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 				(ingredient) => ingredient.parentIngredientUuid == currentFocusedIngredient.uuid
 			)
 	);
-	const focusedFlavors = derived(
-		[focusedSubIngredients, recipeState.flavors],
-		([currentFocusedSubIngredients, currentFlavors]) => {
+	const focusedSubUsages = derived(
+		[focusedSubIngredients, recipeState.usages],
+		([currentFocusedSubIngredients, currentUsages]) => {
+			const currentFocusedSubIngredientUuids = currentFocusedSubIngredients.map(
+				(ingredient) => ingredient.uuid
+			);
+			return Array.from(currentUsages.values()).filter((usage) =>
+				currentFocusedSubIngredientUuids.includes(usage.ingredientUuid)
+			);
+		}
+	);
+
+	const flavorUsages: Readable<FlavorUsage[]> = derived(
+		[recipeState.usages, recipeState.flavors],
+		([currentUsages, currentFlavors]) => {
+			return Array.from(currentUsages.values()).flatMap((usage) => {
+				return Array.from(currentFlavors.values())
+					.filter((flavor) => flavor.ingredientUuid == usage.ingredientUuid)
+					.map((flavor) => {
+						return { ...flavor, usageUuid: usage.uuid };
+					});
+			});
+		}
+	);
+
+	const focusedFlavorUsages: Readable<FlavorUsage[]> = derived(
+		[focusedSubIngredients, flavorUsages],
+		([currentFocusedSubIngredients, currentFlavorUsages]) => {
 			const focusedSubIngedientUuids = currentFocusedSubIngredients.reduce<Set<string>>(
 				(previous, ingredient) => {
 					previous.add(ingredient.uuid);
@@ -71,27 +96,28 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 				new Set()
 			);
 
-			return Array.from(currentFlavors.values()).filter((flavor) =>
+			return currentFlavorUsages.filter((flavor) =>
 				focusedSubIngedientUuids.has(flavor.ingredientUuid)
 			);
 		}
 	);
 
 	// flavors belonging to the focused ingredient
-	const dockedFlavors: Readable<Flavor[]> = derived(
+	const dockedFlavors: Readable<FlavorUsage[]> = derived(
 		[recipeState.flavors, focusedIngredient],
 		([currentFlavors, currentFocusedIngredient]) => {
 			return Array.from(currentFlavors.values())
 				.filter((flavor) => flavor.ingredientUuid == currentFocusedIngredient.uuid)
 				.flatMap((flavor) =>
-					flavor.directions.map<Flavor>((direction) => {
+					flavor.directions.map<FlavorUsage>((direction) => {
 						return {
 							uuid: flavor.uuid,
 							ingredientUuid: flavor.ingredientUuid,
 							type: flavor.type,
 							name: flavor.name,
 							options: flavor.options,
-							directions: direction == Direction.In ? [Direction.Out] : [Direction.In]
+							directions: direction == Direction.In ? [Direction.Out] : [Direction.In],
+							usageUuid: get(recipeState.focusedUsageUuid)
 						};
 					})
 				);
@@ -103,7 +129,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	// centrally track terminals that should be created on flavors
 	const terminals = createTerminals(
 		focusedConnections,
-		focusedFlavors,
+		focusedFlavorUsages,
 		liveConnection,
 		dockedFlavors
 	);
@@ -121,7 +147,8 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 					flavorType: currentLiveConnection.flavorType,
 
 					connectionUuid: currentLiveConnection.connectionUuid,
-					cabled: true
+					cabled: true,
+					usageUuid: undefined
 				};
 			}
 		}
@@ -131,7 +158,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const cables = createCables(terminals, liveTerminal);
 
 	// callsFor/ingredients/nodes in the current view and their components
-	const nodes = createNodes(recipeState, focusedSubIngredients);
+	const nodes = createNodes(recipeState, focusedSubIngredients, focusedSubUsages);
 
 	// centrally track values that go in inputs/monitors so they can be edited from anywhere
 	const payloads = createPayloads(recipeState);

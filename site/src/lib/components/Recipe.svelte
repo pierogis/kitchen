@@ -30,15 +30,7 @@
 {/each}
 
 {#if $liveTerminal}
-	<LiveTerminal
-		terminal={{
-			flavorUuid: undefined,
-			direction: $liveTerminal.direction,
-			cabled: true,
-			connectionUuid: $liveTerminal.connectionUuid,
-			flavorType: $liveTerminal.flavorType
-		}}
-	/>
+	<LiveTerminal terminal={$liveTerminal} />
 {/if}
 
 {#each $cables as cable (cable.connectionUuid)}

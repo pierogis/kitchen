@@ -1,6 +1,7 @@
 # todo
 
 - [ ] recipe
+
   - [x] terminals
   - [x] connections
   - [x] update "master" state
@@ -34,8 +35,8 @@
   - [ ] duplicate/reuse ingredient
 
 - [ ] pan
-  - [ ] cooking images in progress
 
+  - [ ] cooking images in progress
 
 - [ ] backend
   - [ ] retrieve full recipe from db on request
