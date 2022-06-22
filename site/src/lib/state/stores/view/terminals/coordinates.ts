@@ -42,8 +42,7 @@ export function createTerminalsCoordinates(
 		return get(terminals).filter(
 			(candidateTerminal) =>
 				candidateTerminal.direction == terminal.direction &&
-				terminal.flavorType == candidateTerminal.flavorType &&
-				terminal.flavorUuid != candidateTerminal.flavorUuid
+				terminal.flavorType == candidateTerminal.flavorType
 		);
 	}
 	function updateCoordinates(

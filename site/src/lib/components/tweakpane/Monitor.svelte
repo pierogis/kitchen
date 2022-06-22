@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { Writable } from 'svelte/store';
+	import type { Readable } from 'svelte/store';
 
 	import type { FolderApi, MonitorParams } from 'tweakpane';
 	import type { BladeApi, MonitorBindingController } from '@tweakpane/core';
@@ -8,7 +8,7 @@
 	import type { FlavorType, Payload } from '@types';
 
 	export let folder: FolderApi;
-	export let payloadStore: Writable<Payload<FlavorType>>;
+	export let payloadStore: Readable<Payload<FlavorType>>;
 	export let key: string;
 	export let options: MonitorParams | undefined = undefined;
 	export let index: number | undefined = undefined;
@@ -27,7 +27,7 @@
 		payloadStore.subscribe((newPayload) => {
 			if (fired) {
 				if (newPayload?.type == payload.type) {
-					params = { [key]: newPayload.params };
+					params[key] = newPayload.params;
 				} else {
 					// payload type has changed
 				}

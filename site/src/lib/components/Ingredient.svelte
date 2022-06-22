@@ -32,7 +32,6 @@
 	const nodeHeaderSize = 12;
 	const nodeWidth = 180;
 
-	$: cables = viewState.cables;
 	$: terminals = viewState.terminals;
 	let paneContainer: HTMLElement;
 </script>
@@ -61,10 +60,7 @@
 				{#if pane}
 					{#each flavors as flavor, index (flavor.uuid)}
 						<FlavorComponent
-							inPayload={$cables.find((cable) => cable.inFlavorUuid == flavor.uuid)?.payload}
-							outPayloads={$cables
-								.filter((cable) => cable.outFlavorUuid == flavor.uuid)
-								.map((cable) => cable.payload)}
+							{...viewState.payloads.getPayload(flavor.uuid)}
 							terminals={derived(terminals, (currentTerminals) =>
 								currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
 							)}

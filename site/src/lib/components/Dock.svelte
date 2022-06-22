@@ -17,8 +17,6 @@
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 
-	$: cables = viewState.cables;
-
 	let paneContainer: HTMLElement;
 </script>
 
@@ -45,14 +43,7 @@
 					<FlavorComponent
 						{index}
 						{flavor}
-						inPayload={direction == Direction.In
-							? undefined
-							: $cables.find((cable) => cable.inFlavorUuid == flavor.uuid)?.payload}
-						outPayloads={direction == Direction.Out
-							? []
-							: $cables
-									.filter((cable) => cable.outFlavorUuid == flavor.uuid)
-									.map((cable) => cable.payload)}
+						{...viewState.payloads.getPayload(flavor.uuid)}
 						terminals={derived(viewState.terminals, (currentTerminals) =>
 							currentTerminals.filter(
 								(terminal) =>

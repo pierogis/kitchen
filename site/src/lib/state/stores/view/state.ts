@@ -7,11 +7,12 @@ import { createCables, type Cable } from './cables';
 import { createNodes, type Node } from './nodes';
 
 import {
+	createTerminals,
 	type Terminal,
 	createTerminalsCoordinates,
 	type TerminalsCoordinatesState
 } from './terminals';
-import { createTerminals } from '.';
+import { createPayloads, type PayloadsState } from './payloads';
 
 export type Coordinates = { x: number; y: number };
 
@@ -24,6 +25,7 @@ export interface ViewState {
 	liveTerminal: Readable<Terminal | undefined>;
 	terminals: Readable<Terminal[]>;
 	terminalsCoordinates: TerminalsCoordinatesState;
+	payloads: PayloadsState;
 }
 
 export function readableViewState(recipeState: RecipeState): ViewState {
@@ -43,8 +45,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 
 	const cursorCoordinates = writable(undefined);
 
-	const liveConnection = createLiveConnection(recipeState, focusedIngredient);
-
+	// these are connections, ingredient nodes, and flavors that are in the given view
 	const focusedConnections = derived(
 		[focusedIngredient, recipeState.connections],
 		([currentFocusedIngredient, currentConnections]) =>
@@ -97,6 +98,9 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	);
 
+	const liveConnection = createLiveConnection(recipeState, focusedIngredient, dockedFlavors);
+
+	// centrally track terminals that should be created on flavors
 	const terminals = createTerminals(
 		focusedConnections,
 		focusedFlavors,
@@ -104,6 +108,10 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		dockedFlavors
 	);
 
+	// terminals feed back their location for use with drawing cables
+	const terminalsCoordinates = createTerminalsCoordinates(terminals, liveConnection);
+
+	// the live terminal needs to be drawn too
 	const liveTerminal: Readable<Terminal | undefined> = derived(
 		[liveConnection],
 		([currentLiveConnection]) => {
@@ -120,12 +128,13 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	);
 
 	// create representations of connections in the current view
-	const cables = createCables(recipeState, terminals, liveTerminal);
+	const cables = createCables(terminals, liveTerminal);
 
 	// callsFor/ingredients/nodes in the current view and their components
 	const nodes = createNodes(recipeState, focusedSubIngredients);
 
-	const terminalsCoordinates = createTerminalsCoordinates(terminals, liveConnection);
+	// centrally track values that go in inputs/monitors so they can be edited from anywhere
+	const payloads = createPayloads(recipeState);
 
 	return {
 		cables,
@@ -135,6 +144,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		liveConnection,
 		liveTerminal,
 		terminals,
-		terminalsCoordinates
+		terminalsCoordinates,
+		payloads
 	};
 }

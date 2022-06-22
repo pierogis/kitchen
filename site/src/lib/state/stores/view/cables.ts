@@ -1,8 +1,6 @@
-import { derived, writable, type Readable, type Writable } from 'svelte/store';
+import { derived, type Readable } from 'svelte/store';
 
-import { Direction, type FlavorType, type Payload } from '@types';
-
-import type { RecipeState } from '@recipe';
+import { Direction, type FlavorType } from '@types';
 import type { Terminal } from '@view';
 
 export interface Cable {
@@ -10,17 +8,15 @@ export interface Cable {
 	flavorType: FlavorType;
 	inFlavorUuid: string | undefined;
 	outFlavorUuid: string | undefined;
-	payload: Writable<Payload<FlavorType>>;
 }
 
 export function createCables(
-	recipeState: RecipeState,
 	terminals: Readable<Terminal[]>,
 	liveTerminal: Readable<Terminal | undefined>
 ): Readable<Cable[]> {
 	const cables: Readable<Cable[]> = derived(
-		[terminals, liveTerminal, recipeState.parameters],
-		([currentTerminals, currentLiveTerminal, currentParameters]) => {
+		[terminals, liveTerminal],
+		([currentTerminals, currentLiveTerminal]) => {
 			// pairing the in and out terminals by connecionUuid
 			const terminalPairs: Map<
 				string,
@@ -58,20 +54,11 @@ export function createCables(
 			const cables: Cable[] = Array.from(terminalPairs.entries()).reduce<Cable[]>(
 				(previous, [connectionUuid, terminalPair]) => {
 					if (terminalPair.inTerminal && terminalPair.outTerminal) {
-						// get the parameter corresponding to the connection's outputting, "source" flavor ->
-						const outParameter = Array.from(currentParameters.values()).find(
-							(parameter) => parameter.flavorUuid == terminalPair.outTerminal?.flavorUuid
-						);
-
 						previous.push({
 							connectionUuid: connectionUuid,
 							flavorType: terminalPair.outTerminal.flavorType,
 							inFlavorUuid: terminalPair.inTerminal.flavorUuid,
-							outFlavorUuid: terminalPair.outTerminal.flavorUuid,
-							payload: writable({
-								type: terminalPair.outTerminal.flavorType,
-								params: outParameter?.payload.params
-							})
+							outFlavorUuid: terminalPair.outTerminal.flavorUuid
 						});
 					}
 					return previous;

@@ -82,7 +82,7 @@
 		[pathDescription, tweenedPartwayWidth, tweenedPartwayHeight],
 		([currentPathDescription, currentTweenedPartwayWidth, currentTweenedPartwayHeight]) => {
 			if (currentPathDescription) {
-				const { startY, endY, width, height } = { ...currentPathDescription };
+				const { startY, endY, width } = { ...currentPathDescription };
 
 				// making bezier with 4 points (start, [0, height/2], [width, height/2], end)
 				return `M ${0} ${startY} C ${0} ${currentTweenedPartwayHeight / 2}, ${Math.min(
