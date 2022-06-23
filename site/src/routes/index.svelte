@@ -44,6 +44,10 @@
 	on:mousemove={handleMouseMove}
 />
 
+<svelte:head>
+	<title>kitchen</title>
+</svelte:head>
+
 <Recipe
 	dockedFlavors={viewState.dockedFlavors}
 	nodes={viewState.nodes}

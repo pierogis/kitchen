@@ -30,7 +30,7 @@
 	}
 
 	const nodeHeaderSize = 12;
-	const nodeWidth = 180;
+	const nodeWidth = 240;
 
 	$: terminals = viewState.terminals;
 	let paneContainer: HTMLElement;
@@ -38,8 +38,8 @@
 
 <div
 	class="node no-select"
-	style:left="{location.x - nodeWidth / 2}px"
-	style:width="{nodeWidth}px"
+	style:left="{location.x}px"
+	style:max-width="{nodeWidth}px"
 	style:top="{location.y - nodeHeaderSize / 2}px"
 	style:--node-header-size="{nodeHeaderSize}px"
 	use:draggableAction={grabTarget}

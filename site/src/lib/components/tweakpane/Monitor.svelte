@@ -40,7 +40,7 @@
 		const element = bladeApi.controller_.valueController.view.element.parentElement;
 		if (element) {
 			monitorElement = element;
-			monitorElement.style.maxWidth = '6rem';
+			monitorElement.style.maxWidth = '9rem';
 			monitorElement.style.display = 'flex';
 		}
 

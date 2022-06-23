@@ -65,7 +65,6 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 						};
 						recipeState.dispatch(createParameterAction);
 					} else {
-						console.log('go!');
 						const updateParameterAction: Action<ActionType.UpdateParameter> = {
 							type: ActionType.UpdateParameter,
 							params: {
@@ -105,8 +104,6 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 
 			if (!inPayload) throw `payload for inFlavor ${connection.inFlavorUuid} not found`;
 			if (!outPayload) throw `payload for outFlavor ${connection.outFlavorUuid} not found`;
-
-			console.log(get(outPayload.payload));
 
 			inPayload.payload.set(get(outPayload.payload));
 			// this may be too simple for render pipeline setting calculated values

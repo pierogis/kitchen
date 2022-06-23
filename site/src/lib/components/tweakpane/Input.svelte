@@ -41,7 +41,6 @@
 
 		bladeApi = folder.addInput(params, key, { ...options, index }).on('change', (ev) => {
 			if (payload) {
-				console.log(ev.value);
 				$payloadStore = {
 					type: payload.type,
 					params: ev.value
@@ -52,7 +51,7 @@
 		const element = bladeApi.controller_.valueController.view.element.parentElement;
 		if (element) {
 			inputElement = element;
-			inputElement.style.maxWidth = '6rem';
+			inputElement.style.maxWidth = '9rem';
 			inputElement.style.display = 'flex';
 		}
 
