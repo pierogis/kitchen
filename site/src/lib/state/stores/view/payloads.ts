@@ -10,7 +10,8 @@ export type PayloadsState = {
 	getPayload: (
 		flavorUuid: string,
 		usageUuid: string
-	) => { payload: Writable<Payload<FlavorType>>; monitor: boolean };
+	) => Writable<Payload<FlavorType>> & { monitor: boolean };
+	setPayload: (flavorUuid: string, usageUuid: string, newPayload: Payload<FlavorType>) => void;
 };
 
 function getPayloadsKey(flavorUuid: string, usageUuid: string): string {
@@ -27,8 +28,7 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 		[FlavorType.Text]: ''
 	};
 
-	const payloads: Map<string, { payload: Writable<Payload<FlavorType>>; monitor: boolean }> =
-		new Map();
+	const payloads: Map<string, Writable<Payload<FlavorType>> & { monitor: boolean }> = new Map();
 
 	recipeState.callsFor.subscribe((currentCallsFor) => {
 		payloads.clear();
@@ -51,7 +51,8 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 				}
 			);
 			const monitor = currentConnections.some(
-				(connection) => connection.inFlavorUuid == flavor.uuid
+				(connection) =>
+					connection.inFlavorUuid == flavor.uuid && connection.inUsageUuid == callFor.usageUuid
 			);
 
 			let fired = false;
@@ -88,7 +89,7 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 				fired = true;
 			});
 
-			payloads.set(getPayloadsKey(flavor.uuid, callFor.usageUuid), { payload, monitor });
+			payloads.set(getPayloadsKey(flavor.uuid, callFor.usageUuid), { ...payload, monitor });
 		}
 
 		// if a entry does not exist for every flavor in current flavors, add
@@ -105,27 +106,27 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 	});
 
 	// each connection should copy values from out payload to in payload
-	recipeState.connections.subscribe((currentConnections) => {
-		currentConnections.forEach((connection) => {
-			const inPayload = payloads.get(
-				getPayloadsKey(connection.inFlavorUuid, connection.inUsageUuid)
-			);
-			const outPayload = payloads.get(
-				getPayloadsKey(connection.outFlavorUuid, connection.outUsageUuid)
-			);
+	// recipeState.connections.subscribe((currentConnections) => {
+	// 	currentConnections.forEach((connection) => {
+	// 		const inPayload = payloads.get(
+	// 			getPayloadsKey(connection.inFlavorUuid, connection.inUsageUuid)
+	// 		);
+	// 		const outPayload = payloads.get(
+	// 			getPayloadsKey(connection.outFlavorUuid, connection.outUsageUuid)
+	// 		);
 
-			if (!inPayload)
-				throw `payload for inFlavor ${connection.inFlavorUuid} of usage ${connection.inUsageUuid} not found`;
-			if (!outPayload)
-				throw `payload for outFlavor ${connection.outFlavorUuid} of usage ${connection.outUsageUuid} not found`;
+	// 		if (!inPayload)
+	// 			throw `payload for inFlavor ${connection.inFlavorUuid} of usage ${connection.inUsageUuid} not found`;
+	// 		if (!outPayload)
+	// 			throw `payload for outFlavor ${connection.outFlavorUuid} of usage ${connection.outUsageUuid} not found`;
 
-			inPayload.payload.set(get(outPayload.payload));
-			// this may be too simple for render pipeline setting calculated values
-			outPayload.payload.subscribe((newPayload) => {
-				inPayload.payload.set(newPayload);
-			});
-		});
-	});
+	// 		inPayload.set(get(outPayload));
+	// 		// this may be too simple for render pipeline setting calculated values
+	// 		outPayload.subscribe((newPayload) => {
+	// 			inPayload.payload.set(newPayload);
+	// 		});
+	// 	});
+	// });
 
 	function getPayload(flavorUuid: string, usageUuid: string) {
 		const payload = payloads.get(getPayloadsKey(flavorUuid, usageUuid));
@@ -134,7 +135,14 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 		return payload;
 	}
 
+	function setPayload(flavorUuid: string, usageUuid: string, newPayload: Payload<FlavorType>) {
+		const payload = payloads.get(getPayloadsKey(flavorUuid, usageUuid));
+		if (!payload) throw `payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
+		payload.set(newPayload);
+	}
+
 	return {
-		getPayload
+		getPayload,
+		setPayload
 	};
 }

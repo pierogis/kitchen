@@ -1,6 +1,7 @@
 import type { FlatRecipe } from '@recipe';
 import type { ViewState } from '@view';
 import { type Connection, FlavorType, Direction, type Payload } from '@types';
+import { get } from 'svelte/store';
 
 export function createTexture(gl: WebGLRenderingContext): WebGLTexture {
 	// create a texture to sequentially draw on
@@ -134,50 +135,37 @@ function getSourceFlavorUuid(
 function calculateFlavorUsage(
 	gl: WebGLRenderingContext,
 	flavorUuid: string,
+	usageUuid: string,
 	recipe: FlatRecipe,
 	viewState: ViewState,
 	knownPayloads: Map<string, Payload<FlavorType>>,
 	programs: Map<string, WebGLProgram>
 ): Payload<FlavorType> {
-	// go to recipe main ingredient
-	// get an image out flavor
-	// loop until focused flavor has no inConnection (routine 1)
-	//     find that flavor's inConnection
-	//     focus on the corresponding outFlavor of that connection
-	//     assemble a list of flavors to calculate in the opposite order traversed
-	// calculate focused flavor (open from file)
-	// loop walking back through list of image flavors, popping from front (routine 2)
-	//     check if this flavor is part of a shader
-	//     if so
-	//         compile this shader with code and classify by uuid
-	//         get the ingredient/sibling flavors to act as uniforms
-	//         loop each sibling flavor
-	//             proceed back through inConnection until no inconnection, taking list of flavors (routine 1)
-	//                 if "source" is a shader, calculate that shader first, using this same traverse technique
-	//                 maintain list of calculated shaders, and prefer results of that
-	//
-	//
-	//     calculate current flavor
-
 	// get the flavor leading to this flavor's in connection (if exists)
-	const previousFlavorUuid = getSourceFlavorUuid(flavorUuid, recipe.connections);
+	const sourceFlavorUuid = getSourceFlavorUuid(flavorUuid, recipe.connections);
 
-	let calculatedPayload: Payload<FlavorType> | undefined = knownPayloads.get(flavorUuid);
-
-	if (previousFlavorUuid) {
+	if (sourceFlavorUuid) {
 		// the value from the previous may be already calculated
-		calculatedPayload = knownPayloads.get(previousFlavorUuid);
+		calculatedPayload = knownPayloads.get([flavorUuid, usageUuid].join(','));
 
 		if (!calculatedPayload) {
 			// if not already calculated, do that one first
 			calculatedPayload = calculateFlavorUsage(
 				gl,
-				previousFlavorUuid,
+				sourceFlavorUuid,
+				usageUuid,
 				recipe,
 				viewState,
 				knownPayloads,
 				programs
 			);
+		}
+	} else {
+		let calculatedPayload: Payload<FlavorType> | undefined = knownPayloads.get(
+			[flavorUuid, usageUuid].join(',')
+		);
+
+		if (calculatedPayload) {
 		}
 	}
 
@@ -192,11 +180,12 @@ function calculateFlavorUsage(
 			for (const flavor of recipe.flavors.values()) {
 				if (flavor.ingredientUuid == shader.ingredientUuid && flavor.uuid != flavorUuid) {
 					const subFlavorUuid = flavor.uuid;
-					let calculatedSubFlavorPayload = knownPayloads.get(subFlavorUuid);
+					let calculatedSubFlavorPayload = knownPayloads.get([subFlavorUuid, usageUuid].join(','));
 					if (!calculatedSubFlavorPayload) {
 						calculatedSubFlavorPayload = calculateFlavorUsage(
 							gl,
 							subFlavorUuid,
+							usageUuid,
 							recipe,
 							viewState,
 							knownPayloads,
@@ -238,40 +227,51 @@ export function draw(
 	// get the main ingredient that we are cooking
 	const focusedIngredient = recipe.ingredients.get(recipe.focusedIngredientUuid);
 
-	const payloads: Map<string, Payload<FlavorType>> = new Map(
+	// keyed by [flavorUuid, usageUuid].join(',')
+	const newPayloads: Map<
+		string,
+		{ inPayload: Payload<FlavorType> | undefined; outPayload: Payload<FlavorType> }
+	> = new Map(
 		Array.from(recipe.parameters.values()).map((parameter) => {
-			return [parameter.uuid, parameter.payload];
+			const callFor = recipe.callsFor.get(parameter.callForUuid);
+			if (!callFor)
+				throw `callFor ${parameter.callForUuid} for parameter ${parameter.callForUuid} not found`;
+			const key = [parameter.flavorUuid, callFor.usageUuid].join(',');
+			return [key, { inPayload: undefined, outPayload: parameter.payload }];
 		})
 	);
 
-	// calculate flavors on focused ingredient (docks)
-	// calculate flavors on usages in ingredient
-	// calculate necessary usage-flavors to calculate above 2
+	for (const flavorUsage of get(viewState.inFocusFlavorUsages)) {
+		newPayloads.set([flavorUsage.uuid, flavorUsage.usageUuid].join(','), { inPayload });
+	}
 
-	// focusedUsages
-	// flavors on the main ingredient
+	for (const usage of viewState.focusedUsages.values()) {
+		const flavors = Array.from(recipe.flavors.values()).filter(
+			(flavor) => flavor.ingredientUuid == usage.ingredientUuid
+		);
 
-	// go through the main ingredient's flavors and internal connections
-	// start at connections where out docked flavors are the inFlavor
-	// go to the out flavor-usage of that docked flavor in the connection
-	// calculate that flavor
-	//   including looking for connections where it is the in flavor-usage then searching parameters
-	//   take this out flavor-usage of the connection and see if it has a parameter, otherwise calculate
-	// 	 if its a shader, handle differently
-	//   when a value is calculated for a flavor-usage, set in view state payloads
-
-	if (focusedIngredient) {
-		for (const flavor of recipe.flavors.values()) {
-			if (flavor.ingredientUuid == focusedIngredient.uuid) {
-				calculateFlavorUsage(gl, flavor.uuid, recipe, viewState, payloads, programs);
-
-				// for image out flavors on the main ingredient
-				if (Direction.Out in flavor.directions && flavor.type == FlavorType.Image) {
-					const texture = createTexture(gl);
-
-					drawCanvasFramebuffer(gl, texture);
-				}
+		for (const flavor of flavors) {
+			let payload = newPayloads.get([flavor.uuid, usage.uuid].join(','));
+			if (!payload?.outPayload) {
+				payload = calculateFlavorUsage(
+					gl,
+					flavor.uuid,
+					usage.uuid,
+					recipe,
+					viewState,
+					newPayloads,
+					programs
+				);
 			}
+
+			// for image out flavors on the main ingredient
+			if (Direction.Out in flavor.directions && flavor.type == FlavorType.Image) {
+				const texture = createTexture(gl);
+
+				drawCanvasFramebuffer(gl, texture);
+			}
+
+			viewState.payloads.setPayload(flavor.uuid, usage.uuid, calculatedPayload);
 		}
 	}
 }

@@ -20,6 +20,7 @@ export interface ViewState {
 	cables: Readable<Cable[]>;
 	nodes: Readable<Node[]>;
 	dockedFlavors: Readable<Flavor[]>;
+	inFocusFlavorUsages: Readable<FlavorUsage[]>;
 	cursorCoordinates: Writable<Coordinates | undefined>;
 	liveConnection: LiveConnectionState;
 	liveTerminal: Readable<Terminal | undefined>;
@@ -32,13 +33,13 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	// get the ingredient that is currently focused
 	const focusedIngredient = derived(
 		[recipeState.ingredients, recipeState.focusedIngredientUuid],
-		([currentIngredients, currentFocusedIngredientUuid]) => {
-			const ingredient = currentIngredients.get(currentFocusedIngredientUuid);
+		([$ingredients, $focusedIngredientUuid]) => {
+			const ingredient = $ingredients.get($focusedIngredientUuid);
 			if (ingredient) {
 				// return the focused ingredient
 				return ingredient;
 			} else {
-				throw `Ingredient ${currentFocusedIngredientUuid} not found`;
+				throw `ingredient ${$focusedIngredientUuid} not found`;
 			}
 		}
 	);
@@ -46,27 +47,27 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const cursorCoordinates = writable(undefined);
 
 	// these are connections, ingredient nodes, and flavors that are in the given view
-	const focusedConnections = derived(
+	const inFocusConnections = derived(
 		[focusedIngredient, recipeState.connections],
-		([currentFocusedIngredient, currentConnections]) =>
-			Array.from(currentConnections.values()).filter(
-				(connection) => connection.parentIngredientUuid == currentFocusedIngredient.uuid
+		([$focusedIngredient, $connections]) =>
+			Array.from($connections.values()).filter(
+				(connection) => connection.parentIngredientUuid == $focusedIngredient.uuid
 			)
 	);
-	const focusedSubIngredients = derived(
+	const inFocusSubIngredients = derived(
 		[focusedIngredient, recipeState.ingredients],
-		([currentFocusedIngredient, currentIngredients]) =>
-			Array.from(currentIngredients.values()).filter(
-				(ingredient) => ingredient.parentIngredientUuid == currentFocusedIngredient.uuid
+		([$focusedIngredient, $ingredients]) =>
+			Array.from($ingredients.values()).filter(
+				(ingredient) => ingredient.parentIngredientUuid == $focusedIngredient.uuid
 			)
 	);
-	const focusedSubUsages = derived(
-		[focusedSubIngredients, recipeState.usages],
-		([currentFocusedSubIngredients, currentUsages]) => {
-			const currentFocusedSubIngredientUuids = currentFocusedSubIngredients.map(
+	const inFocusSubUsages = derived(
+		[inFocusSubIngredients, recipeState.usages],
+		([$inFocusSubIngredients, $usages]) => {
+			const currentFocusedSubIngredientUuids = $inFocusSubIngredients.map(
 				(ingredient) => ingredient.uuid
 			);
-			return Array.from(currentUsages.values()).filter((usage) =>
+			return Array.from($usages.values()).filter((usage) =>
 				currentFocusedSubIngredientUuids.includes(usage.ingredientUuid)
 			);
 		}
@@ -74,9 +75,9 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 
 	const flavorUsages: Readable<FlavorUsage[]> = derived(
 		[recipeState.usages, recipeState.flavors],
-		([currentUsages, currentFlavors]) => {
-			return Array.from(currentUsages.values()).flatMap((usage) => {
-				return Array.from(currentFlavors.values())
+		([$usages, $flavors]) => {
+			return Array.from($usages.values()).flatMap((usage) => {
+				return Array.from($flavors.values())
 					.filter((flavor) => flavor.ingredientUuid == usage.ingredientUuid)
 					.map((flavor) => {
 						return { ...flavor, usageUuid: usage.uuid };
@@ -85,10 +86,10 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	);
 
-	const focusedFlavorUsages: Readable<FlavorUsage[]> = derived(
-		[focusedSubIngredients, flavorUsages],
-		([currentFocusedSubIngredients, currentFlavorUsages]) => {
-			const focusedSubIngedientUuids = currentFocusedSubIngredients.reduce<Set<string>>(
+	const inFocusFlavorUsages: Readable<FlavorUsage[]> = derived(
+		[inFocusSubIngredients, flavorUsages],
+		([$inFocusSubIngredients, $flavorUsages]) => {
+			const focusedSubIngedientUuids = $inFocusSubIngredients.reduce<Set<string>>(
 				(previous, ingredient) => {
 					previous.add(ingredient.uuid);
 					return previous;
@@ -96,18 +97,16 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 				new Set()
 			);
 
-			return currentFlavorUsages.filter((flavor) =>
-				focusedSubIngedientUuids.has(flavor.ingredientUuid)
-			);
+			return $flavorUsages.filter((flavor) => focusedSubIngedientUuids.has(flavor.ingredientUuid));
 		}
 	);
 
 	// flavors belonging to the focused ingredient
 	const dockedFlavors: Readable<FlavorUsage[]> = derived(
 		[recipeState.flavors, focusedIngredient],
-		([currentFlavors, currentFocusedIngredient]) => {
-			return Array.from(currentFlavors.values())
-				.filter((flavor) => flavor.ingredientUuid == currentFocusedIngredient.uuid)
+		([$flavors, $focusedIngredient]) => {
+			return Array.from($flavors.values())
+				.filter((flavor) => flavor.ingredientUuid == $focusedIngredient.uuid)
 				.flatMap((flavor) =>
 					flavor.directions.map<FlavorUsage>((direction) => {
 						return {
@@ -128,8 +127,8 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 
 	// centrally track terminals that should be created on flavors
 	const terminals = createTerminals(
-		focusedConnections,
-		focusedFlavorUsages,
+		inFocusConnections,
+		inFocusFlavorUsages,
 		liveConnection,
 		dockedFlavors
 	);
@@ -158,7 +157,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const cables = createCables(terminals, liveTerminal);
 
 	// callsFor/ingredients/nodes in the current view and their components
-	const nodes = createNodes(recipeState, focusedSubIngredients, focusedSubUsages);
+	const nodes = createNodes(recipeState, inFocusSubIngredients, inFocusSubUsages);
 
 	// centrally track values that go in inputs/monitors so they can be edited from anywhere
 	const payloads = createPayloads(recipeState);
@@ -167,6 +166,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		cables,
 		nodes,
 		dockedFlavors,
+		inFocusFlavorUsages,
 		cursorCoordinates,
 		liveConnection,
 		liveTerminal,
