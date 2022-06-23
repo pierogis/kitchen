@@ -2,7 +2,7 @@
 	import { getContext } from 'svelte';
 	import { derived } from 'svelte/store';
 
-	import { Direction, type Flavor } from '@types';
+	import { Direction, type Flavor, type Usage } from '@types';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 
 	import { viewStateContextKey } from '@state';
@@ -11,6 +11,7 @@
 	import FlavorComponent from '@components/Flavor.svelte';
 	import Pane from '@components/tweakpane/Pane.svelte';
 
+	export let focusedUsageUuid: string;
 	export let direction: Direction;
 	export let flavors: Flavor[];
 	let expanded = false;
@@ -43,7 +44,7 @@
 					<FlavorComponent
 						{index}
 						{flavor}
-						{...viewState.payloads.getPayload(flavor.uuid)}
+						{...viewState.payloads.getPayload(flavor.uuid, focusedUsageUuid)}
 						terminals={derived(viewState.terminals, (currentTerminals) =>
 							currentTerminals.filter(
 								(terminal) =>

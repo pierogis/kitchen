@@ -13,6 +13,7 @@
 	import CableComponent from '@components/Cable.svelte';
 	import LiveTerminal from '@components/LiveTerminal.svelte';
 
+	export let focusedUsageUuid: Readable<string>;
 	export let dockedFlavors: Readable<Flavor[]>;
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
@@ -43,8 +44,10 @@
 <Dock
 	direction={Direction.In}
 	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.Out))}
+	focusedUsageUuid={$focusedUsageUuid}
 />
 <Dock
 	direction={Direction.Out}
 	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.In))}
+	focusedUsageUuid={$focusedUsageUuid}
 />

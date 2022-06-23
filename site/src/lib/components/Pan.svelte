@@ -2,10 +2,10 @@
 	import { getContext, onMount, tick } from 'svelte';
 	import { writable, type Readable } from 'svelte/store';
 
-	import type { Parameter, Shader, Connection, Ingredient, Flavor } from '@types';
+	import type { Parameter, Shader, Connection, Ingredient, Flavor, Usage } from '@types';
 	import { draw } from '$lib/common/draw';
 
-	import type { Coordinates } from '@view';
+	import type { Coordinates, ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
 	import { dispatchCreateIngredientActions } from '@state/batch/ingredient';
 
@@ -14,17 +14,12 @@
 	export let width: number;
 	export let height: number;
 
-	export let mainCallForUuid: string;
-	export let flavors: Readable<Map<string, Flavor>>;
-	export let ingredients: Readable<Map<string, Ingredient>>;
-	export let connections: Readable<Map<string, Connection>>;
-	export let shaders: Readable<Map<string, Shader>>;
-	export let parameters: Readable<Map<string, Parameter>>;
+	export let recipeState: RecipeState;
+	export let viewState: ViewState;
 
 	export let cursorCoordinates: Readable<Coordinates | undefined>;
 
 	let canvas: HTMLCanvasElement;
-	const recipeState: RecipeState = getContext('recipe');
 
 	// export let media: (HTMLImageElement | HTMLVideoElement | HTMLAudioElement | WebGLTexture)[];
 
@@ -39,17 +34,7 @@
 			frame = requestAnimationFrame(loop);
 
 			if (gl) {
-				const knownParameters: Map<string, Parameter> = new Map($parameters);
-				draw(
-					gl,
-					mainCallForUuid,
-					knownParameters,
-					$connections,
-					$ingredients,
-					$flavors,
-					$shaders,
-					programs
-				);
+				draw(gl, programs, $recipeState, viewState);
 			}
 		}
 		loop();

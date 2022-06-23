@@ -7,8 +7,15 @@ import type { RecipeState } from '@recipe';
 import { ActionType, type Action } from '$lib/state/actions';
 
 export type PayloadsState = {
-	getPayload: (flavorUuid: string) => { payload: Writable<Payload<FlavorType>>; monitor: boolean };
+	getPayload: (
+		flavorUuid: string,
+		usageUuid: string
+	) => { payload: Writable<Payload<FlavorType>>; monitor: boolean };
 };
+
+function getPayloadsKey(flavorUuid: string, usageUuid: string): string {
+	return `${flavorUuid}, ${usageUuid}`;
+}
 
 export function createPayloads(recipeState: RecipeState): PayloadsState {
 	const paramsDefaults: {
@@ -81,13 +88,14 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 				fired = true;
 			});
 
-			payloads.set(flavor.uuid, { payload, monitor });
+			payloads.set(getPayloadsKey(flavor.uuid, callFor.usageUuid), { payload, monitor });
 		}
 
 		// if a entry does not exist for every flavor in current flavors, add
 		for (const callFor of currentCallsFor.values()) {
 			const usage = currentUsages.get(callFor.usageUuid);
 			if (!usage) throw `usage ${callFor.usageUuid} not found`;
+
 			for (const flavor of currentFlavors.values()) {
 				if (flavor.ingredientUuid == usage.ingredientUuid) {
 					addPayload(flavor, callFor);
@@ -99,11 +107,17 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 	// each connection should copy values from out payload to in payload
 	recipeState.connections.subscribe((currentConnections) => {
 		currentConnections.forEach((connection) => {
-			const inPayload = payloads.get(connection.inFlavorUuid);
-			const outPayload = payloads.get(connection.outFlavorUuid);
+			const inPayload = payloads.get(
+				getPayloadsKey(connection.inFlavorUuid, connection.inUsageUuid)
+			);
+			const outPayload = payloads.get(
+				getPayloadsKey(connection.outFlavorUuid, connection.outUsageUuid)
+			);
 
-			if (!inPayload) throw `payload for inFlavor ${connection.inFlavorUuid} not found`;
-			if (!outPayload) throw `payload for outFlavor ${connection.outFlavorUuid} not found`;
+			if (!inPayload)
+				throw `payload for inFlavor ${connection.inFlavorUuid} of usage ${connection.inUsageUuid} not found`;
+			if (!outPayload)
+				throw `payload for outFlavor ${connection.outFlavorUuid} of usage ${connection.outUsageUuid} not found`;
 
 			inPayload.payload.set(get(outPayload.payload));
 			// this may be too simple for render pipeline setting calculated values
@@ -113,9 +127,9 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 		});
 	});
 
-	function getPayload(flavorUuid: string) {
-		const payload = payloads.get(flavorUuid);
-		if (!payload) throw `payload for flavor ${flavorUuid} not found`;
+	function getPayload(flavorUuid: string, usageUuid: string) {
+		const payload = payloads.get(getPayloadsKey(flavorUuid, usageUuid));
+		if (!payload) throw `payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 
 		return payload;
 	}

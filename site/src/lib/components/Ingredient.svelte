@@ -60,7 +60,7 @@
 				{#if pane}
 					{#each flavors as flavor, index (flavor.uuid)}
 						<FlavorComponent
-							{...viewState.payloads.getPayload(flavor.uuid)}
+							{...viewState.payloads.getPayload(flavor.uuid, callFor.usageUuid)}
 							terminals={derived(terminals, (currentTerminals) =>
 								currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
 							)}
