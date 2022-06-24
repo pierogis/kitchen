@@ -2,7 +2,7 @@
 	import { onMount, tick } from 'svelte';
 	import { writable, type Readable } from 'svelte/store';
 
-	import { calculateOutPayloads } from '$lib/common/draw';
+	import { cookPayloads } from '$lib/common/draw';
 
 	import type { Coordinates, ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
@@ -21,25 +21,6 @@
 	let canvas: HTMLCanvasElement;
 
 	// export let media: (HTMLImageElement | HTMLVideoElement | HTMLAudioElement | WebGLTexture)[];
-
-	const programs: Map<string, WebGLProgram> = new Map();
-
-	onMount(async () => {
-		await tick();
-		let gl = canvas.getContext('webgl');
-
-		let frame: number;
-		function loop() {
-			frame = requestAnimationFrame(loop);
-
-			if (gl) {
-				calculateOutPayloads(gl, programs, $recipeState, viewState);
-			}
-		}
-		loop();
-
-		return () => cancelAnimationFrame(frame);
-	});
 
 	const pressing = writable(false);
 
@@ -83,6 +64,25 @@
 			}
 		};
 	}
+
+	const programs: Map<string, WebGLProgram> = new Map();
+
+	onMount(async () => {
+		await tick();
+		let gl = canvas.getContext('webgl');
+
+		let frame: number;
+		function loop() {
+			frame = requestAnimationFrame(loop);
+
+			if (gl) {
+				cookPayloads(gl, programs, $recipeState, viewState);
+			}
+		}
+		loop();
+
+		return () => cancelAnimationFrame(frame);
+	});
 </script>
 
 <canvas bind:this={canvas} use:longPressAction {width} {height} />

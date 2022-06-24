@@ -2,7 +2,7 @@
 	import { getContext } from 'svelte';
 	import { derived } from 'svelte/store';
 
-	import type { CallFor, Flavor, Ingredient, Location } from '@types';
+	import { Direction, type CallFor, type Flavor, type Ingredient, type Location } from '@types';
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 
 	import { recipeStateContextKey, viewStateContextKey } from '@state';
@@ -60,7 +60,11 @@
 				{#if pane}
 					{#each flavors as flavor, index (flavor.uuid)}
 						<FlavorComponent
-							payload={viewState.payloads.getPayload(flavor.uuid, callFor.usageUuid)}
+							payload={viewState.payloads.getPayload(
+								flavor.uuid,
+								callFor.usageUuid,
+								flavor.directions.includes(Direction.Out) ? Direction.Out : Direction.In
+							)}
 							terminals={derived(terminals, (currentTerminals) =>
 								currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
 							)}

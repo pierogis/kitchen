@@ -2,23 +2,32 @@ import { get, writable, type Writable } from 'svelte/store';
 
 import { v4 as uuid } from 'uuid';
 
-import { FlavorType, type Flavor, type Payload, type PayloadParams, type Usage } from '@types';
+import {
+	Direction,
+	FlavorType,
+	type Flavor,
+	type Payload,
+	type PayloadParams,
+	type Usage
+} from '@types';
 import type { RecipeState } from '@recipe';
 import { ActionType, type Action } from '$lib/state/actions';
 
 export type PayloadsState = {
 	getPayload: (
 		flavorUuid: string,
-		usageUuid: string
+		usageUuid: string,
+		direction: Direction
 	) => Writable<Payload<FlavorType>> & {
 		monitor: boolean;
 	};
-	setPayload: (flavorUuid: string, usageUuid: string, newPayload: Payload<FlavorType>) => void;
+	setPayload: (
+		flavorUuid: string,
+		usageUuid: string,
+		direction: Direction,
+		newPayload: Payload<FlavorType>
+	) => void;
 };
-
-function getPayloadsKey(flavorUuid: string, usageUuid: string): string {
-	return `${flavorUuid}, ${usageUuid}`;
-}
 
 export function createPayloads(recipeState: RecipeState): PayloadsState {
 	const paramsDefaults: {
@@ -30,12 +39,26 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 		[FlavorType.Text]: ''
 	};
 
-	const flavorUsagePayloads: Map<
+	const flavorUsagePayloadsMap: Map<
 		string,
 		Writable<Payload<FlavorType>> & {
 			monitor: boolean;
 		}
 	> = new Map();
+
+	const flavorUsagePayloads = {
+		clear: flavorUsagePayloadsMap.clear,
+		get: (flavorUuid: string, usageUuid: string, direction: Direction) =>
+			flavorUsagePayloadsMap.get([flavorUuid, usageUuid, direction].join(',')),
+		set: (
+			flavorUuid: string,
+			usageUuid: string,
+			direction: Direction,
+			payload: Writable<Payload<FlavorType>> & {
+				monitor: boolean;
+			}
+		) => flavorUsagePayloadsMap.set([flavorUuid, usageUuid, direction].join(','), payload)
+	};
 
 	recipeState.callsFor.subscribe((currentCallsFor) => {
 		flavorUsagePayloads.clear();
@@ -51,20 +74,31 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 				(parameter) => parameter.flavorUuid == flavor.uuid && parameter.usageUuid == usage.uuid
 			);
 
-			const payload: Writable<Payload<FlavorType>> = writable(
-				parameter?.payload || {
-					type: flavor.type,
-					params: paramsDefaults[flavor.type]
-				}
-			);
-			const monitor = currentConnections.some(
+			const payload: Payload<FlavorType> = parameter?.payload || {
+				type: flavor.type,
+				params: paramsDefaults[flavor.type]
+			};
+
+			const inPayload: Writable<Payload<FlavorType>> = writable(payload);
+			const outPayload: Writable<Payload<FlavorType>> = writable(payload);
+
+			const inMonitor = currentConnections.some(
 				(connection) =>
-					connection.inFlavorUuid == flavor.uuid && connection.inUsageUuid == usage.uuid
+					connection.inFlavorUuid == flavor.uuid &&
+					connection.inUsageUuid == usage.uuid &&
+					connection.parentIngredientUuid != usage.ingredientUuid
+			);
+
+			const outMonitor = currentConnections.some(
+				(connection) =>
+					connection.inFlavorUuid == flavor.uuid &&
+					connection.inUsageUuid == usage.uuid &&
+					connection.parentIngredientUuid == usage.ingredientUuid
 			);
 
 			let fired = false;
-			payload.subscribe((newPayload) => {
-				if (fired && !monitor) {
+			inPayload.subscribe((newPayload) => {
+				if (fired && !inMonitor) {
 					if (!parameter) {
 						const createParameterAction: Action<ActionType.CreateParameter> = {
 							type: ActionType.CreateParameter,
@@ -96,7 +130,15 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 				fired = true;
 			});
 
-			flavorUsagePayloads.set(getPayloadsKey(flavor.uuid, usage.uuid), { ...payload, monitor });
+			flavorUsagePayloads.set(flavor.uuid, usage.uuid, Direction.In, {
+				...inPayload,
+				monitor: inMonitor
+			});
+
+			flavorUsagePayloads.set(flavor.uuid, usage.uuid, Direction.Out, {
+				...outPayload,
+				monitor: outMonitor
+			});
 		}
 
 		// if a entry does not exist for every flavor in current flavors, add
@@ -112,16 +154,22 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 		}
 	});
 
-	function getPayload(flavorUuid: string, usageUuid: string) {
-		const payload = flavorUsagePayloads.get(getPayloadsKey(flavorUuid, usageUuid));
+	function getPayload(flavorUuid: string, usageUuid: string, direction: Direction) {
+		const payload = flavorUsagePayloads.get(flavorUuid, usageUuid, direction);
 		if (!payload) throw `payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 
 		return payload;
 	}
 
-	function setPayload(flavorUuid: string, usageUuid: string, newPayload: Payload<FlavorType>) {
-		const payload = flavorUsagePayloads.get(getPayloadsKey(flavorUuid, usageUuid));
+	function setPayload(
+		flavorUuid: string,
+		usageUuid: string,
+		direction: Direction,
+		newPayload: Payload<FlavorType>
+	) {
+		const payload = flavorUsagePayloads.get(flavorUuid, usageUuid, direction);
 		if (!payload) throw `payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
+
 		payload.set(newPayload);
 	}
 

@@ -121,9 +121,20 @@ export function drawCanvasFramebuffer(gl: WebGLRenderingContext, targetTexture: 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
-const knownPayloads: Map<string, Payload<FlavorType>> = new Map();
+const knownPayloadsMap: Map<string, Payload<FlavorType>> = new Map();
+const knownPayloads = {
+	clear: () => knownPayloadsMap.clear(),
+	get: (flavorUuid: string, usageUuid: string, direction: Direction) =>
+		knownPayloadsMap.get([flavorUuid, usageUuid, direction].join(',')),
+	set: (
+		flavorUuid: string,
+		usageUuid: string,
+		direction: Direction,
+		payload: Payload<FlavorType>
+	) => knownPayloadsMap.set([flavorUuid, usageUuid, direction].join(','), payload)
+};
 
-export function calculateOutPayloads(
+export function cookPayloads(
 	gl: WebGLRenderingContext,
 	programs: Map<string, WebGLProgram>,
 	recipe: FlatRecipe,
@@ -136,9 +147,8 @@ export function calculateOutPayloads(
 	knownPayloads.clear();
 	// get the main ingredient that we are cooking
 
-	function calculateFlavorUsage(flavorUuid: string, usageUuid: string): Payload<FlavorType> {
-		// memoize
-		let flavorUsagePayload = knownPayloads.get([flavorUuid, usageUuid].join(','));
+	function cookFlavorUsageInPayload(flavorUuid: string, usageUuid: string) {
+		let flavorUsagePayload = knownPayloads.get(flavorUuid, usageUuid, Direction.In);
 
 		const usage = recipe.usages.get(usageUuid);
 		if (!usage) throw `usage ${usageUuid} not found`;
@@ -151,18 +161,31 @@ export function calculateOutPayloads(
 					connection.inUsageUuid == usage.uuid &&
 					connection.parentIngredientUuid != usage.ingredientUuid
 			);
-
 			if (inFlavorOuterConnection) {
-				// calculate all of the flavors on this usage
-				calculateUsage(inFlavorOuterConnection.outUsageUuid);
+				// if corresponding out flavor is in the dock of the parent usage
+				if (usage.parentUsageUuid == inFlavorOuterConnection.outUsageUuid) {
+					// the in payloads on the parent usage need to be all calculated
+					flavorUsagePayload = knownPayloads.get(
+						inFlavorOuterConnection.outFlavorUuid,
+						inFlavorOuterConnection.outUsageUuid,
+						Direction.In
+					);
+				} else {
+					// calculate all of the flavors on this usage
+					cookUsage(inFlavorOuterConnection.outUsageUuid);
 
-				// now it should be in the map
-				flavorUsagePayload = knownPayloads.get(
-					[inFlavorOuterConnection.outFlavorUuid, inFlavorOuterConnection.outUsageUuid].join(',')
-				);
+					// now it should be in the map
+					flavorUsagePayload = knownPayloads.get(
+						inFlavorOuterConnection.outFlavorUuid,
+						inFlavorOuterConnection.outUsageUuid,
+						Direction.Out
+					);
+				}
 
 				if (!flavorUsagePayload)
 					throw `payload for flavor ${inFlavorOuterConnection.outFlavorUuid} on usage ${inFlavorOuterConnection.outUsageUuid} not found`;
+
+				viewState.payloads.setPayload(flavorUuid, usageUuid, Direction.In, flavorUsagePayload);
 			} else {
 				const parameter = Array.from(recipe.parameters.values()).find((parameter) => {
 					parameter.flavorUuid == flavorUuid && parameter.usageUuid == usageUuid;
@@ -173,11 +196,27 @@ export function calculateOutPayloads(
 					flavorUsagePayload = parameter.payload;
 				} else {
 					// fall back on default stored in payloads?
-					flavorUsagePayload = get(viewState.payloads.getPayload(flavorUuid, usageUuid));
+					flavorUsagePayload = get(
+						viewState.payloads.getPayload(flavorUuid, usageUuid, Direction.In)
+					);
 					// throw `parameter for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 				}
 			}
+		}
 
+		return flavorUsagePayload;
+	}
+
+	function cookFlavorUsageOutPayload(flavorUuid: string, usageUuid: string): Payload<FlavorType> {
+		// memoize
+		let flavorUsagePayload = knownPayloads.get(flavorUuid, usageUuid, Direction.In);
+		if (!flavorUsagePayload)
+			throw `in payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
+
+		const usage = recipe.usages.get(usageUuid);
+		if (!usage) throw `usage ${usageUuid} not found`;
+
+		if (!flavorUsagePayload) {
 			// find a connection leading in to this flavor usage inside of the usage
 			const outFlavorInnerConnection = Array.from(recipe.connections.values()).find(
 				(connection) =>
@@ -187,15 +226,19 @@ export function calculateOutPayloads(
 			);
 
 			if (outFlavorInnerConnection) {
-				// calculate all of the flavors on the previous usage
-				calculateUsage(outFlavorInnerConnection.outUsageUuid);
-				// now it should be in the map
-				flavorUsagePayload = knownPayloads.get(
-					[outFlavorInnerConnection.outFlavorUuid, outFlavorInnerConnection.outUsageUuid].join(',')
-				);
+				if (outFlavorInnerConnection.outUsageUuid != usageUuid) {
+					// calculate all of the flavors on the previous usage
+					cookUsage(outFlavorInnerConnection.outUsageUuid);
+					// now it should be in the map
+					flavorUsagePayload = knownPayloads.get(
+						outFlavorInnerConnection.outFlavorUuid,
+						outFlavorInnerConnection.outUsageUuid,
+						Direction.Out
+					);
 
-				if (!flavorUsagePayload)
-					throw `payload for flavor ${outFlavorInnerConnection.outFlavorUuid} on usage ${outFlavorInnerConnection.outUsageUuid} not found`;
+					if (!flavorUsagePayload)
+						throw `payload for flavor ${outFlavorInnerConnection.outFlavorUuid} on usage ${outFlavorInnerConnection.outUsageUuid} not found`;
+				}
 			}
 		}
 		return flavorUsagePayload;
@@ -231,7 +274,7 @@ export function calculateOutPayloads(
 		return usagePayloads;
 	}
 
-	function calculateUsage(usageUuid: string) {
+	function cookUsage(usageUuid: string) {
 		// work through the flavors on this usage's ingredient
 		const usage = recipe.usages.get(usageUuid);
 		if (!usage) throw `usage ${usageUuid} not found`;
@@ -240,20 +283,28 @@ export function calculateOutPayloads(
 		);
 
 		// loop each flavor on the usage's ingredient
-		let payloads = new Map(
-			flavors.map((flavor) => [flavor.uuid, calculateFlavorUsage(flavor.uuid, usageUuid)])
-		);
+		flavors.forEach((flavor) => {
+			const flavorUsagePayload = cookFlavorUsageInPayload(flavor.uuid, usageUuid);
+			knownPayloads.set(flavor.uuid, usageUuid, Direction.In, flavorUsagePayload);
+		});
 
-		payloads = applyUsageShader(payloads);
+		let outUsagePayloads: Map<string, Payload<FlavorType>> = new Map();
 
-		for (const [flavorUuid, payload] of payloads) {
-			knownPayloads.set([flavorUuid, usageUuid].join(','), payload);
-			viewState.payloads.setPayload(flavorUuid, usageUuid, payload);
+		flavors.forEach((flavor) => {
+			const flavorUsagePayload = cookFlavorUsageOutPayload(flavor.uuid, usageUuid);
+			outUsagePayloads.set(flavor.uuid, flavorUsagePayload);
+		});
+
+		outUsagePayloads = applyUsageShader(outUsagePayloads);
+
+		for (const [flavorUuid, payload] of outUsagePayloads) {
+			knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
+			viewState.payloads.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
 		}
 	}
 
 	// function works from perspective of main ingredient/usage
-	calculateUsage(recipe.focusedUsageUuid);
+	cookUsage(recipe.focusedUsageUuid);
 
 	const dockedFlavors = Array.from(recipe.flavors.values()).filter(
 		(flavor) => flavor.ingredientUuid == recipe.focusedIngredientUuid
