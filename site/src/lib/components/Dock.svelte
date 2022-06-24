@@ -2,7 +2,7 @@
 	import { getContext } from 'svelte';
 	import { derived } from 'svelte/store';
 
-	import { Direction, type Flavor, type Usage } from '@types';
+	import { Direction, type Flavor } from '@types';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 
 	import { viewStateContextKey } from '@state';
@@ -40,7 +40,6 @@
 		{#if paneContainer}
 			<Pane container={paneContainer} let:pane>
 				{#each flavors as flavor, index (flavor.uuid)}
-					<!-- inPayload could have a value not necessarily based on cables -->
 					<FlavorComponent
 						{index}
 						{flavor}

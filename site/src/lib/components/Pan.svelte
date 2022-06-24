@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { getContext, onMount, tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { writable, type Readable } from 'svelte/store';
 
-	import type { Parameter, Shader, Connection, Ingredient, Flavor, Usage } from '@types';
 	import { calculateOutPayloads } from '$lib/common/draw';
 
 	import type { Coordinates, ViewState } from '@view';

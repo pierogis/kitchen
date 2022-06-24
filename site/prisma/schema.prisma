@@ -58,6 +58,7 @@ model Usage {
   parentUsage     Usage?       @relation("Usage_parentUsage", fields: [parentUsageUuid], references: [uuid])
   subUsages       Usage[]      @relation("Usage_parentUsage")
   callFor             CallFor?    @relation("CallFor_usage")
+  parameters     Parameter[] @relation("Parameter_usage")
 }
 
 model Connection {
@@ -99,8 +100,8 @@ model Parameter {
   recipe      Recipe  @relation("Parameter_recipe", fields: [recipeUuid], references: [uuid])
   flavorUuid  String  @unique
   flavor      Flavor  @relation("Parameter_flavor", fields: [flavorUuid], references: [uuid])
-  callForUuid String
-  callFor     CallFor @relation("Parameter_callFor", fields: [callForUuid], references: [uuid])
+  usageUuid String
+  usage     Usage @relation("Parameter_usage", fields: [usageUuid], references: [uuid])
 
   @@unique([recipeUuid, flavorUuid])
 }
@@ -126,7 +127,6 @@ model CallFor {
   recipe         Recipe      @relation("CallFor_recipe", fields: [recipeUuid], references: [uuid], onDelete: Cascade)
   usageUuid String      @db.Uuid
   usage     Usage  @relation("CallFor_usage", fields: [usageUuid], references: [uuid])
-  parameters     Parameter[] @relation("Parameter_callFor")
   location       Location?   @relation("Location_callFor")
 }
 

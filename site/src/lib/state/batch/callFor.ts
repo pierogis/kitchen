@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
 
-import type { Ingredient, CallFor, Flavor, Location, Usage } from '@types';
+import type { CallFor, Location } from '@types';
 
 import { type Action, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';

@@ -23,7 +23,7 @@ export const deleteUsage: ActionHandler<ActionType.DeleteUsage, ActionType.Creat
 ) => {
 	// delete usage
 	const usage = state.usages.get(params.uuid);
-	if (!usage) throw `Usage ${params.uuid} does not exist`;
+	if (!usage) throw `usage ${params.uuid} not found`;
 	state.usages.delete(params.uuid);
 
 	return {

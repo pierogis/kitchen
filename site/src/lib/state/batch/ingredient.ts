@@ -13,7 +13,7 @@ import {
 } from '@types';
 
 import type { RecipeState } from '@recipe';
-import type { Coordinates, ViewState } from '@view';
+import type { Coordinates } from '@view';
 import { type Action, ActionType } from '@state/actions';
 
 export function dispatchCreateIngredientActions(

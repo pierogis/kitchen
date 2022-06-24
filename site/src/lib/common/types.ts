@@ -69,7 +69,7 @@ export interface Parameter {
 	payload: Payload<FlavorType>;
 	recipeUuid: string;
 	flavorUuid: string;
-	callForUuid: string;
+	usageUuid: string;
 }
 
 type FlavorTypesPayloadMapper = {

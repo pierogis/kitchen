@@ -20,7 +20,6 @@ export interface ViewState {
 	cables: Readable<Cable[]>;
 	nodes: Readable<Node[]>;
 	dockedFlavors: Readable<Flavor[]>;
-	inFocusFlavorUsages: Readable<FlavorUsage[]>;
 	cursorCoordinates: Writable<Coordinates | undefined>;
 	liveConnection: LiveConnectionState;
 	liveTerminal: Readable<Terminal | undefined>;
@@ -166,7 +165,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		cables,
 		nodes,
 		dockedFlavors,
-		inFocusFlavorUsages,
+
 		cursorCoordinates,
 		liveConnection,
 		liveTerminal,

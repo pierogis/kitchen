@@ -116,7 +116,6 @@ export const defaultRecipe: FullRecipe = {
 			connections: [],
 			usages: [
 				{
-					id: 2,
 					uuid: '2',
 					ingredientUuid: '2'
 				}
@@ -164,7 +163,7 @@ export const defaultRecipe: FullRecipe = {
 			uuid: '0',
 			recipeUuid: '0',
 			flavorUuid: '0',
-			callForUuid: '0',
+			usageUuid: '0',
 			payload: {
 				type: FlavorType.Image,
 				params: ''
@@ -174,7 +173,7 @@ export const defaultRecipe: FullRecipe = {
 			uuid: '1',
 			recipeUuid: '0',
 			flavorUuid: '1',
-			callForUuid: '0',
+			usageUuid: '0',
 			payload: {
 				type: FlavorType.Number,
 				params: 0
@@ -184,7 +183,7 @@ export const defaultRecipe: FullRecipe = {
 			uuid: '2',
 			recipeUuid: '0',
 			flavorUuid: '2',
-			callForUuid: '0',
+			usageUuid: '0',
 			payload: {
 				type: FlavorType.Number,
 				params: 40
@@ -194,7 +193,7 @@ export const defaultRecipe: FullRecipe = {
 			uuid: '3',
 			recipeUuid: '0',
 			flavorUuid: '3',
-			callForUuid: '0',
+			usageUuid: '0',
 			payload: {
 				type: FlavorType.Number,
 				params: 180
@@ -204,7 +203,7 @@ export const defaultRecipe: FullRecipe = {
 			uuid: '4',
 			recipeUuid: '0',
 			flavorUuid: '4',
-			callForUuid: '1',
+			usageUuid: '1',
 			payload: {
 				type: FlavorType.Text,
 				params: ''
@@ -214,7 +213,7 @@ export const defaultRecipe: FullRecipe = {
 			uuid: '5',
 			recipeUuid: '0',
 			flavorUuid: '5',
-			callForUuid: '2',
+			usageUuid: '2',
 			payload: {
 				type: FlavorType.Image,
 				params: ''
@@ -224,7 +223,7 @@ export const defaultRecipe: FullRecipe = {
 			uuid: '6',
 			recipeUuid: '0',
 			flavorUuid: '6',
-			callForUuid: '2',
+			usageUuid: '2',
 			payload: {
 				type: FlavorType.Text,
 				params: ''
@@ -234,7 +233,7 @@ export const defaultRecipe: FullRecipe = {
 			uuid: '7',
 			recipeUuid: '0',
 			flavorUuid: '7',
-			callForUuid: '2',
+			usageUuid: '2',
 			payload: {
 				type: FlavorType.Color,
 				params: '#0088ff'
