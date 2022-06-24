@@ -44,7 +44,7 @@
 					<FlavorComponent
 						{index}
 						{flavor}
-						{...viewState.payloads.getPayload(flavor.uuid, focusedUsageUuid)}
+						payload={viewState.payloads.getPayload(flavor.uuid, focusedUsageUuid)}
 						terminals={derived(viewState.terminals, (currentTerminals) =>
 							currentTerminals.filter(
 								(terminal) =>

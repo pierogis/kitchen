@@ -18,13 +18,12 @@
 	$: inTerminals = $terminals.filter((terminal) => terminal.direction == Direction.In);
 	$: outTerminals = $terminals.filter((terminal) => terminal.direction == Direction.Out);
 
-	export let payload: Writable<Payload<FlavorType>>;
-	export let monitor: boolean;
+	export let payload: Writable<Payload<FlavorType>> & { monitor: boolean };
 
 	export let folder: FolderApi;
 </script>
 
-{#if monitor}
+{#if payload.monitor}
 	<Monitor {index} {folder} payloadStore={payload} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack

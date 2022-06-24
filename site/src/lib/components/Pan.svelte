@@ -3,7 +3,7 @@
 	import { writable, type Readable } from 'svelte/store';
 
 	import type { Parameter, Shader, Connection, Ingredient, Flavor, Usage } from '@types';
-	import { draw } from '$lib/common/draw';
+	import { calculateOutPayloads } from '$lib/common/draw';
 
 	import type { Coordinates, ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
@@ -34,7 +34,7 @@
 			frame = requestAnimationFrame(loop);
 
 			if (gl) {
-				draw(gl, programs, $recipeState, viewState);
+				calculateOutPayloads(gl, programs, $recipeState, viewState);
 			}
 		}
 		loop();

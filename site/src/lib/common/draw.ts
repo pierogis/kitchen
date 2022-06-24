@@ -124,10 +124,10 @@ export function drawCanvasFramebuffer(gl: WebGLRenderingContext, targetTexture: 
 function getSourceFlavorUuid(
 	flavorUuid: string,
 	connections: Map<string, Connection>
-): string | undefined {
+): {flavorUuid: string, usageUuid:string} | undefined {
 	for (const connection of connections.values()) {
 		if (connection.inFlavorUuid == flavorUuid) {
-			return connection.outFlavorUuid;
+			return {flavorUuid: connection.outFlavorUuid, usageUuid: connection.outUsageUuid};
 		}
 	}
 }
@@ -141,16 +141,21 @@ function calculateFlavorUsage(
 	knownPayloads: Map<string, Payload<FlavorType>>,
 	programs: Map<string, WebGLProgram>
 ): Payload<FlavorType> {
+	// find or calculate source payload if exists
+	// calculate out payload for current flavor usage
+	// set this out payload in known payloads
+
+
 	// get the flavor leading to this flavor's in connection (if exists)
-	const sourceFlavorUuid = getSourceFlavorUuid(flavorUuid, recipe.connections);
+	const sourceFlavorUsage = getSourceFlavorUuid(flavorUuid, recipe.connections);
+	let sourcePayload = knownPayloads.get([sourceFlavorUsage?.flavorUuid, sourceFlavorUsage?.usageUuid].join(','));
 
-	if (sourceFlavorUuid) {
+	if (sourcePayload) {
 		// the value from the previous may be already calculated
-		calculatedPayload = knownPayloads.get([flavorUuid, usageUuid].join(','));
 
-		if (!calculatedPayload) {
+		if (!sourcePayload) {
 			// if not already calculated, do that one first
-			calculatedPayload = calculateFlavorUsage(
+			sourcePayload = calculateFlavorUsage(
 				gl,
 				sourceFlavorUuid,
 				usageUuid,
@@ -159,13 +164,6 @@ function calculateFlavorUsage(
 				knownPayloads,
 				programs
 			);
-		}
-	} else {
-		let calculatedPayload: Payload<FlavorType> | undefined = knownPayloads.get(
-			[flavorUuid, usageUuid].join(',')
-		);
-
-		if (calculatedPayload) {
 		}
 	}
 
@@ -211,46 +209,47 @@ function calculateFlavorUsage(
 	}
 
 	if (calculatedPayload) {
-		knownPayloads.set(flavorUuid, calculatedPayload);
+		knownPayloads.set([flavorUuid, usageUuid].join(','), calculatedPayload);
 		return calculatedPayload;
 	} else {
 		throw "couldn't calculate payload";
 	}
 }
 
-export function draw(
+export function calculateOutPayloads(
 	gl: WebGLRenderingContext,
 	programs: Map<string, WebGLProgram>,
 	recipe: FlatRecipe,
 	viewState: ViewState
 ) {
+	// this will go through the flavor usages in focus (and the docked flavors)
+	// and calculate a payload based on that flavor usage's in payload and shaders, expressions, etc.
+	// it will set these new out payloads on the view state
+
 	// get the main ingredient that we are cooking
 	const focusedIngredient = recipe.ingredients.get(recipe.focusedIngredientUuid);
 
-	// keyed by [flavorUuid, usageUuid].join(',')
-	const newPayloads: Map<
-		string,
-		{ inPayload: Payload<FlavorType> | undefined; outPayload: Payload<FlavorType> }
-	> = new Map(
-		Array.from(recipe.parameters.values()).map((parameter) => {
-			const callFor = recipe.callsFor.get(parameter.callForUuid);
-			if (!callFor)
-				throw `callFor ${parameter.callForUuid} for parameter ${parameter.callForUuid} not found`;
-			const key = [parameter.flavorUuid, callFor.usageUuid].join(',');
-			return [key, { inPayload: undefined, outPayload: parameter.payload }];
-		})
-	);
+	const knownPayloads: Map<string, Payload<FlavorType>> = new Map()
 
 	for (const flavorUsage of get(viewState.inFocusFlavorUsages)) {
-		newPayloads.set([flavorUsage.uuid, flavorUsage.usageUuid].join(','), { inPayload });
+		calculateFlavorUsage(
+			gl,
+			flavorUsage.uuid,
+			flavorUsage.usageUuid,
+			recipe,
+			viewState,
+			knownPayloads,
+			programs
+		);
 	}
 
-	for (const usage of viewState.focusedUsages.values()) {
+	for (const usage of viewState.focusedUsage.values()) {
 		const flavors = Array.from(recipe.flavors.values()).filter(
 			(flavor) => flavor.ingredientUuid == usage.ingredientUuid
 		);
 
 		for (const flavor of flavors) {
+			const calculatedPayload = 
 			let payload = newPayloads.get([flavor.uuid, usage.uuid].join(','));
 			if (!payload?.outPayload) {
 				payload = calculateFlavorUsage(
@@ -259,7 +258,7 @@ export function draw(
 					usage.uuid,
 					recipe,
 					viewState,
-					newPayloads,
+					knownPayloads,
 					programs
 				);
 			}
@@ -271,7 +270,7 @@ export function draw(
 				drawCanvasFramebuffer(gl, texture);
 			}
 
-			viewState.payloads.setPayload(flavor.uuid, usage.uuid, calculatedPayload);
+			viewState.payloads.setOutPayload(flavor.uuid, usage.uuid, calculatedPayload);
 		}
 	}
 }
