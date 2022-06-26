@@ -2,7 +2,7 @@
 	import { spring } from 'svelte/motion';
 	import { derived } from 'svelte/store';
 
-	import type { Coordinates } from '@view';
+	import type { Coordinates } from '@types';
 
 	// define sping animation effects
 	export let cursorCoordinates: Coordinates;

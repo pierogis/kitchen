@@ -1,6 +1,7 @@
 import { type ActionHandler, ActionType } from '@state/actions';
+import type { RecipeState } from '@recipe';
 
-export const createUsage: ActionHandler<ActionType.CreateUsage, ActionType.DeleteUsage> = (
+const createUsage: ActionHandler<ActionType.CreateUsage, ActionType.DeleteUsage> = (
 	state,
 	params
 ) => {
@@ -17,7 +18,7 @@ export const createUsage: ActionHandler<ActionType.CreateUsage, ActionType.Delet
 	};
 };
 
-export const deleteUsage: ActionHandler<ActionType.DeleteUsage, ActionType.CreateUsage> = (
+const deleteUsage: ActionHandler<ActionType.DeleteUsage, ActionType.CreateUsage> = (
 	state,
 	params
 ) => {
@@ -31,3 +32,8 @@ export const deleteUsage: ActionHandler<ActionType.DeleteUsage, ActionType.Creat
 		undoAction: { type: ActionType.CreateUsage, params: { usage } }
 	};
 };
+
+export function registerUsageHandlers(recipeState: RecipeState) {
+	recipeState.register(ActionType.CreateUsage, createUsage);
+	recipeState.register(ActionType.DeleteUsage, deleteUsage);
+}

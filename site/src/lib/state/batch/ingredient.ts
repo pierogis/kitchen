@@ -9,11 +9,11 @@ import {
 	type Flavor,
 	type Ingredient,
 	type Location,
-	type Usage
+	type Usage,
+	type Coordinates
 } from '@types';
 
 import type { RecipeState } from '@recipe';
-import type { Coordinates } from '@view';
 import { type Action, ActionType } from '@state/actions';
 
 export function dispatchCreateIngredientActions(

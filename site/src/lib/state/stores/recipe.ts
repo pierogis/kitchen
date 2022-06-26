@@ -39,72 +39,13 @@ export type RecipeState = {
 		batchDispatch: <T extends ActionType>(actions: Action<T>[]) => void;
 	};
 
+export const recipeStateContextKey = 'recipe';
+
 export function createRecipeState(recipe: FlatRecipe): RecipeState {
 	// update all at once
 	// subscribe to all at once
 	// subscribe to just 1
 	const store = writable(recipe);
-
-	// const recipeUuid = writable(recipe.recipeUuid);
-	// const focusedIngredientUuid = writable(recipe.focusedIngredientUuid);
-	// const ingredients = writable(recipe.ingredients);
-	// const flavors = writable(recipe.flavors);
-	// const callsFor = writable(recipe.callsFor);
-	// const connections = writable(recipe.connections);
-	// const shaders = writable(recipe.shaders);
-	// const parameters = writable(recipe.parameters);
-	// const locations = writable(recipe.locations);
-
-	// store.subscribe((currentRecipe) => {
-	// 	recipeUuid.update((currentRecipeUuid) => {
-	// 		currentRecipeUuid = currentRecipe.recipeUuid;
-	// 		return currentRecipeUuid;
-	// 	});
-	// 	focusedIngredientUuid.update((currentFocusedIngredientUuid) => {
-	// 		currentFocusedIngredientUuid = currentRecipe.focusedIngredientUuid;
-	// 		return currentFocusedIngredientUuid;
-	// 	});
-	// 	ingredients.update((currentIngredients) => {
-	// 		currentIngredients = currentRecipe.ingredients;
-	// 		return currentIngredients;
-	// 	});
-	// 	flavors.update((currentFlavors) => {
-	// 		currentFlavors = currentRecipe.flavors;
-	// 		return currentFlavors;
-	// 	});
-	// 	callsFor.update((currentCallsFor) => {
-	// 		currentCallsFor = currentRecipe.callsFor;
-	// 		return currentCallsFor;
-	// 	});
-	// 	connections.update((currentConnections) => {
-	// 		currentConnections = currentRecipe.connections;
-	// 		return currentConnections;
-	// 	});
-	// 	shaders.update((currentShaders) => {
-	// 		currentShaders = currentRecipe.shaders;
-	// 		return currentShaders;
-	// 	});
-	// 	parameters.update((currentParameters) => {
-	// 		currentParameters = currentRecipe.parameters;
-	// 		return currentParameters;
-	// 	});
-	// 	locations.update((currentLocations) => {
-	// 		currentLocations = currentRecipe.locations;
-	// 		return currentLocations;
-	// 	});
-	// });
-
-	// const stores = {
-	// 	recipeUuid,
-	// 	focusedIngredientUuid,
-	// 	ingredients,
-	// 	flavors,
-	// 	callsFor,
-	// 	connections,
-	// 	shaders,
-	// 	parameters,
-	// 	locations
-	// };
 
 	const actionsDispatcher = dispatcher(store);
 

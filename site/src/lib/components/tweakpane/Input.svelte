@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { Writable } from 'svelte/store';
 
-	import type { BladeApi, InputBindingController } from '@tweakpane/core';
+	import type { BladeApi, InputBindingController, TpChangeEvent } from '@tweakpane/core';
 	import type { FolderApi, InputParams } from 'tweakpane';
 
-	import { FlavorType, type Payload } from '@types';
-
 	export let folder: FolderApi;
-	export let payloadStore: Writable<Payload<FlavorType> | undefined>;
+	export let params: { [key: string]: string | number };
+	export let onChange: (ev: TpChangeEvent<string | number>) => void;
 	export let key: string;
 	export let options: InputParams | undefined = undefined;
 	export let index: number | undefined = undefined;
@@ -16,37 +14,9 @@
 	let inputElement: HTMLElement;
 
 	onMount(() => {
-		let payload = $payloadStore;
 		let bladeApi: BladeApi<InputBindingController<any>>;
 
-		let params = { [key]: payload?.params || '' };
-
-		let fired = false;
-
-		// this is so fucked
-		payloadStore.subscribe((newPayload) => {
-			if (fired) {
-				if (newPayload?.type == payload?.type) {
-					params = { [key]: newPayload?.params || '' };
-				} else {
-					// payload type has changed
-				}
-			}
-			fired = true;
-		});
-
-		if (payload?.type == FlavorType.Color) {
-			options = { ...options, view: 'color', color: { alpha: true } };
-		}
-
-		bladeApi = folder.addInput(params, key, { ...options, index }).on('change', (ev) => {
-			if (payload) {
-				$payloadStore = {
-					type: payload.type,
-					params: ev.value
-				};
-			}
-		});
+		bladeApi = folder.addInput(params, key, { ...options, index }).on('change', onChange);
 
 		const element = bladeApi.controller_.valueController.view.element.parentElement;
 		if (element) {

@@ -1,12 +1,12 @@
 import type { Connection, Flavor, FullRecipe, Usage } from '@types';
-import { ActionType } from './actions';
 
-import { createCallFor, deleteCallFor } from './handlers/callsFor';
-import { createConnection, deleteConnection, updateConnection } from './handlers/connections';
-import { createFlavor, deleteFlavor } from './handlers/flavors';
-import { createIngredient, deleteIngredient } from './handlers/ingredients';
-import { createLocation, deleteLocation } from './handlers/locations';
-import { createUsage, deleteUsage } from './handlers/usages';
+import { registerCallForHandlers } from './handlers/callsFor';
+import { registerConnectionHandlers } from './handlers/connections';
+import { registerFlavorHandlers } from './handlers/flavors';
+import { registerIngredientHandlers } from './handlers/ingredients';
+import { registerLocationHandlers } from './handlers/locations';
+import { registerParameterHandlers } from './handlers/parameters';
+import { registerUsageHandlers } from './handlers/usages';
 
 import { createRecipeState } from './stores/recipe';
 
@@ -66,27 +66,13 @@ export function storeRecipe(recipe: FullRecipe) {
 		usages: initialUsages
 	});
 
-	recipeState.register(ActionType.CreateIngredient, createIngredient);
-	recipeState.register(ActionType.DeleteIngredient, deleteIngredient);
-
-	recipeState.register(ActionType.CreateConnection, createConnection);
-	recipeState.register(ActionType.UpdateConnection, updateConnection);
-	recipeState.register(ActionType.DeleteConnection, deleteConnection);
-
-	recipeState.register(ActionType.CreateCallFor, createCallFor);
-	recipeState.register(ActionType.DeleteCallFor, deleteCallFor);
-
-	recipeState.register(ActionType.CreateFlavor, createFlavor);
-	recipeState.register(ActionType.DeleteFlavor, deleteFlavor);
-
-	recipeState.register(ActionType.CreateLocation, createLocation);
-	recipeState.register(ActionType.DeleteLocation, deleteLocation);
-
-	recipeState.register(ActionType.CreateUsage, createUsage);
-	recipeState.register(ActionType.DeleteUsage, deleteUsage);
+	registerIngredientHandlers(recipeState);
+	registerFlavorHandlers(recipeState);
+	registerUsageHandlers(recipeState);
+	registerConnectionHandlers(recipeState);
+	registerCallForHandlers(recipeState);
+	registerLocationHandlers(recipeState);
+	registerParameterHandlers(recipeState);
 
 	return recipeState;
 }
-
-export const recipeStateContextKey = 'recipe';
-export const viewStateContextKey = 'view';

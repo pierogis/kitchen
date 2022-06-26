@@ -153,7 +153,7 @@ export const defaultRecipe: FullRecipe = {
 			location: {
 				uuid: '2',
 				callForUuid: '2',
-				x: 400,
+				x: 500,
 				y: 200
 			}
 		}

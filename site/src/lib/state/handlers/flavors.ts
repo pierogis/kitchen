@@ -1,6 +1,7 @@
 import { type ActionHandler, ActionType } from '@state/actions';
+import type { RecipeState } from '@recipe';
 
-export const createFlavor: ActionHandler<ActionType.CreateFlavor, ActionType.DeleteFlavor> = (
+const createFlavor: ActionHandler<ActionType.CreateFlavor, ActionType.DeleteFlavor> = (
 	state,
 	params
 ) => {
@@ -17,7 +18,7 @@ export const createFlavor: ActionHandler<ActionType.CreateFlavor, ActionType.Del
 	};
 };
 
-export const deleteFlavor: ActionHandler<ActionType.DeleteFlavor, ActionType.CreateFlavor> = (
+const deleteFlavor: ActionHandler<ActionType.DeleteFlavor, ActionType.CreateFlavor> = (
 	state,
 	params
 ) => {
@@ -31,3 +32,8 @@ export const deleteFlavor: ActionHandler<ActionType.DeleteFlavor, ActionType.Cre
 		undoAction: { type: ActionType.CreateFlavor, params: { flavor } }
 	};
 };
+
+export function registerFlavorHandlers(recipeState: RecipeState) {
+	recipeState.register(ActionType.CreateFlavor, createFlavor);
+	recipeState.register(ActionType.DeleteFlavor, deleteFlavor);
+}

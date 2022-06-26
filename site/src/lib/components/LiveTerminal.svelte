@@ -2,8 +2,9 @@
 	import { getContext } from 'svelte';
 	import { get, type Readable } from 'svelte/store';
 
-	import { type Terminal, terminalHeight, type ViewState, type Coordinates } from '@view';
-	import { viewStateContextKey } from '@state';
+	import type { Coordinates } from '@types';
+	import { type Terminal, terminalHeight, type ViewState, viewStateContextKey } from '@view';
+
 	import { checkPointWithinBox } from '$lib/common/utils';
 
 	import TerminalComponent from '@components/Terminal.svelte';

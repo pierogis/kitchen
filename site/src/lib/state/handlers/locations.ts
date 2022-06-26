@@ -1,6 +1,7 @@
 import { type ActionHandler, ActionType } from '@state/actions';
+import type { RecipeState } from '@recipe';
 
-export const createLocation: ActionHandler<ActionType.CreateLocation, ActionType.DeleteLocation> = (
+const createLocation: ActionHandler<ActionType.CreateLocation, ActionType.DeleteLocation> = (
 	state,
 	params
 ) => {
@@ -17,7 +18,7 @@ export const createLocation: ActionHandler<ActionType.CreateLocation, ActionType
 	};
 };
 
-export const deleteLocation: ActionHandler<ActionType.DeleteLocation, ActionType.CreateLocation> = (
+const deleteLocation: ActionHandler<ActionType.DeleteLocation, ActionType.CreateLocation> = (
 	state,
 	params
 ) => {
@@ -31,3 +32,8 @@ export const deleteLocation: ActionHandler<ActionType.DeleteLocation, ActionType
 		undoAction: { type: ActionType.CreateLocation, params: { location } }
 	};
 };
+
+export function registerLocationHandlers(recipeState: RecipeState) {
+	recipeState.register(ActionType.CreateLocation, createLocation);
+	recipeState.register(ActionType.DeleteLocation, deleteLocation);
+}

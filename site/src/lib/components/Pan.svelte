@@ -4,7 +4,8 @@
 
 	import { cookPayloads } from '$lib/common/draw';
 
-	import type { Coordinates, ViewState } from '@view';
+	import type { Coordinates } from '@types';
+	import type { ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
 	import { dispatchCreateIngredientActions } from '@state/batch/ingredient';
 

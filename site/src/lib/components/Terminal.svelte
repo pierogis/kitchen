@@ -4,8 +4,7 @@
 	import { Direction } from '@types';
 	import { calculateCenter } from '$lib/common/utils';
 
-	import type { LiveConnection, ViewState } from '@view';
-	import { viewStateContextKey } from '@state';
+	import { type LiveConnection, type ViewState, viewStateContextKey } from '@view';
 	import type { Terminal } from '@view/terminals';
 	import { derived } from 'svelte/store';
 

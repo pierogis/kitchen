@@ -5,8 +5,7 @@
 	import { Direction, type Flavor } from '@types';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 
-	import { viewStateContextKey } from '@state';
-	import type { ViewState } from '@view';
+	import { viewStateContextKey, type ViewState } from '@view';
 
 	import FlavorComponent from '@components/Flavor.svelte';
 	import Pane from '@components/tweakpane/Pane.svelte';
@@ -51,6 +50,7 @@
 									terminal.direction == (direction == Direction.In ? Direction.Out : Direction.In)
 							)
 						)}
+						usageUuid={focusedUsageUuid}
 						folder={pane}
 					/>
 				{/each}

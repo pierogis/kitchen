@@ -5,7 +5,8 @@
 	import { Direction, type CallFor, type Flavor, type Ingredient, type Location } from '@types';
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 
-	import { recipeStateContextKey, viewStateContextKey } from '@state';
+	import { viewStateContextKey } from '@view';
+	import { recipeStateContextKey } from '@recipe';
 	import type { RecipeState } from '@recipe';
 	import type { ViewState } from '@view';
 	import { dispatchDeleteCallForActions } from '@state/batch/callFor';
@@ -70,6 +71,7 @@
 							)}
 							{index}
 							{flavor}
+							usageUuid={callFor.usageUuid}
 							folder={pane}
 						/>
 					{/each}

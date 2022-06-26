@@ -1,6 +1,9 @@
 <script lang="ts" context="module">
+	import { storeRecipe } from '@state';
+	import { recipeStateContextKey } from '@recipe';
+	import { viewStateContextKey } from '@view';
+
 	import { defaultRecipe } from './_recipe';
-	import { recipeStateContextKey, storeRecipe, viewStateContextKey } from '@state';
 
 	/** @type {import('./index').Load} */
 	export async function load() {

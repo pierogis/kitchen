@@ -1,9 +1,10 @@
 import { ActionType, type ActionHandler } from '@state/actions';
+import type { RecipeState } from '@recipe';
 
-export const createIngredient: ActionHandler<
-	ActionType.CreateIngredient,
-	ActionType.DeleteIngredient
-> = (state, params) => {
+const createIngredient: ActionHandler<ActionType.CreateIngredient, ActionType.DeleteIngredient> = (
+	state,
+	params
+) => {
 	state.ingredients.set(params.ingredient.uuid, params.ingredient);
 
 	return {
@@ -15,10 +16,10 @@ export const createIngredient: ActionHandler<
 	};
 };
 
-export const deleteIngredient: ActionHandler<
-	ActionType.DeleteIngredient,
-	ActionType.CreateIngredient
-> = (state, params) => {
+const deleteIngredient: ActionHandler<ActionType.DeleteIngredient, ActionType.CreateIngredient> = (
+	state,
+	params
+) => {
 	// delete ingredient
 	const ingredient = state.ingredients.get(params.uuid);
 	if (!ingredient) throw '';
@@ -32,3 +33,8 @@ export const deleteIngredient: ActionHandler<
 		}
 	};
 };
+
+export function registerIngredientHandlers(recipeState: RecipeState) {
+	recipeState.register(ActionType.CreateIngredient, createIngredient);
+	recipeState.register(ActionType.DeleteIngredient, deleteIngredient);
+}

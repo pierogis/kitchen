@@ -1,6 +1,7 @@
 import { type ActionHandler, ActionType } from '@state/actions';
+import type { RecipeState } from '@recipe';
 
-export const createCallFor: ActionHandler<ActionType.CreateCallFor, ActionType.DeleteCallFor> = (
+const createCallFor: ActionHandler<ActionType.CreateCallFor, ActionType.DeleteCallFor> = (
 	state,
 	params
 ) => {
@@ -17,7 +18,7 @@ export const createCallFor: ActionHandler<ActionType.CreateCallFor, ActionType.D
 	};
 };
 
-export const deleteCallFor: ActionHandler<ActionType.DeleteCallFor, ActionType.CreateCallFor> = (
+const deleteCallFor: ActionHandler<ActionType.DeleteCallFor, ActionType.CreateCallFor> = (
 	state,
 	params
 ) => {
@@ -31,3 +32,8 @@ export const deleteCallFor: ActionHandler<ActionType.DeleteCallFor, ActionType.C
 		undoAction: { type: ActionType.CreateCallFor, params: { callFor } }
 	};
 };
+
+export function registerCallForHandlers(recipeState: RecipeState) {
+	recipeState.register(ActionType.CreateCallFor, createCallFor);
+	recipeState.register(ActionType.DeleteCallFor, deleteCallFor);
+}

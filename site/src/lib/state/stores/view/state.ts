@@ -1,6 +1,6 @@
 import { derived, writable, type Writable, type Readable, get } from 'svelte/store';
 
-import { Direction, type Flavor, type FlavorUsage } from '@types';
+import { Direction, type Coordinates, type Flavor, type FlavorUsage } from '@types';
 import type { RecipeState } from '@recipe';
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
 import { createCables, type Cable } from './cables';
@@ -13,8 +13,6 @@ import {
 	type TerminalsCoordinatesState
 } from './terminals';
 import { createPayloads, type PayloadsState } from './payloads';
-
-export type Coordinates = { x: number; y: number };
 
 export interface ViewState {
 	cables: Readable<Cable[]>;

@@ -1,7 +1,5 @@
 import { get, writable, type Writable } from 'svelte/store';
 
-import { v4 as uuid } from 'uuid';
-
 import {
 	Direction,
 	FlavorType,
@@ -11,7 +9,6 @@ import {
 	type Usage
 } from '@types';
 import type { RecipeState } from '@recipe';
-import { ActionType, type Action } from '$lib/state/actions';
 
 export type PayloadsState = {
 	getPayload: (
@@ -20,6 +17,7 @@ export type PayloadsState = {
 		direction: Direction
 	) => Writable<Payload<FlavorType>> & {
 		monitor: boolean;
+		parameterUuid?: string;
 	};
 	setPayload: (
 		flavorUuid: string,
@@ -43,11 +41,12 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 		string,
 		Writable<Payload<FlavorType>> & {
 			monitor: boolean;
+			parameterUuid?: string;
 		}
 	> = new Map();
 
 	const flavorUsagePayloads = {
-		clear: flavorUsagePayloadsMap.clear,
+		clear: () => flavorUsagePayloadsMap.clear(),
 		get: (flavorUuid: string, usageUuid: string, direction: Direction) =>
 			flavorUsagePayloadsMap.get([flavorUuid, usageUuid, direction].join(',')),
 		set: (
@@ -56,6 +55,7 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 			direction: Direction,
 			payload: Writable<Payload<FlavorType>> & {
 				monitor: boolean;
+				parameterUuid?: string;
 			}
 		) => flavorUsagePayloadsMap.set([flavorUuid, usageUuid, direction].join(','), payload)
 	};
@@ -96,48 +96,16 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 					connection.parentIngredientUuid == usage.ingredientUuid
 			);
 
-			let fired = false;
-			inPayload.subscribe((newPayload) => {
-				if (fired && !inMonitor) {
-					if (!parameter) {
-						const createParameterAction: Action<ActionType.CreateParameter> = {
-							type: ActionType.CreateParameter,
-							params: {
-								parameter: {
-									uuid: uuid(),
-									payload: newPayload,
-									recipeUuid: get(recipeState.recipeUuid),
-									flavorUuid: flavor.uuid,
-									usageUuid: usage.uuid
-								}
-							}
-						};
-						recipeState.dispatch(createParameterAction);
-					} else {
-						const updateParameterAction: Action<ActionType.UpdateParameter> = {
-							type: ActionType.UpdateParameter,
-							params: {
-								parameter: {
-									...parameter,
-									payload: newPayload
-								}
-							}
-						};
-						recipeState.dispatch(updateParameterAction);
-					}
-				}
-
-				fired = true;
-			});
-
 			flavorUsagePayloads.set(flavor.uuid, usage.uuid, Direction.In, {
 				...inPayload,
-				monitor: inMonitor
+				monitor: inMonitor,
+				parameterUuid: parameter?.uuid
 			});
 
 			flavorUsagePayloads.set(flavor.uuid, usage.uuid, Direction.Out, {
 				...outPayload,
-				monitor: outMonitor
+				monitor: outMonitor,
+				parameterUuid: parameter?.uuid
 			});
 		}
 

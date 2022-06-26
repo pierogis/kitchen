@@ -1,8 +1,9 @@
 import type { Direction } from '@types';
 import { get, writable, type Readable, type Writable } from 'svelte/store';
 
+import type { Coordinates } from '@types';
+import type { LiveConnectionState } from '@view';
 import type { Terminal } from '.';
-import type { Coordinates, LiveConnectionState } from '@view';
 
 export type TerminalsCoordinatesState = {
 	getCoordinates: (connectionUuid: string, direction: Direction) => Readable<Coordinates>;

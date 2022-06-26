@@ -83,8 +83,10 @@ export type PayloadParams<T> = T extends FlavorType ? FlavorTypesPayloadMapper[T
 
 export interface Payload<T extends FlavorType> {
 	type: T;
-	params: PayloadParams<T> | undefined;
+	params: PayloadParams<T>;
 }
+
+export type Coordinates = Pick<Location, 'x' | 'y'>;
 
 export interface Location {
 	uuid: string;

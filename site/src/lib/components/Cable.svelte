@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { derived, type Readable } from 'svelte/store';
 
-	import type { Coordinates } from '@view';
+	import type { Coordinates } from '@types';
 	import { tweened } from 'svelte/motion';
 
 	export let outCoordinates: Readable<Coordinates>;
