@@ -113,7 +113,17 @@ export const defaultRecipe: FullRecipe = {
 					options: { view: 'color', color: { alpha: true } }
 				}
 			],
-			connections: [],
+			connections: [
+				{
+					uuid: '0',
+					parentIngredientUuid: '2',
+					flavorType: FlavorType.Image,
+					inFlavorUuid: '5',
+					outFlavorUuid: '5',
+					inUsageUuid: '2',
+					outUsageUuid: '2'
+				}
+			],
 			usages: [
 				{
 					uuid: '2',

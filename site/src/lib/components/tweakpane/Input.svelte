@@ -18,11 +18,12 @@
 
 		bladeApi = folder.addInput(params, key, { ...options, index }).on('change', onChange);
 
-		const element = bladeApi.controller_.valueController.view.element.parentElement;
+		// const element = bladeApi.controller_.valueController.view.element.parentElement;
+		const element = bladeApi.element;
 		if (element) {
 			inputElement = element;
-			inputElement.style.maxWidth = '9rem';
-			inputElement.style.display = 'flex';
+			// monitorElement.style.maxWidth = '9rem';
+			// monitorElement.style.display = 'flex';
 		}
 
 		return () => {
