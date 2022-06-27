@@ -102,7 +102,7 @@ export function drawOnTexture(
 		// Attach the color as a uniform for the GL gl.
 		const uniform = gl.getUniformLocation(program, `u_${payloadName}`);
 		// switch on payload.type to determine uniform3f, texture, etc
-		gl.uniform3f(uniform, 255, 223, 211);
+		gl.uniform3f(uniform, 100, 223, 211);
 	}
 
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -117,7 +117,7 @@ export function drawCanvasFramebuffer(gl: WebGLRenderingContext, targetTexture: 
 	gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
 	// Clear the canvas AND the depth buffer.
-	gl.clearColor(1, 1, 1, 1); // clear to white
+	gl.clearColor(0.3, 0.35, 0.3, 1); // clear to grey
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 }
 
@@ -187,20 +187,12 @@ export function cookPayloads(
 
 				viewState.payloads.setPayload(flavorUuid, usageUuid, Direction.In, flavorUsagePayload);
 			} else {
-				const parameter = Array.from(recipe.parameters.values()).find((parameter) => {
-					parameter.flavorUuid == flavorUuid && parameter.usageUuid == usageUuid;
-				});
-
-				if (parameter) {
-					// use the parameter for this flavor usage
-					flavorUsagePayload = parameter.payload;
-				} else {
-					// fall back on default stored in payloads?
-					flavorUsagePayload = get(
-						viewState.payloads.getPayload(flavorUuid, usageUuid, Direction.In)
-					);
-					// throw `parameter for flavor ${flavorUuid} on usage ${usageUuid} not found`;
-				}
+				// fall back on parameter based or default stored in payloads
+				flavorUsagePayload = get(
+					viewState.payloads.getPayload(flavorUuid, usageUuid, Direction.In)
+				);
+				if (!flavorUsagePayload)
+					throw `in payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 			}
 		}
 
@@ -209,9 +201,7 @@ export function cookPayloads(
 
 	function cookFlavorUsageOutPayload(flavorUuid: string, usageUuid: string): Payload<FlavorType> {
 		// memoize
-		let flavorUsagePayload = knownPayloads.get(flavorUuid, usageUuid, Direction.In);
-		if (!flavorUsagePayload)
-			throw `in payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
+		let flavorUsagePayload = knownPayloads.get(flavorUuid, usageUuid, Direction.Out);
 
 		const usage = recipe.usages.get(usageUuid);
 		if (!usage) throw `usage ${usageUuid} not found`;
@@ -226,21 +216,34 @@ export function cookPayloads(
 			);
 
 			if (outFlavorInnerConnection) {
-				if (outFlavorInnerConnection.outUsageUuid != usageUuid) {
+				// avoid infinite recursion
+				const outUsageIsSame = outFlavorInnerConnection.outUsageUuid == usageUuid;
+				if (!outUsageIsSame) {
 					// calculate all of the flavors on the previous usage
 					cookUsage(outFlavorInnerConnection.outUsageUuid);
-					// now it should be in the map
+					// target out payload should now be in the map
 					flavorUsagePayload = knownPayloads.get(
 						outFlavorInnerConnection.outFlavorUuid,
 						outFlavorInnerConnection.outUsageUuid,
 						Direction.Out
 					);
-
 					if (!flavorUsagePayload)
-						throw `payload for flavor ${outFlavorInnerConnection.outFlavorUuid} on usage ${outFlavorInnerConnection.outUsageUuid} not found`;
+						throw `out payload for flavor ${outFlavorInnerConnection.outFlavorUuid} on usage ${outFlavorInnerConnection.outUsageUuid} not found`;
+				} else {
+					flavorUsagePayload = knownPayloads.get(flavorUuid, usageUuid, Direction.In);
+					if (!flavorUsagePayload)
+						throw `in payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 				}
+			} else {
+				// fall back on param/default stored in payloads
+				flavorUsagePayload = get(
+					viewState.payloads.getPayload(flavorUuid, usageUuid, Direction.Out)
+				);
+				if (!flavorUsagePayload)
+					throw `out payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 			}
 		}
+
 		return flavorUsagePayload;
 	}
 
@@ -284,15 +287,19 @@ export function cookPayloads(
 
 		// loop each flavor on the usage's ingredient
 		flavors.forEach((flavor) => {
-			const flavorUsagePayload = cookFlavorUsageInPayload(flavor.uuid, usageUuid);
-			knownPayloads.set(flavor.uuid, usageUuid, Direction.In, flavorUsagePayload);
+			if (flavor.directions.includes(Direction.In)) {
+				const flavorUsagePayload = cookFlavorUsageInPayload(flavor.uuid, usageUuid);
+				knownPayloads.set(flavor.uuid, usageUuid, Direction.In, flavorUsagePayload);
+			}
 		});
 
 		let outUsagePayloads: Map<string, Payload<FlavorType>> = new Map();
 
 		flavors.forEach((flavor) => {
-			const flavorUsagePayload = cookFlavorUsageOutPayload(flavor.uuid, usageUuid);
-			outUsagePayloads.set(flavor.uuid, flavorUsagePayload);
+			if (flavor.directions.includes(Direction.Out)) {
+				const flavorUsagePayload = cookFlavorUsageOutPayload(flavor.uuid, usageUuid);
+				outUsagePayloads.set(flavor.uuid, flavorUsagePayload);
+			}
 		});
 
 		outUsagePayloads = applyUsageShader(outUsagePayloads);
@@ -306,15 +313,18 @@ export function cookPayloads(
 	// function works from perspective of main ingredient/usage
 	cookUsage(recipe.focusedUsageUuid);
 
+	for (const node of get(viewState.nodes)) {
+		cookUsage(node.callFor.usageUuid);
+	}
+
 	const dockedFlavors = Array.from(recipe.flavors.values()).filter(
 		(flavor) => flavor.ingredientUuid == recipe.focusedIngredientUuid
 	);
 
 	for (const flavor of dockedFlavors) {
 		// for image out flavors on the main ingredient
-		if (Direction.Out in flavor.directions && flavor.type == FlavorType.Image) {
+		if (flavor.directions.includes(Direction.Out) && flavor.type == FlavorType.Image) {
 			const texture = createTexture(gl);
-
 			drawCanvasFramebuffer(gl, texture);
 		}
 	}

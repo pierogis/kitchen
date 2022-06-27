@@ -54,9 +54,9 @@ export const defaultRecipe: FullRecipe = {
 			connections: [],
 			usages: [
 				{
-					id: 0,
 					uuid: '0',
-					ingredientUuid: '0'
+					ingredientUuid: '0',
+					parentUsageUuid: undefined
 				}
 			]
 		},
@@ -77,9 +77,9 @@ export const defaultRecipe: FullRecipe = {
 			connections: [],
 			usages: [
 				{
-					id: 1,
 					uuid: '1',
-					ingredientUuid: '1'
+					ingredientUuid: '1',
+					parentUsageUuid: '0'
 				}
 			]
 		},
@@ -127,7 +127,8 @@ export const defaultRecipe: FullRecipe = {
 			usages: [
 				{
 					uuid: '2',
-					ingredientUuid: '2'
+					ingredientUuid: '2',
+					parentUsageUuid: '0'
 				}
 			]
 		}

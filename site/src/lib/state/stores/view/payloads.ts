@@ -47,6 +47,8 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 
 	const flavorUsagePayloads = {
 		clear: () => flavorUsagePayloadsMap.clear(),
+		has: (flavorUuid: string, usageUuid: string, direction: Direction) =>
+			flavorUsagePayloadsMap.has([flavorUuid, usageUuid, direction].join(',')),
 		get: (flavorUuid: string, usageUuid: string, direction: Direction) =>
 			flavorUsagePayloadsMap.get([flavorUuid, usageUuid, direction].join(',')),
 		set: (
@@ -61,53 +63,11 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 	};
 
 	recipeState.callsFor.subscribe((currentCallsFor) => {
-		flavorUsagePayloads.clear();
 		// each flavor should have a payload
 		const currentParameters = Array.from(get(recipeState.parameters).values());
 		const currentConnections = Array.from(get(recipeState.connections).values());
 		const currentFlavors = Array.from(get(recipeState.flavors).values());
 		const currentUsages = get(recipeState.usages);
-
-		function addPayload(flavor: Flavor, usage: Usage) {
-			// add flavor to map with params/default
-			const parameter = currentParameters.find(
-				(parameter) => parameter.flavorUuid == flavor.uuid && parameter.usageUuid == usage.uuid
-			);
-
-			const payload: Payload<FlavorType> = parameter?.payload || {
-				type: flavor.type,
-				params: paramsDefaults[flavor.type]
-			};
-
-			const inPayload: Writable<Payload<FlavorType>> = writable(payload);
-			const outPayload: Writable<Payload<FlavorType>> = writable(payload);
-
-			const inMonitor = currentConnections.some(
-				(connection) =>
-					connection.inFlavorUuid == flavor.uuid &&
-					connection.inUsageUuid == usage.uuid &&
-					connection.parentIngredientUuid != usage.ingredientUuid
-			);
-
-			const outMonitor = currentConnections.some(
-				(connection) =>
-					connection.inFlavorUuid == flavor.uuid &&
-					connection.inUsageUuid == usage.uuid &&
-					connection.parentIngredientUuid == usage.ingredientUuid
-			);
-
-			flavorUsagePayloads.set(flavor.uuid, usage.uuid, Direction.In, {
-				...inPayload,
-				monitor: inMonitor,
-				parameterUuid: parameter?.uuid
-			});
-
-			flavorUsagePayloads.set(flavor.uuid, usage.uuid, Direction.Out, {
-				...outPayload,
-				monitor: outMonitor,
-				parameterUuid: parameter?.uuid
-			});
-		}
 
 		// if a entry does not exist for every flavor in current flavors, add
 		for (const callFor of currentCallsFor.values()) {
@@ -116,7 +76,63 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 
 			for (const flavor of currentFlavors.values()) {
 				if (flavor.ingredientUuid == usage.ingredientUuid) {
-					addPayload(flavor, usage);
+					// add flavor to map with params/default
+					const parameter = currentParameters.find(
+						(parameter) => parameter.flavorUuid == flavor.uuid && parameter.usageUuid == usage.uuid
+					);
+
+					const payload: Payload<FlavorType> = parameter?.payload || {
+						type: flavor.type,
+						params: paramsDefaults[flavor.type]
+					};
+					const inMonitor = currentConnections.some(
+						(connection) =>
+							connection.inFlavorUuid == flavor.uuid &&
+							connection.inUsageUuid == usage.uuid &&
+							connection.parentIngredientUuid != usage.ingredientUuid
+					);
+
+					const outMonitor = currentConnections.some(
+						(connection) =>
+							connection.inFlavorUuid == flavor.uuid &&
+							connection.inUsageUuid == usage.uuid &&
+							connection.parentIngredientUuid == usage.ingredientUuid
+					);
+
+					let inPayload: Writable<Payload<FlavorType>> | undefined = flavorUsagePayloads.get(
+						flavor.uuid,
+						usage.uuid,
+						Direction.In
+					);
+					let outPayload: Writable<Payload<FlavorType>> | undefined = flavorUsagePayloads.get(
+						flavor.uuid,
+						usage.uuid,
+						Direction.Out
+					);
+
+					if (!inPayload) {
+						inPayload = writable(payload);
+					} else {
+						setPayload(flavor.uuid, usage.uuid, Direction.In, payload);
+					}
+					if (!outPayload) {
+						outPayload = writable(payload);
+					} else {
+						setPayload(flavor.uuid, usage.uuid, Direction.Out, payload);
+					}
+
+					// add or update payload
+					flavorUsagePayloads.set(flavor.uuid, usage.uuid, Direction.In, {
+						...inPayload,
+						monitor: inMonitor,
+						parameterUuid: parameter?.uuid
+					});
+
+					flavorUsagePayloads.set(flavor.uuid, usage.uuid, Direction.Out, {
+						...outPayload,
+						monitor: outMonitor,
+						parameterUuid: parameter?.uuid
+					});
 				}
 			}
 		}
@@ -138,7 +154,11 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 		const payload = flavorUsagePayloads.get(flavorUuid, usageUuid, direction);
 		if (!payload) throw `payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 
-		payload.set(newPayload);
+		const params = get(payload).params;
+
+		if (params != newPayload.params) {
+			payload.set(newPayload);
+		}
 	}
 
 	return {

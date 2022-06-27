@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { get, type Readable, type Writable } from 'svelte/store';
+	import { derived, get, type Readable, type Writable } from 'svelte/store';
 
 	import { v4 as uuid } from 'uuid';
 
@@ -75,11 +75,13 @@
 	if (flavor.type == FlavorType.Color) {
 		options = { ...options, view: 'color', color: { alpha: true } };
 	}
-	const params = { [flavor.name]: $payload.params };
+	const paramsStore = derived(payload, ($payload) => {
+		return { [flavor.name]: $payload.params };
+	});
 </script>
 
 {#if payload.monitor}
-	<Monitor {index} {folder} {params} key={flavor.name} let:monitorElement>
+	<Monitor {index} {folder} {paramsStore} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack
 				parentElement={monitorElement}
@@ -89,7 +91,7 @@
 		{/each}
 	</Monitor>
 {:else}
-	<Input {index} {folder} {params} {options} {onChange} key={flavor.name} let:inputElement>
+	<Input {index} {folder} {paramsStore} {options} {onChange} key={flavor.name} let:inputElement>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack
 				parentElement={inputElement}
