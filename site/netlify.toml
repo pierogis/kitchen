@@ -1,0 +1,7 @@
+[build]
+  command = "prisma generate && prisma migrate deploy && svelte-kit build"
+  publish = "public/"
+
+[functions]
+  external_node_modules = ["@prisma/client"]
+  node_bundler = "esbuild"
