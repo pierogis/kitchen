@@ -1,5 +1,17 @@
-import type { Direction, FlavorType } from '@prisma/client';
-export { Direction, FlavorType } from '@prisma/client';
+export const FlavorType = {
+	Number: 'Number',
+	Color: 'Color',
+	Text: 'Text',
+	Image: 'Image'
+};
+
+export type FlavorType = typeof FlavorType[keyof typeof FlavorType];
+
+export const Direction = {
+	In: 'In',
+	Out: 'Out'
+};
+export type Direction = typeof Direction[keyof typeof Direction];
 
 // types with for api contract
 export interface Flavor {

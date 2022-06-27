@@ -1,12 +1,10 @@
 <script lang="ts" context="module">
-	import { dev } from '$app/env';
-
 	import type { Load } from './__types/__error';
 
 	export const load: Load = ({ error, status }) => {
-		const message = `${status}${dev && error ? `: ${error.message}` : ''}`;
-		const stack = dev && error ? error.stack : '';
-		dev && console.error(message);
+		const message = `${status}${error ? `: ${error.message}` : ''}`;
+		const stack = error ? error.stack : '';
+		console.error(message);
 		return {
 			props: {
 				message,
