@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FlavorType {
+  Number
+  Color
+  Text
+  Image
+}
+
+enum Direction {
+  In
+  Out
+}
+
+model Flavor {
+  id             Int          @id @default(autoincrement())
+  uuid           String       @unique @db.Uuid
+  ingredientUuid String       @db.Uuid
+  type           FlavorType
+  name           String       @db.VarChar(255)
+  options        Json?
+  ingredient     Ingredient   @relation(fields: [ingredientUuid], references: [uuid])
+  directions     Direction[]
+  inConnection   Connection?  @relation("Connection_inFlavor")
+  outConnections Connection[] @relation("Connection_outFlavor")
+  shader         Shader?      @relation("Shader_imageFlavor")
+  parameter      Parameter?   @relation("Parameter_flavor")
+}
+
+model Ingredient {
+  id                   Int          @id @default(autoincrement())
+  uuid                 String       @unique @db.Uuid
+  name                 String       @db.VarChar(255)
+  flavors              Flavor[]
+  connections          Connection[]
+  shader               Shader?      @relation("Shader_ingredient")
+  parentIngredientUuid String?      @db.Uuid
+  parentIngredient     Ingredient?  @relation("Ingredient_parentIngredient", fields: [parentIngredientUuid], references: [uuid])
+  subIngredients       Ingredient[] @relation("Ingredient_parentIngredient")
+  usages               Usage[]      @relation("Usage_ingredient")
+}
+
+model Usage {
+  id              Int          @id @default(autoincrement())
+  uuid            String       @unique @db.Uuid
+  ingredientUuid  String       @db.Uuid
+  ingredient      Ingredient   @relation("Usage_ingredient", fields: [ingredientUuid], references: [uuid])
+  outConnections  Connection[] @relation("Connection_outUsage")
+  inConnections   Connection[] @relation("Connection_inUsage")
+  parentUsageUuid String?      @db.Uuid
+  parentUsage     Usage?       @relation("Usage_parentUsage", fields: [parentUsageUuid], references: [uuid])
+  subUsages       Usage[]      @relation("Usage_parentUsage")
+  callFor             CallFor?    @relation("CallFor_usage")
+  parameters     Parameter[] @relation("Parameter_usage")
+}
+
+model Connection {
+  id                   Int        @id @default(autoincrement())
+  uuid                 String     @unique @db.Uuid
+  parentIngredientUuid String     @db.Uuid
+  parentIngredient     Ingredient @relation(fields: [parentIngredientUuid], references: [uuid])
+  inFlavorUuid         String     @unique @db.Uuid
+  inFlavor             Flavor     @relation("Connection_inFlavor", fields: [inFlavorUuid], references: [uuid])
+  outFlavorUuid        String     @db.Uuid
+  outFlavor            Flavor     @relation("Connection_outFlavor", fields: [outFlavorUuid], references: [uuid])
+  inUsageUuid          String     @unique @db.Uuid
+  inUsage              Usage      @relation("Connection_inUsage", fields: [inUsageUuid], references: [uuid])
+  outUsageUuid         String     @db.Uuid
+  outUsage             Usage      @relation("Connection_outUsage", fields: [outUsageUuid], references: [uuid])
+  flavorType           FlavorType
+
+  @@unique([parentIngredientUuid, inFlavorUuid, outFlavorUuid, inUsageUuid, outUsageUuid])
+}
+
+model Recipe {
+  id              Int         @id @default(autoincrement())
+  uuid            String      @unique @db.Uuid
+  mainCallForUuid String      @unique @db.Uuid
+  mainCallFor     CallFor     @relation("Recipe_mainCallFor", fields: [mainCallForUuid], references: [uuid])
+  parameters      Parameter[] @relation("Parameter_recipe")
+  shaders         Shader[]    @relation("Shader_recipe")
+  callsFor        CallFor[]   @relation("CallFor_recipe")
+}
+
+model Parameter {
+  id          Int     @id @default(autoincrement())
+  uuid        String  @unique @db.Uuid
+  number      Float?
+  text        String? @db.VarChar(511)
+  color       String? @db.VarChar(6)
+  image       String? @db.VarChar(511)
+  recipeUuid  String
+  recipe      Recipe  @relation("Parameter_recipe", fields: [recipeUuid], references: [uuid])
+  flavorUuid  String  @unique
+  flavor      Flavor  @relation("Parameter_flavor", fields: [flavorUuid], references: [uuid])
+  usageUuid String
+  usage     Usage @relation("Parameter_usage", fields: [usageUuid], references: [uuid])
+
+  @@unique([recipeUuid, flavorUuid])
+}
+
+model Shader {
+  id              Int        @id @default(autoincrement())
+  uuid            String     @unique @db.Uuid
+  recipeUuid      String     @unique @db.Uuid
+  recipe          Recipe     @relation("Shader_recipe", fields: [recipeUuid], references: [uuid])
+  ingredientUuid  String     @unique @db.Uuid
+  ingredient      Ingredient @relation("Shader_ingredient", fields: [ingredientUuid], references: [uuid])
+  imageFlavorUuid String     @unique @db.Uuid
+  imageFlavor     Flavor     @relation("Shader_imageFlavor", fields: [imageFlavorUuid], references: [uuid])
+  vertexSource    String     @db.VarChar(16383)
+  fragmentSource  String     @db.VarChar(16383)
+}
+
+model CallFor {
+  id             Int         @id @default(autoincrement())
+  uuid           String      @unique @db.Uuid
+  mainRecipe     Recipe?     @relation("Recipe_mainCallFor")
+  recipeUuid     String      @db.Uuid
+  recipe         Recipe      @relation("CallFor_recipe", fields: [recipeUuid], references: [uuid], onDelete: Cascade)
+  usageUuid String      @db.Uuid
+  usage     Usage  @relation("CallFor_usage", fields: [usageUuid], references: [uuid])
+  location       Location?   @relation("Location_callFor")
+}
+
+model Location {
+  id          Int     @id @default(autoincrement())
+  callForUuid String  @unique @db.Uuid
+  callFor     CallFor @relation("Location_callFor", fields: [callForUuid], references: [uuid], onDelete: Cascade)
+  x           Int
+  y           Int
+}

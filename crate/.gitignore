@@ -1,0 +1,6 @@
+target/
+*.rs.bk
+/pkg
+/wasm-pack.log
+.cache
+.parcel-cache
