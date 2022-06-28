@@ -86,7 +86,7 @@
 		position: relative;
 		width: var(--rack-width);
 		height: var(--rack-height);
-		transition: width 300ms, margin 300ms, left 300ms, right 300ms;
+		transition: width 100ms, margin 100ms, left 100ms, right 100ms;
 	}
 
 	.terminal-rack:hover {
@@ -99,7 +99,7 @@
 		justify-content: space-evenly;
 
 		width: 10px;
-		transition: width 300ms;
+		transition: width 100ms;
 	}
 
 	.terminals-container.expanded {

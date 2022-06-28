@@ -58,6 +58,8 @@
 	cables={viewState.cables}
 	terminalsCoordinates={viewState.terminalsCoordinates}
 	liveTerminal={viewState.liveTerminal}
+	width={innerWidth}
+	height={innerHeight}
 />
 
 <Pan

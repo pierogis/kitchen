@@ -19,6 +19,11 @@
 	export let cables: Readable<Cable[]>;
 	export let terminalsCoordinates: TerminalsCoordinatesState;
 	export let liveTerminal: Readable<Terminal | undefined>;
+
+	export let width: number;
+	export let height: number;
+
+	const pathStrokeWidth = 2;
 </script>
 
 {#each $nodes as node (node.callFor.uuid)}
@@ -34,12 +39,14 @@
 	<LiveTerminal terminal={$liveTerminal} />
 {/if}
 
-{#each $cables as cable (cable.connectionUuid)}
-	<CableComponent
-		outCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
-		inCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
-	/>
-{/each}
+<svg style:--path-stroke-width="{pathStrokeWidth}px" {width} {height}>
+	{#each $cables as cable (cable.connectionUuid)}
+		<CableComponent
+			outCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
+			inCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
+		/>
+	{/each}
+</svg>
 
 <Dock
 	direction={Direction.In}
@@ -51,3 +58,10 @@
 	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.In))}
 	focusedUsageUuid={$focusedUsageUuid}
 />
+
+<style>
+	svg {
+		padding: var(--path-stroke-width);
+		margin: calc(0px - var(--path-stroke-width));
+	}
+</style>
