@@ -1,39 +1,48 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
-const createFlavor: ActionHandler<ActionType.CreateFlavor, ActionType.DeleteFlavor> = (
+const createFlavors: ActionHandler<ActionType.CreateFlavors, ActionType.DeleteFlavors> = (
 	state,
 	params
 ) => {
-	state.flavors.set(params.flavor.uuid, params.flavor);
+	const uuids = params.flavors.map((flavor) => {
+		state.flavors.set(flavor.uuid, flavor);
+
+		return flavor.uuid;
+	});
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.DeleteFlavor,
+			type: ActionType.DeleteFlavors,
 			params: {
-				uuid: params.flavor.uuid
+				uuids
 			}
 		}
 	};
 };
 
-const deleteFlavor: ActionHandler<ActionType.DeleteFlavor, ActionType.CreateFlavor> = (
+const deleteFlavors: ActionHandler<ActionType.DeleteFlavors, ActionType.CreateFlavors> = (
 	state,
 	params
 ) => {
-	// delete flavors
-	const flavor = state.flavors.get(params.uuid);
-	if (!flavor) throw `Flavor ${params.uuid} does not exist`;
-	state.flavors.delete(params.uuid);
+	const flavors = params.uuids.map((uuid) => {
+		const flavor = state.flavors.get(uuid);
+		if (!flavor) throw `flavor ${uuid} does not exist`;
+
+		// delete flavor
+		state.flavors.delete(uuid);
+
+		return flavor;
+	});
 
 	return {
 		state,
-		undoAction: { type: ActionType.CreateFlavor, params: { flavor } }
+		undoAction: { type: ActionType.CreateFlavors, params: { flavors } }
 	};
 };
 
 export function registerFlavorHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateFlavor, createFlavor);
-	recipeState.register(ActionType.DeleteFlavor, deleteFlavor);
+	recipeState.register(ActionType.CreateFlavors, createFlavors);
+	recipeState.register(ActionType.DeleteFlavors, deleteFlavors);
 }

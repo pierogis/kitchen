@@ -7,7 +7,7 @@
 	import type { Coordinates } from '@types';
 	import type { ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
-	import { dispatchCreateIngredientActions } from '@state/batch/ingredient';
+	import { dispatchIngredientCreationActions } from '@state/batch/ingredient';
 
 	import CursorCircle from '@components/CursorCircle.svelte';
 
@@ -51,7 +51,7 @@
 					window.removeEventListener('mouseup', handleMouseUp);
 					$pressing = false;
 					// notify parent that there has been a long press
-					dispatchCreateIngredientActions(recipeState, { x: event.clientX, y: event.clientY });
+					dispatchIngredientCreationActions(recipeState, { x: event.clientX, y: event.clientY });
 				}, touchDuration);
 			}
 		}

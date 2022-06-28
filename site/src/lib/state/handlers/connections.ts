@@ -1,66 +1,95 @@
 import { ActionType, type ActionHandler } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
-const createConnection: ActionHandler<ActionType.CreateConnection, ActionType.DeleteConnection> = (
-	state,
-	params
-) => {
-	state.connections.set(params.connection.uuid, params.connection);
+const createConnections: ActionHandler<
+	ActionType.CreateConnections,
+	ActionType.DeleteConnections
+> = (state, params) => {
+	for (const connection of params.connections) {
+		state.connections.set(connection.uuid, connection);
+	}
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.DeleteConnection,
+			type: ActionType.DeleteConnections,
 			params: {
-				uuid: params.connection.uuid
+				uuids: params.connections.map((connection) => connection.uuid)
 			}
 		}
 	};
 };
 
-const updateConnection: ActionHandler<ActionType.UpdateConnection, ActionType.UpdateConnection> = (
-	state,
-	params
-) => {
-	const oldConnection = state.connections.get(params.connection.uuid);
-	if (!oldConnection) {
-		throw `Connection ${params.connection.uuid} does not exist`;
-	}
+const updateConnections: ActionHandler<
+	ActionType.UpdateConnections,
+	ActionType.UpdateConnections
+> = (state, params) => {
+	const oldConnections = params.connections.map((connection) => {
+		const oldConnection = state.connections.get(connection.uuid);
+		if (!oldConnection) {
+			throw `connection ${connection.uuid} does not exist`;
+		}
 
-	state.connections.set(params.connection.uuid, params.connection);
+		state.connections.set(connection.uuid, connection);
+		return oldConnection;
+	});
+
 	return {
 		state,
 		undoAction: {
-			type: ActionType.UpdateConnection,
-			params: { connection: oldConnection }
+			type: ActionType.UpdateConnections,
+			params: { connections: oldConnections }
 		}
 	};
 };
 
-const deleteConnection: ActionHandler<ActionType.DeleteConnection, ActionType.CreateConnection> = (
-	state,
-	params
-) => {
-	// delete callFor
-	const connection = state.connections.get(params.uuid);
+const deleteConnections: ActionHandler<
+	ActionType.DeleteConnections,
+	ActionType.CreateConnections
+> = (state, params) => {
+	const connections = params.uuids.map((uuid) => {
+		const connection = state.connections.get(uuid);
+		if (!connection) throw `connection ${uuid} not found`;
 
-	if (connection) {
-	} else {
-		throw `Connection ${params.uuid} does not exist`;
-	}
-	state.connections.delete(connection.uuid);
+		// delete connection
+		state.connections.delete(uuid);
+
+		return connection;
+	});
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.CreateConnection,
-			params: { connection }
+			type: ActionType.CreateConnections,
+			params: { connections }
 		}
+	};
+};
+
+const deleteUsages: ActionHandler<ActionType.DeleteUsages, ActionType.CreateConnections> = (
+	state,
+	params
+) => {
+	const connections = [];
+	for (const uuid of params.uuids) {
+		for (const connection of state.connections.values()) {
+			if (connection.inUsageUuid == uuid || connection.outUsageUuid == uuid) {
+				// this connection uses this usage
+				state.connections.delete(connection.uuid);
+				connections.push(connection);
+			}
+		}
+	}
+
+	return {
+		state,
+		undoAction: { type: ActionType.CreateConnections, params: { connections } }
 	};
 };
 
 export function registerConnectionHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateConnection, createConnection);
-	recipeState.register(ActionType.CreateConnection, createConnection);
-	recipeState.register(ActionType.DeleteConnection, deleteConnection);
+	recipeState.register(ActionType.CreateConnections, createConnections);
+	recipeState.register(ActionType.UpdateConnections, updateConnections);
+	recipeState.register(ActionType.DeleteConnections, deleteConnections);
+	recipeState.register(ActionType.DeleteUsages, deleteUsages);
 }

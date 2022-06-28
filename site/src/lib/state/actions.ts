@@ -2,41 +2,41 @@ import type { CallFor, Connection, Flavor, Ingredient, Location, Parameter, Usag
 import type { FlatRecipe } from '@recipe';
 
 export enum ActionType {
-	CreateIngredient,
-	DeleteIngredient,
-	CreateFlavor,
-	DeleteFlavor,
-	CreateUsage,
-	DeleteUsage,
-	CreateCallFor,
-	DeleteCallFor,
-	CreateLocation,
-	DeleteLocation,
-	CreateConnection,
-	UpdateConnection,
-	DeleteConnection,
-	CreateParameter,
-	UpdateParameter,
-	DeleteParameter
+	CreateIngredients,
+	DeleteIngredients,
+	CreateFlavors,
+	DeleteFlavors,
+	CreateUsages,
+	DeleteUsages,
+	CreateCallsFor,
+	DeleteCallsFor,
+	CreateLocations,
+	DeleteLocations,
+	CreateConnections,
+	UpdateConnections,
+	DeleteConnections,
+	CreateParameters,
+	UpdateParameters,
+	DeleteParameters
 }
 
 type ActionParamsMapper = {
-	[ActionType.CreateIngredient]: { ingredient: Ingredient };
-	[ActionType.DeleteIngredient]: { uuid: string };
-	[ActionType.CreateFlavor]: { flavor: Flavor };
-	[ActionType.DeleteFlavor]: { uuid: string };
-	[ActionType.CreateUsage]: { usage: Usage };
-	[ActionType.DeleteUsage]: { uuid: string };
-	[ActionType.CreateCallFor]: { callFor: CallFor };
-	[ActionType.DeleteCallFor]: { uuid: string };
-	[ActionType.CreateLocation]: { location: Location };
-	[ActionType.DeleteLocation]: { uuid: string };
-	[ActionType.CreateConnection]: { connection: Connection };
-	[ActionType.UpdateConnection]: { connection: Connection };
-	[ActionType.DeleteConnection]: { uuid: string };
-	[ActionType.CreateParameter]: { parameter: Parameter };
-	[ActionType.UpdateParameter]: { parameter: Parameter };
-	[ActionType.DeleteParameter]: { uuid: string };
+	[ActionType.CreateIngredients]: { ingredients: Ingredient[] };
+	[ActionType.DeleteIngredients]: { uuids: string[] };
+	[ActionType.CreateFlavors]: { flavors: Flavor[] };
+	[ActionType.DeleteFlavors]: { uuids: string[] };
+	[ActionType.CreateUsages]: { usages: Usage[] };
+	[ActionType.DeleteUsages]: { uuids: string[] };
+	[ActionType.CreateCallsFor]: { callsFor: CallFor[] };
+	[ActionType.DeleteCallsFor]: { uuids: string[] };
+	[ActionType.CreateLocations]: { locations: Location[] };
+	[ActionType.DeleteLocations]: { uuids: string[] };
+	[ActionType.CreateConnections]: { connections: Connection[] };
+	[ActionType.UpdateConnections]: { connections: Connection[] };
+	[ActionType.DeleteConnections]: { uuids: string[] };
+	[ActionType.CreateParameters]: { parameters: Parameter[] };
+	[ActionType.UpdateParameters]: { parameters: Parameter[] };
+	[ActionType.DeleteParameters]: { uuids: string[] };
 };
 
 export type ActionParams<T> = T extends ActionType ? ActionParamsMapper[T] : never;

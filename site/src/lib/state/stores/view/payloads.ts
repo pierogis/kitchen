@@ -5,7 +5,7 @@ import {
 	FlavorType,
 	type Flavor,
 	type Payload,
-	type PayloadParams,
+	type PayloadValue,
 	type Usage
 } from '@types';
 import type { RecipeState } from '@recipe';
@@ -28,8 +28,8 @@ export type PayloadsState = {
 };
 
 export function createPayloads(recipeState: RecipeState): PayloadsState {
-	const paramsDefaults: {
-		[flavorType in FlavorType]: PayloadParams<flavorType>;
+	const valueDefaults: {
+		[flavorType in FlavorType]: PayloadValue<flavorType>;
 	} = {
 		[FlavorType.Color]: '#0088ff',
 		[FlavorType.Image]: '',
@@ -76,14 +76,14 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 
 			for (const flavor of currentFlavors.values()) {
 				if (flavor.ingredientUuid == usage.ingredientUuid) {
-					// add flavor to map with params/default
+					// add flavor to map with param/default
 					const parameter = currentParameters.find(
 						(parameter) => parameter.flavorUuid == flavor.uuid && parameter.usageUuid == usage.uuid
 					);
 
 					const payload: Payload<FlavorType> = parameter?.payload || {
 						type: flavor.type,
-						params: paramsDefaults[flavor.type]
+						value: valueDefaults[flavor.type]
 					};
 					const inMonitor = currentConnections.some(
 						(connection) =>
@@ -154,9 +154,9 @@ export function createPayloads(recipeState: RecipeState): PayloadsState {
 		const payload = flavorUsagePayloads.get(flavorUuid, usageUuid, direction);
 		if (!payload) throw `payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 
-		const params = get(payload).params;
+		const value = get(payload).value;
 
-		if (params != newPayload.params) {
+		if (value != newPayload.value) {
 			payload.set(newPayload);
 		}
 	}

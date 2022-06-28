@@ -33,19 +33,21 @@
 	if (!payload.monitor) {
 		onChange = (ev: TpChangeEvent<any>) => {
 			if (!payload.parameterUuid) {
-				const createParameterAction: Action<ActionType.CreateParameter> = {
-					type: ActionType.CreateParameter,
+				const createParameterAction: Action<ActionType.CreateParameters> = {
+					type: ActionType.CreateParameters,
 					params: {
-						parameter: {
-							uuid: uuid(),
-							payload: {
-								type: flavor.type,
-								params: ev.value
-							},
-							recipeUuid: get(recipeState.recipeUuid),
-							flavorUuid: flavor.uuid,
-							usageUuid: usageUuid
-						}
+						parameters: [
+							{
+								uuid: uuid(),
+								payload: {
+									type: flavor.type,
+									value: ev.value
+								},
+								recipeUuid: get(recipeState.recipeUuid),
+								flavorUuid: flavor.uuid,
+								usageUuid: usageUuid
+							}
+						]
 					}
 				};
 				recipeState.dispatch(createParameterAction);
@@ -53,16 +55,18 @@
 				const parameter = get(recipeState.parameters).get(payload.parameterUuid);
 
 				if (!parameter) throw `parameter ${payload.parameterUuid} not found`;
-				const updateParameterAction: Action<ActionType.UpdateParameter> = {
-					type: ActionType.UpdateParameter,
+				const updateParameterAction: Action<ActionType.UpdateParameters> = {
+					type: ActionType.UpdateParameters,
 					params: {
-						parameter: {
-							...parameter,
-							payload: {
-								type: get(payload).type,
-								params: ev.value
+						parameters: [
+							{
+								...parameter,
+								payload: {
+									type: get(payload).type,
+									value: ev.value
+								}
 							}
-						}
+						]
 					}
 				};
 				recipeState.dispatch(updateParameterAction);
@@ -76,7 +80,7 @@
 		options = { ...options, view: 'color', color: { alpha: true } };
 	}
 	const paramsStore = derived(payload, ($payload) => {
-		return { [flavor.name]: $payload.params };
+		return { [flavor.name]: $payload.value };
 	});
 </script>
 

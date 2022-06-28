@@ -1,40 +1,48 @@
 import { ActionType, type ActionHandler } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
-const createIngredient: ActionHandler<ActionType.CreateIngredient, ActionType.DeleteIngredient> = (
-	state,
-	params
-) => {
-	state.ingredients.set(params.ingredient.uuid, params.ingredient);
+const createIngredients: ActionHandler<
+	ActionType.CreateIngredients,
+	ActionType.DeleteIngredients
+> = (state, params) => {
+	const uuids = params.ingredients.map((ingredient) => {
+		state.ingredients.set(ingredient.uuid, ingredient);
+
+		return ingredient.uuid;
+	});
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.DeleteIngredient,
-			params: { uuid: params.ingredient.uuid }
+			type: ActionType.DeleteIngredients,
+			params: { uuids }
 		}
 	};
 };
 
-const deleteIngredient: ActionHandler<ActionType.DeleteIngredient, ActionType.CreateIngredient> = (
-	state,
-	params
-) => {
-	// delete ingredient
-	const ingredient = state.ingredients.get(params.uuid);
-	if (!ingredient) throw '';
-	state.ingredients.delete(ingredient.uuid);
+const deleteIngredients: ActionHandler<
+	ActionType.DeleteIngredients,
+	ActionType.CreateIngredients
+> = (state, params) => {
+	const ingredients = params.uuids.map((uuid) => {
+		const ingredient = state.ingredients.get(uuid);
+		if (!ingredient) throw 'ingredient ${uuid} does not exist';
+
+		// delete ingredient
+		state.ingredients.delete(uuid);
+		return ingredient;
+	});
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.CreateIngredient,
-			params: { ingredient }
+			type: ActionType.CreateIngredients,
+			params: { ingredients }
 		}
 	};
 };
 
 export function registerIngredientHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateIngredient, createIngredient);
-	recipeState.register(ActionType.DeleteIngredient, deleteIngredient);
+	recipeState.register(ActionType.CreateIngredients, createIngredients);
+	recipeState.register(ActionType.DeleteIngredients, deleteIngredients);
 }

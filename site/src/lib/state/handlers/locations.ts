@@ -1,39 +1,47 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
-const createLocation: ActionHandler<ActionType.CreateLocation, ActionType.DeleteLocation> = (
+const createLocations: ActionHandler<ActionType.CreateLocations, ActionType.DeleteLocations> = (
 	state,
 	params
 ) => {
-	state.locations.set(params.location.uuid, params.location);
+	const uuids = params.locations.map((location) => {
+		state.locations.set(location.uuid, location);
+
+		return location.uuid;
+	});
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.DeleteLocation,
+			type: ActionType.DeleteLocations,
 			params: {
-				uuid: params.location.uuid
+				uuids
 			}
 		}
 	};
 };
 
-const deleteLocation: ActionHandler<ActionType.DeleteLocation, ActionType.CreateLocation> = (
+const deleteLocations: ActionHandler<ActionType.DeleteLocations, ActionType.CreateLocations> = (
 	state,
 	params
 ) => {
-	// delete location
-	const location = state.locations.get(params.uuid);
-	if (!location) throw `Location ${params.uuid} does not exist`;
-	state.locations.delete(params.uuid);
+	const locations = params.uuids.map((uuid) => {
+		const location = state.locations.get(uuid);
+		if (!location) throw 'location ${uuid} does not exist';
+
+		// delete location
+		state.locations.delete(uuid);
+		return location;
+	});
 
 	return {
 		state,
-		undoAction: { type: ActionType.CreateLocation, params: { location } }
+		undoAction: { type: ActionType.CreateLocations, params: { locations } }
 	};
 };
 
 export function registerLocationHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateLocation, createLocation);
-	recipeState.register(ActionType.DeleteLocation, deleteLocation);
+	recipeState.register(ActionType.CreateLocations, createLocations);
+	recipeState.register(ActionType.DeleteLocations, deleteLocations);
 }

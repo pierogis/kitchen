@@ -1,39 +1,47 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
-const createUsage: ActionHandler<ActionType.CreateUsage, ActionType.DeleteUsage> = (
+const createUsages: ActionHandler<ActionType.CreateUsages, ActionType.DeleteUsages> = (
 	state,
 	params
 ) => {
-	state.usages.set(params.usage.uuid, params.usage);
+	const uuids = params.usages.map((usage) => {
+		state.usages.set(usage.uuid, usage);
+
+		return usage.uuid;
+	});
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.DeleteUsage,
+			type: ActionType.DeleteUsages,
 			params: {
-				uuid: params.usage.uuid
+				uuids
 			}
 		}
 	};
 };
 
-const deleteUsage: ActionHandler<ActionType.DeleteUsage, ActionType.CreateUsage> = (
+const deleteUsages: ActionHandler<ActionType.DeleteUsages, ActionType.CreateUsages> = (
 	state,
 	params
 ) => {
-	// delete usage
-	const usage = state.usages.get(params.uuid);
-	if (!usage) throw `usage ${params.uuid} not found`;
-	state.usages.delete(params.uuid);
+	const usages = params.uuids.map((uuid) => {
+		const usage = state.usages.get(uuid);
+		if (!usage) throw 'usage ${uuid} does not exist';
+
+		// delete usage
+		state.usages.delete(uuid);
+		return usage;
+	});
 
 	return {
 		state,
-		undoAction: { type: ActionType.CreateUsage, params: { usage } }
+		undoAction: { type: ActionType.CreateUsages, params: { usages } }
 	};
 };
 
 export function registerUsageHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateUsage, createUsage);
-	recipeState.register(ActionType.DeleteUsage, deleteUsage);
+	recipeState.register(ActionType.CreateUsages, createUsages);
+	recipeState.register(ActionType.DeleteUsages, deleteUsages);
 }

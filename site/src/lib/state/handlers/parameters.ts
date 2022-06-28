@@ -1,59 +1,71 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
-const createParameter: ActionHandler<ActionType.CreateParameter, ActionType.DeleteParameter> = (
+const createParameters: ActionHandler<ActionType.CreateParameters, ActionType.DeleteParameters> = (
 	state,
 	params
 ) => {
-	state.parameters.set(params.parameter.uuid, params.parameter);
+	const uuids = params.parameters.map((parameter) => {
+		state.parameters.set(parameter.uuid, parameter);
+
+		return parameter.uuid;
+	});
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.DeleteParameter,
+			type: ActionType.DeleteParameters,
 			params: {
-				uuid: params.parameter.uuid
+				uuids
 			}
 		}
 	};
 };
 
-const updateParameter: ActionHandler<ActionType.UpdateParameter, ActionType.UpdateParameter> = (
+const updateParameters: ActionHandler<ActionType.UpdateParameters, ActionType.UpdateParameters> = (
 	state,
 	params
 ) => {
-	const oldParameter = state.parameters.get(params.parameter.uuid);
+	const parameters = params.parameters.map((parameter) => {
+		const oldParameter = state.parameters.get(parameter.uuid);
+		if (!oldParameter) {
+			throw `parameter ${parameter.uuid} does not exist`;
+		}
 
-	if (!oldParameter) throw `parameter ${params.parameter.uuid} not found`;
-
-	state.parameters.set(params.parameter.uuid, params.parameter);
+		state.parameters.set(parameter.uuid, parameter);
+		return oldParameter;
+	});
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.UpdateParameter,
-			params: { parameter: oldParameter }
+			type: ActionType.UpdateParameters,
+			params: { parameters }
 		}
 	};
 };
 
-const deleteParameter: ActionHandler<ActionType.DeleteParameter, ActionType.CreateParameter> = (
+const deleteParameters: ActionHandler<ActionType.DeleteParameters, ActionType.CreateParameters> = (
 	state,
 	params
 ) => {
-	// delete parameter
-	const parameter = state.parameters.get(params.uuid);
-	if (!parameter) throw `Parameter ${params.uuid} does not exist`;
-	state.parameters.delete(params.uuid);
+	const parameters = params.uuids.map((uuid) => {
+		const parameter = state.parameters.get(uuid);
+		if (!parameter) throw 'parameter ${uuid} does not exist';
+
+		// delete parameter
+		state.parameters.delete(uuid);
+		return parameter;
+	});
 
 	return {
 		state,
-		undoAction: { type: ActionType.CreateParameter, params: { parameter } }
+		undoAction: { type: ActionType.CreateParameters, params: { parameters } }
 	};
 };
 
 export function registerParameterHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateParameter, createParameter);
-	recipeState.register(ActionType.UpdateParameter, updateParameter);
-	recipeState.register(ActionType.DeleteParameter, deleteParameter);
+	recipeState.register(ActionType.CreateParameters, createParameters);
+	recipeState.register(ActionType.UpdateParameters, updateParameters);
+	recipeState.register(ActionType.DeleteParameters, deleteParameters);
 }

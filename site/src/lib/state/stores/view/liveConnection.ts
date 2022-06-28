@@ -75,7 +75,7 @@ export function createLiveConnection(
 		const liveConnection = get(store);
 
 		if (liveConnection) {
-			throw 'There is already a live connection';
+			throw 'there is already a live connection';
 		}
 		if (terminal.flavorUuid && terminal.usageUuid) {
 			const anchorDirection = terminal.direction == Direction.In ? Direction.Out : Direction.In;
@@ -83,10 +83,11 @@ export function createLiveConnection(
 			const connection = get(recipeState.connections).get(terminal.connectionUuid);
 
 			if (connection) {
+				// dispatch a delete action
 				recipeState.dispatch({
-					type: ActionType.DeleteConnection,
+					type: ActionType.DeleteConnections,
 					params: {
-						uuid: terminal.connectionUuid
+						uuids: [terminal.connectionUuid]
 					}
 				});
 
@@ -131,34 +132,36 @@ export function createLiveConnection(
 				let connectionUuid = liveConnection.connectionUuid;
 
 				if (existingConnectionUuid) {
-					actionType = ActionType.UpdateConnection;
+					actionType = ActionType.UpdateConnections;
 					connectionUuid = existingConnectionUuid;
 				} else {
-					actionType = ActionType.CreateConnection;
+					actionType = ActionType.CreateConnections;
 				}
 
-				const params: ActionParams<ActionType.CreateConnection> = {
-					connection: {
-						uuid: connectionUuid,
-						parentIngredientUuid: get(focusedIngredientUuid),
-						inFlavorUuid:
-							liveConnection.anchorDirection == Direction.In
-								? liveConnection.anchorFlavorUuid
-								: targetFlavorUuid,
-						outFlavorUuid:
-							liveConnection.anchorDirection == Direction.In
-								? targetFlavorUuid
-								: liveConnection.anchorFlavorUuid,
-						flavorType: liveConnection.flavorType,
-						inUsageUuid:
-							liveConnection.anchorDirection == Direction.In
-								? liveConnection.anchorUsageUuid
-								: targetUsageUuid,
-						outUsageUuid:
-							liveConnection.anchorDirection == Direction.In
-								? targetUsageUuid
-								: liveConnection.anchorUsageUuid
-					}
+				const params: ActionParams<ActionType.CreateConnections> = {
+					connections: [
+						{
+							uuid: connectionUuid,
+							parentIngredientUuid: get(focusedIngredientUuid),
+							inFlavorUuid:
+								liveConnection.anchorDirection == Direction.In
+									? liveConnection.anchorFlavorUuid
+									: targetFlavorUuid,
+							outFlavorUuid:
+								liveConnection.anchorDirection == Direction.In
+									? targetFlavorUuid
+									: liveConnection.anchorFlavorUuid,
+							flavorType: liveConnection.flavorType,
+							inUsageUuid:
+								liveConnection.anchorDirection == Direction.In
+									? liveConnection.anchorUsageUuid
+									: targetUsageUuid,
+							outUsageUuid:
+								liveConnection.anchorDirection == Direction.In
+									? targetUsageUuid
+									: liveConnection.anchorUsageUuid
+						}
+					]
 				};
 
 				recipeState.dispatch({
@@ -169,7 +172,7 @@ export function createLiveConnection(
 
 			store.set(undefined);
 		} else {
-			throw 'There is no live connection';
+			throw 'there is no live connection';
 		}
 	}
 
@@ -179,7 +182,7 @@ export function createLiveConnection(
 		if (liveConnection) {
 			store.set(undefined);
 		} else {
-			throw 'There is no live connection';
+			throw 'there is no live connection';
 		}
 	}
 

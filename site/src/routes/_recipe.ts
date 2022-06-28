@@ -177,7 +177,7 @@ export const defaultRecipe: FullRecipe = {
 			usageUuid: '0',
 			payload: {
 				type: FlavorType.Image,
-				params: ''
+				value: ''
 			}
 		},
 		{
@@ -187,7 +187,7 @@ export const defaultRecipe: FullRecipe = {
 			usageUuid: '0',
 			payload: {
 				type: FlavorType.Number,
-				params: 0
+				value: 0
 			}
 		},
 		{
@@ -197,7 +197,7 @@ export const defaultRecipe: FullRecipe = {
 			usageUuid: '0',
 			payload: {
 				type: FlavorType.Number,
-				params: 40
+				value: 40
 			}
 		},
 		{
@@ -207,7 +207,7 @@ export const defaultRecipe: FullRecipe = {
 			usageUuid: '0',
 			payload: {
 				type: FlavorType.Number,
-				params: 180
+				value: 180
 			}
 		},
 		{
@@ -217,7 +217,7 @@ export const defaultRecipe: FullRecipe = {
 			usageUuid: '1',
 			payload: {
 				type: FlavorType.Text,
-				params: ''
+				value: ''
 			}
 		},
 		{
@@ -227,7 +227,7 @@ export const defaultRecipe: FullRecipe = {
 			usageUuid: '2',
 			payload: {
 				type: FlavorType.Image,
-				params: ''
+				value: ''
 			}
 		},
 		{
@@ -237,7 +237,7 @@ export const defaultRecipe: FullRecipe = {
 			usageUuid: '2',
 			payload: {
 				type: FlavorType.Text,
-				params: ''
+				value: ''
 			}
 		},
 		{
@@ -247,7 +247,7 @@ export const defaultRecipe: FullRecipe = {
 			usageUuid: '2',
 			payload: {
 				type: FlavorType.Color,
-				params: '#0088ff'
+				value: '#0088ff'
 			}
 		}
 	],

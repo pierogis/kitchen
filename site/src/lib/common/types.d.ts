@@ -1,17 +1,14 @@
-export const FlavorType = {
-	Number: 'Number',
-	Color: 'Color',
-	Text: 'Text',
-	Image: 'Image'
-};
+export enum FlavorType {
+	Number = 'Number',
+	Color = 'Color',
+	Text = 'Text',
+	Image = 'Image'
+}
 
-export type FlavorType = typeof FlavorType[keyof typeof FlavorType];
-
-export const Direction = {
-	In: 'In',
-	Out: 'Out'
-};
-export type Direction = typeof Direction[keyof typeof Direction];
+export enum Direction {
+	In = 'In',
+	Out = 'Out'
+}
 
 // types with for api contract
 export interface Flavor {
@@ -76,14 +73,6 @@ export interface Shader {
 	fragmentSource: string;
 }
 
-export interface Parameter {
-	uuid: string;
-	payload: Payload<FlavorType>;
-	recipeUuid: string;
-	flavorUuid: string;
-	usageUuid: string;
-}
-
 type FlavorTypesPayloadMapper = {
 	[FlavorType.Color]: string;
 	[FlavorType.Image]: string;
@@ -91,11 +80,19 @@ type FlavorTypesPayloadMapper = {
 	[FlavorType.Text]: string;
 };
 
-export type PayloadParams<T> = T extends FlavorType ? FlavorTypesPayloadMapper[T] : never;
+export type PayloadValue<T> = T extends FlavorType ? FlavorTypesPayloadMapper[T] : never;
 
 export interface Payload<T extends FlavorType> {
 	type: T;
-	params: PayloadParams<T>;
+	value: PayloadValue<T>;
+}
+
+export interface Parameter {
+	uuid: string;
+	payload: Payload<FlavorType>;
+	recipeUuid: string;
+	flavorUuid: string;
+	usageUuid: string;
 }
 
 export type Coordinates = Pick<Location, 'x' | 'y'>;

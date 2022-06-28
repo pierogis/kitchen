@@ -1,39 +1,47 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
-const createCallFor: ActionHandler<ActionType.CreateCallFor, ActionType.DeleteCallFor> = (
+const createCallsFor: ActionHandler<ActionType.CreateCallsFor, ActionType.DeleteCallsFor> = (
 	state,
 	params
 ) => {
-	state.callsFor.set(params.callFor.uuid, params.callFor);
+	const uuids = params.callsFor.map((callFor) => {
+		state.callsFor.set(callFor.uuid, callFor);
+		return callFor.uuid;
+	});
 
 	return {
 		state,
 		undoAction: {
-			type: ActionType.DeleteCallFor,
+			type: ActionType.DeleteCallsFor,
 			params: {
-				uuid: params.callFor.uuid
+				uuids
 			}
 		}
 	};
 };
 
-const deleteCallFor: ActionHandler<ActionType.DeleteCallFor, ActionType.CreateCallFor> = (
+const deleteCallsFor: ActionHandler<ActionType.DeleteCallsFor, ActionType.CreateCallsFor> = (
 	state,
 	params
 ) => {
-	// delete call for
-	const callFor = state.callsFor.get(params.uuid);
-	if (!callFor) throw `CallFor ${params.uuid} does not exist`;
-	state.callsFor.delete(params.uuid);
+	const callsFor = params.uuids.map((uuid) => {
+		const callFor = state.callsFor.get(uuid);
+		if (!callFor) throw `callFor ${uuid} does not exist`;
+
+		// delete call for
+		state.callsFor.delete(uuid);
+
+		return callFor;
+	});
 
 	return {
 		state,
-		undoAction: { type: ActionType.CreateCallFor, params: { callFor } }
+		undoAction: { type: ActionType.CreateCallsFor, params: { callsFor } }
 	};
 };
 
 export function registerCallForHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateCallFor, createCallFor);
-	recipeState.register(ActionType.DeleteCallFor, deleteCallFor);
+	recipeState.register(ActionType.CreateCallsFor, createCallsFor);
+	recipeState.register(ActionType.DeleteCallsFor, deleteCallsFor);
 }

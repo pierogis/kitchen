@@ -6,14 +6,14 @@ import { type Action, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
 export function dispatchDeleteCallForActions(recipeState: RecipeState, callFor: CallFor) {
-	const callForAction: Action<ActionType.DeleteCallFor> = {
-		type: ActionType.DeleteCallFor,
-		params: { uuid: callFor.uuid }
+	const callForAction: Action<ActionType.DeleteCallsFor> = {
+		type: ActionType.DeleteCallsFor,
+		params: { uuids: [callFor.uuid] }
 	};
 
-	const usageAction: Action<ActionType.DeleteUsage> = {
-		type: ActionType.DeleteUsage,
-		params: { uuid: callFor.usageUuid }
+	const usageAction: Action<ActionType.DeleteUsages> = {
+		type: ActionType.DeleteUsages,
+		params: { uuids: [callFor.usageUuid] }
 	};
 
 	const actions: Action<ActionType>[] = [callForAction, usageAction];
@@ -22,10 +22,10 @@ export function dispatchDeleteCallForActions(recipeState: RecipeState, callFor: 
 		(location) => location.callForUuid == callFor.uuid
 	);
 	if (location) {
-		const locationAction: Action<ActionType.DeleteLocation> = {
-			type: ActionType.DeleteLocation,
+		const locationAction: Action<ActionType.DeleteLocations> = {
+			type: ActionType.DeleteLocations,
 			params: {
-				uuid: location.uuid
+				uuids: [location.uuid]
 			}
 		};
 
