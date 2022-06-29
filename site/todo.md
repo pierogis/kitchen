@@ -19,11 +19,11 @@
     - [ ] canvas when monitor
     - [ ] file input when input
   - [ ] docked flavors
-    - [ ] display
+    - [x] display
     - [ ] editing
   - [ ] change focused flavor
   - [ ] edit ingredient name
-  - [ ] propagate parameter/cable payloads
+  - [x] propagate parameter/cable payloads
   - [ ] update location state
   - [ ] shader editor tab (if focused ingredient has shader)
   - [ ] undo and redo interaction
@@ -37,6 +37,9 @@
 - [ ] pan
 
   - [ ] cooking images in progress
+      - [ ] use threejs
+      - [ ] show final output
+      - [ ] draw textures to inner shader nodes
 
 - [ ] backend
   - [ ] retrieve full recipe from db on request

@@ -251,5 +251,14 @@ export const defaultRecipe: FullRecipe = {
 			}
 		}
 	],
-	shaders: []
+	shaders: [
+		{
+			uuid: '0',
+			ingredientUuid: '0',
+			imageFlavorUuid: '0',
+			recipeUuid: '0',
+			vertexSource: '',
+			fragmentSource: ''
+		}
+	]
 };

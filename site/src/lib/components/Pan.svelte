@@ -2,7 +2,7 @@
 	import { onMount, tick } from 'svelte';
 	import { writable, type Readable } from 'svelte/store';
 
-	import { cookPayloads } from '$lib/common/draw';
+	import { cookPayloads } from '$lib/common/cook';
 
 	import type { Coordinates } from '@types';
 	import type { ViewState } from '@view';
@@ -10,6 +10,8 @@
 	import { dispatchIngredientCreationActions } from '@state/batch/ingredient';
 
 	import CursorCircle from '@components/CursorCircle.svelte';
+	import type { Pass } from 'three/examples/jsm/postprocessing/Pass';
+	import { OrthographicCamera, WebGLRenderer } from 'three';
 
 	export let width: number;
 	export let height: number;
@@ -66,18 +68,20 @@
 		};
 	}
 
-	const programs: Map<string, WebGLProgram> = new Map();
+	const passes: Map<string, Pass> = new Map();
 
 	onMount(async () => {
 		await tick();
 		let gl = canvas.getContext('webgl');
+		let renderer: WebGLRenderer;
 
 		let frame: number;
 		function loop() {
 			frame = requestAnimationFrame(loop);
 
-			if (gl) {
-				cookPayloads(gl, programs, $recipeState, viewState);
+			if (gl && !renderer) {
+				renderer = new WebGLRenderer(gl);
+				cookPayloads(renderer, passes, $recipeState, viewState);
 			}
 		}
 		loop();

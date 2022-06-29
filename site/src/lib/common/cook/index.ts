@@ -1,7 +1,14 @@
+import { get } from 'svelte/store';
+
+import type { Shader, WebGLRenderer } from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+
 import type { FlatRecipe } from '@recipe';
 import type { ViewState } from '@view';
 import { FlavorType, Direction, type Payload } from '@types';
-import { get } from 'svelte/store';
+import { ColorShader } from './shaders/color';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import type { Pass } from 'three/examples/jsm/postprocessing/Pass';
 
 export function createTexture(gl: WebGLRenderingContext): WebGLTexture {
 	// create a texture to sequentially draw on
@@ -79,35 +86,6 @@ export function createProgram(
 	}
 }
 
-export function drawOnTexture(
-	gl: WebGLRenderingContext,
-	program: WebGLProgram,
-	shaderPayloads: Map<string, Payload<FlavorType>>
-) {
-	const vertices: number[] = [-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0];
-	const vertex_buffer = gl.createBuffer();
-	const view = new Float32Array(vertices);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-	gl.bufferData(gl.ARRAY_BUFFER, view, gl.STATIC_DRAW);
-
-	gl.useProgram(program);
-
-	// Attach the position vector as an attribute for the GL gl.
-	const position = gl.getAttribLocation(program, 'a_position');
-	gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(position);
-
-	for (const [payloadName, _payload] of shaderPayloads) {
-		// Attach the color as a uniform for the GL gl.
-		const uniform = gl.getUniformLocation(program, `u_${payloadName}`);
-		// switch on payload.type to determine uniform3f, texture, etc
-		gl.uniform3f(uniform, 100, 223, 211);
-	}
-
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
-}
-
 export function drawCanvasFramebuffer(gl: WebGLRenderingContext, targetTexture: WebGLTexture) {
 	// draw the layered texture onto the canvas fb
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -135,8 +113,8 @@ const knownPayloads = {
 };
 
 export function cookPayloads(
-	gl: WebGLRenderingContext,
-	programs: Map<string, WebGLProgram>,
+	renderer: WebGLRenderer,
+	passes: Map<string, Pass>,
 	recipe: FlatRecipe,
 	viewState: ViewState
 ) {
@@ -145,6 +123,8 @@ export function cookPayloads(
 	// it will set these new out payloads on the view state
 
 	knownPayloads.clear();
+
+	const composer = new EffectComposer(renderer);
 	// get the main ingredient that we are cooking
 
 	function cookFlavorUsageInPayload(flavorUuid: string, usageUuid: string) {
@@ -247,7 +227,7 @@ export function cookPayloads(
 		return flavorUsagePayload;
 	}
 
-	function applyUsageShader(usagePayloads: Map<string, Payload<FlavorType>>) {
+	function render(usagePayloads: Map<string, Payload<FlavorType>>) {
 		// find if this flavor is an image associated with a shader
 		for (const shader of recipe.shaders.values()) {
 			if (shader.imageFlavorUuid in usagePayloads.keys()) {
@@ -262,15 +242,19 @@ export function cookPayloads(
 					shaderPayloads.set(flavor.name, payload);
 				}
 
-				// run shader program with uniforms and cookedPrevious
-				let program = programs.get(shader.uuid);
-				if (program === undefined) {
-					program = createProgram(gl, shader.vertexSource, shader.fragmentSource);
+				let pass = passes.get(shader.uuid);
+				if (pass === undefined) {
+					// const customShader: Shader = {
+					// 	uniforms: shader.uniforms,
+					// 	vertexShader: shader.vertexSource,
+					// 	fragmentShader: shader.fragmentSource
+					// };
+					const customShader: Shader = ColorShader;
+					const customPass = new ShaderPass(customShader);
 
-					programs.set(shader.uuid, program);
+					composer.addPass(customPass);
+					passes.set(shader.uuid, customPass);
 				}
-
-				drawOnTexture(gl, program, shaderPayloads);
 			}
 		}
 
@@ -302,7 +286,7 @@ export function cookPayloads(
 			}
 		});
 
-		outUsagePayloads = applyUsageShader(outUsagePayloads);
+		outUsagePayloads = render(outUsagePayloads);
 
 		for (const [flavorUuid, payload] of outUsagePayloads) {
 			knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
@@ -324,8 +308,7 @@ export function cookPayloads(
 	for (const flavor of dockedFlavors) {
 		// for image out flavors on the main ingredient
 		if (flavor.directions.includes(Direction.Out) && flavor.type == FlavorType.Image) {
-			const texture = createTexture(gl);
-			drawCanvasFramebuffer(gl, texture);
+			composer.render();
 		}
 	}
 }
