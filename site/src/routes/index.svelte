@@ -24,8 +24,7 @@
 	import Pan from '@components/Pan.svelte';
 	import Recipe from '@components/Recipe.svelte';
 
-	let innerWidth = 0,
-		innerHeight = 0;
+	let innerWidth: number, innerHeight: number;
 
 	export let recipe: FullRecipe;
 

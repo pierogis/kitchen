@@ -27,7 +27,7 @@
 
 	const pressing = writable(false);
 
-	function longPressAction(canvas: HTMLCanvasElement) {
+	function longPressAction(element: Window) {
 		const touchDuration = 500;
 
 		// this timer will fire a callback if you press long enough
@@ -45,12 +45,12 @@
 		function handleMouseDown(event: MouseEvent) {
 			// click
 			if (!longPressTimer && event.button == 0) {
-				window.addEventListener('mouseup', handleMouseUp);
+				element.addEventListener('mouseup', handleMouseUp);
 				$pressing = true;
 				// send an event at end of timer
 				longPressTimer = setTimeout(() => {
 					longPressTimer = null;
-					window.removeEventListener('mouseup', handleMouseUp);
+					element.removeEventListener('mouseup', handleMouseUp);
 					$pressing = false;
 					// notify parent that there has been a long press
 					dispatchIngredientCreationActions(recipeState, { x: event.clientX, y: event.clientY });
@@ -58,12 +58,12 @@
 			}
 		}
 
-		canvas.addEventListener('mousedown', handleMouseDown);
+		element.addEventListener('mousedown', handleMouseDown);
 
 		return {
 			destroy: () => {
-				window.removeEventListener('mouseup', handleMouseUp);
-				canvas.removeEventListener('mousedown', handleMouseDown);
+				element.removeEventListener('mouseup', handleMouseUp);
+				element.removeEventListener('mousedown', handleMouseDown);
 			}
 		};
 	}
@@ -75,6 +75,10 @@
 	let camera: Camera;
 
 	$: {
+		if (canvas) {
+			canvas.width = width;
+			canvas.height = height;
+		}
 		if (renderer) {
 			cook(renderer, scene, camera, materials, $recipeState, viewState);
 		}
@@ -87,7 +91,8 @@
 	});
 </script>
 
-<canvas bind:this={canvas} use:longPressAction {width} {height} />
+<svelte:window use:longPressAction />
+<canvas bind:this={canvas} {width} {height} />
 
 {#if $cursorCoordinates}
 	<CursorCircle cursorCoordinates={$cursorCoordinates} pressing={$pressing} />
@@ -96,5 +101,10 @@
 <style>
 	canvas {
 		display: block;
+
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: -1;
 	}
 </style>

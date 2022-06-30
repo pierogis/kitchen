@@ -67,5 +67,6 @@
 		fill: transparent;
 
 		cursor: grab;
+		pointer-events: auto;
 	}
 </style>

@@ -5,7 +5,6 @@ export function init(canvas: HTMLCanvasElement) {
 	var height = canvas.height;
 
 	const renderer = new WebGLRenderer({ canvas });
-	renderer.setClearColor(0x3300ff);
 	renderer.setSize(width, height);
 
 	// basic scene setup

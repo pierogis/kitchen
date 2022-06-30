@@ -52,7 +52,7 @@
 				<div class="grab-dot" />
 			</div>
 
-			<div class="remove" on:click={handleRemove} />
+			<div class="remove" on:mousedown|stopPropagation={handleRemove} />
 		</div>
 	{/if}
 	<div bind:this={paneContainer} class="no-select">
