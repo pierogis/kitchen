@@ -1,9 +1,8 @@
-import type { Shader } from 'three';
+import { Color, type Shader } from 'three';
 
 export const ColorShader: Shader = {
 	uniforms: {
-		tDiffuse: { value: null },
-		color: { value: 1 }
+		color: { value: new Color('red') }
 	},
 
 	vertexShader: /* glsl */ `

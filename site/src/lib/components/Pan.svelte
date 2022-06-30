@@ -2,16 +2,16 @@
 	import { onMount, tick } from 'svelte';
 	import { writable, type Readable } from 'svelte/store';
 
-	import { cookPayloads } from '$lib/common/cook';
+	import type { Camera, Scene, ShaderMaterial, WebGLRenderer } from 'three';
 
 	import type { Coordinates } from '@types';
 	import type { ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
 	import { dispatchIngredientCreationActions } from '@state/batch/ingredient';
 
+	import { init, cook } from '$lib/common/cook';
+
 	import CursorCircle from '@components/CursorCircle.svelte';
-	import type { Pass } from 'three/examples/jsm/postprocessing/Pass';
-	import { OrthographicCamera, WebGLRenderer } from 'three';
 
 	export let width: number;
 	export let height: number;
@@ -68,25 +68,22 @@
 		};
 	}
 
-	const passes: Map<string, Pass> = new Map();
+	const materials: Map<string, ShaderMaterial> = new Map();
+
+	let renderer: WebGLRenderer;
+	let scene: Scene;
+	let camera: Camera;
+
+	$: {
+		if (renderer) {
+			cook(renderer, scene, camera, materials, $recipeState, viewState);
+		}
+	}
 
 	onMount(async () => {
 		await tick();
-		let gl = canvas.getContext('webgl');
-		let renderer: WebGLRenderer;
 
-		let frame: number;
-		function loop() {
-			frame = requestAnimationFrame(loop);
-
-			if (gl && !renderer) {
-				renderer = new WebGLRenderer(gl);
-				cookPayloads(renderer, passes, $recipeState, viewState);
-			}
-		}
-		loop();
-
-		return () => cancelAnimationFrame(frame);
+		({ renderer, scene, camera } = init(canvas));
 	});
 </script>
 
