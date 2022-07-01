@@ -61,7 +61,6 @@
 
 <style>
 	svg {
-		padding: var(--path-stroke-width);
-		margin: calc(0px - var(--path-stroke-width));
+		display: block;
 	}
 </style>

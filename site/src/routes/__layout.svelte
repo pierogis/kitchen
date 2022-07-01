@@ -1,4 +1,4 @@
-<div style:overflow-y="hidden">
+<div>
 	<slot />
 </div>
 
