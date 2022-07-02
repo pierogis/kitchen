@@ -17,7 +17,8 @@ export enum ActionType {
 	DeleteConnections,
 	CreateParameters,
 	UpdateParameters,
-	DeleteParameters
+	DeleteParameters,
+	FocusUsage
 }
 
 type ActionParamsMapper = {
@@ -37,6 +38,7 @@ type ActionParamsMapper = {
 	[ActionType.CreateParameters]: { parameters: Parameter[] };
 	[ActionType.UpdateParameters]: { parameters: Parameter[] };
 	[ActionType.DeleteParameters]: { uuids: string[] };
+	[ActionType.FocusUsage]: { uuid: string };
 };
 
 export type ActionParams<T> = T extends ActionType ? ActionParamsMapper[T] : never;

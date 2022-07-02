@@ -18,12 +18,13 @@ import { type Action, ActionType } from '@state/actions';
 
 export function dispatchIngredientCreationActions(
 	recipeState: RecipeState,
-	coordinates: Coordinates
+	coordinates: Coordinates,
+	focusedIngredientUuid: string
 ) {
 	const ingredient: Ingredient = {
 		uuid: uuid(),
 		name: 'default',
-		parentIngredientUuid: get(recipeState.focusedIngredientUuid)
+		parentIngredientUuid: focusedIngredientUuid
 	};
 	const ingredientAction: Action<ActionType.CreateIngredients> = {
 		type: ActionType.CreateIngredients,

@@ -51,7 +51,7 @@ const deleteParameters: ActionHandler<ActionType.DeleteParameters, ActionType.Cr
 ) => {
 	const parameters = params.uuids.map((uuid) => {
 		const parameter = state.parameters.get(uuid);
-		if (!parameter) throw 'parameter ${uuid} does not exist';
+		if (!parameter) throw `parameter ${uuid} does not exist`;
 
 		// delete parameter
 		state.parameters.delete(uuid);

@@ -28,7 +28,7 @@ const deleteLocations: ActionHandler<ActionType.DeleteLocations, ActionType.Crea
 ) => {
 	const locations = params.uuids.map((uuid) => {
 		const location = state.locations.get(uuid);
-		if (!location) throw 'location ${uuid} does not exist';
+		if (!location) throw `location ${uuid} does not exist`;
 
 		// delete location
 		state.locations.delete(uuid);

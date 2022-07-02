@@ -52,7 +52,7 @@ export function cook(
 	camera: Camera,
 	materials: Map<string, ShaderMaterial>,
 	recipe: FlatRecipe,
-	viewState: ViewState
+	view: ViewState
 ) {
 	// this will go through the flavor usages in focus (and the docked flavors)
 	// and calculate a payload based on that flavor usage's in payload and shaders, expressions, etc.
@@ -101,12 +101,10 @@ export function cook(
 				if (!flavorUsagePayload)
 					throw `payload for flavor ${inFlavorOuterConnection.outFlavorUuid} on usage ${inFlavorOuterConnection.outUsageUuid} not found`;
 
-				viewState.payloads.setPayload(flavorUuid, usageUuid, Direction.In, flavorUsagePayload);
+				view.payloads.setPayload(flavorUuid, usageUuid, Direction.In, flavorUsagePayload);
 			} else {
 				// fall back on parameter based or default stored in payloads
-				flavorUsagePayload = get(
-					viewState.payloads.getPayload(flavorUuid, usageUuid, Direction.In)
-				);
+				flavorUsagePayload = get(view.payloads.getPayload(flavorUuid, usageUuid, Direction.In));
 				if (!flavorUsagePayload)
 					throw `in payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 			}
@@ -152,9 +150,7 @@ export function cook(
 				}
 			} else {
 				// fall back on param/default stored in payloads
-				flavorUsagePayload = get(
-					viewState.payloads.getPayload(flavorUuid, usageUuid, Direction.Out)
-				);
+				flavorUsagePayload = get(view.payloads.getPayload(flavorUuid, usageUuid, Direction.Out));
 				if (!flavorUsagePayload)
 					throw `out payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 			}
@@ -257,19 +253,20 @@ export function cook(
 
 		for (const [flavorUuid, payload] of outUsagePayloads) {
 			knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
-			viewState.payloads.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
+			view.payloads.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
 		}
 	}
 
 	// function works from perspective of main ingredient/usage
 	cookUsage(recipe.focusedUsageUuid);
 
-	for (const node of get(viewState.nodes)) {
+	for (const node of get(view.nodes)) {
 		cookUsage(node.callFor.usageUuid);
 	}
 
+	const focusedIngredientUuid = get(view.focusedIngredient).uuid;
 	const dockedFlavors = Array.from(recipe.flavors.values()).filter(
-		(flavor) => flavor.ingredientUuid == recipe.focusedIngredientUuid
+		(flavor) => flavor.ingredientUuid == focusedIngredientUuid
 	);
 
 	for (const flavor of dockedFlavors) {

@@ -26,7 +26,7 @@ const deleteIngredients: ActionHandler<
 > = (state, params) => {
 	const ingredients = params.uuids.map((uuid) => {
 		const ingredient = state.ingredients.get(uuid);
-		if (!ingredient) throw 'ingredient ${uuid} does not exist';
+		if (!ingredient) throw `ingredient ${uuid} does not exist`;
 
 		// delete ingredient
 		state.ingredients.delete(uuid);

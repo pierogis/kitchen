@@ -1,6 +1,12 @@
 import { derived, writable, type Writable, type Readable, get } from 'svelte/store';
 
-import { Direction, type Coordinates, type Flavor, type FlavorUsage } from '@types';
+import {
+	Direction,
+	type Coordinates,
+	type Flavor,
+	type FlavorUsage,
+	type Ingredient
+} from '@types';
 import type { RecipeState } from '@recipe';
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
 import { createCables, type Cable } from './cables';
@@ -16,6 +22,7 @@ import { createPayloads, type PayloadsState } from './payloads';
 
 export interface ViewState {
 	cables: Readable<Cable[]>;
+	focusedIngredient: Readable<Ingredient>;
 	nodes: Readable<Node[]>;
 	dockedFlavors: Readable<Flavor[]>;
 	cursorCoordinates: Writable<Coordinates | undefined>;
@@ -27,9 +34,22 @@ export interface ViewState {
 }
 
 export function readableViewState(recipeState: RecipeState): ViewState {
+	const focusedIngredientUuid = derived(
+		[recipeState.usages, recipeState.focusedUsageUuid],
+		([$usages, $focusedUsageUuid]) => {
+			const usage = $usages.get($focusedUsageUuid);
+			if (usage) {
+				// return the focused ingredient
+				return usage.ingredientUuid;
+			} else {
+				throw `usage ${$focusedUsageUuid} not found`;
+			}
+		}
+	);
+
 	// get the ingredient that is currently focused
 	const focusedIngredient = derived(
-		[recipeState.ingredients, recipeState.focusedIngredientUuid],
+		[recipeState.ingredients, focusedIngredientUuid],
 		([$ingredients, $focusedIngredientUuid]) => {
 			const ingredient = $ingredients.get($focusedIngredientUuid);
 			if (ingredient) {
@@ -163,7 +183,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		cables,
 		nodes,
 		dockedFlavors,
-
+		focusedIngredient,
 		cursorCoordinates,
 		liveConnection,
 		liveTerminal,

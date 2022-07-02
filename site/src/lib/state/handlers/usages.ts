@@ -41,7 +41,21 @@ const deleteUsages: ActionHandler<ActionType.DeleteUsages, ActionType.CreateUsag
 	};
 };
 
+const focusUsage: ActionHandler<ActionType.FocusUsage, ActionType.FocusUsage> = (state, params) => {
+	const oldUsageUuid = state.focusedUsageUuid;
+
+	const usage = state.usages.get(params.uuid);
+	if (!usage) throw `usage ${params.uuid} does not exist`;
+	state.focusedUsageUuid = usage.uuid;
+
+	return {
+		state,
+		undoAction: { type: ActionType.FocusUsage, params: { uuid: oldUsageUuid } }
+	};
+};
+
 export function registerUsageHandlers(recipeState: RecipeState) {
 	recipeState.register(ActionType.CreateUsages, createUsages);
 	recipeState.register(ActionType.DeleteUsages, deleteUsages);
+	recipeState.register(ActionType.FocusUsage, focusUsage);
 }

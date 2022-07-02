@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { writable, type Readable } from 'svelte/store';
+	import { get, writable, type Readable } from 'svelte/store';
 
 	import type { Camera, Scene, ShaderMaterial, WebGLRenderer } from 'three';
 
@@ -53,7 +53,11 @@
 					element.removeEventListener('mouseup', handleMouseUp);
 					$pressing = false;
 					// notify parent that there has been a long press
-					dispatchIngredientCreationActions(recipeState, { x: event.clientX, y: event.clientY });
+					dispatchIngredientCreationActions(
+						recipeState,
+						{ x: event.clientX, y: event.clientY },
+						get(viewState.focusedIngredient).uuid
+					);
 				}, touchDuration);
 			}
 		}
@@ -78,6 +82,8 @@
 		if (canvas) {
 			canvas.width = width;
 			canvas.height = height;
+			canvas.style.width = width + 'px';
+			canvas.style.height = height + 'px';
 		}
 		if (renderer) {
 			cook(renderer, scene, camera, materials, $recipeState, viewState);

@@ -9,6 +9,7 @@
 	import { recipeStateContextKey } from '@recipe';
 	import type { RecipeState } from '@recipe';
 	import type { ViewState } from '@view';
+	import { ActionType, type Action } from '@state/actions';
 	import { dispatchDeleteCallForActions } from '@state/batch/callFor';
 
 	import Pane from '@components/tweakpane/Pane.svelte';
@@ -24,6 +25,16 @@
 
 	let grabTarget: HTMLElement;
 	let dragging = false;
+
+	// focus node on focus button
+	function handleFocus(_event: MouseEvent) {
+		const focusUsageAction: Action<ActionType.FocusUsage> = {
+			type: ActionType.FocusUsage,
+			params: { uuid: callFor.usageUuid }
+		};
+
+		recipeState.dispatch(focusUsageAction);
+	}
 
 	// delete node on close button
 	function handleRemove(_event: MouseEvent) {
@@ -47,6 +58,8 @@
 >
 	{#if paneContainer}
 		<div class="header">
+			<div class="focus" on:mousedown|stopPropagation={handleFocus} />
+
 			<div class="grab" bind:this={grabTarget} class:dragging>
 				<div class="grab-dot" />
 				<div class="grab-dot" />
@@ -98,8 +111,6 @@
 
 		box-shadow: 0 2px 4px var(--shadow-color);
 
-		border-radius: 6px 0px 0px 6px;
-
 		flex: 1;
 		display: flex;
 		align-items: center;
@@ -119,13 +130,25 @@
 		margin: 2px;
 	}
 
+	.focus,
+	.remove {
+		box-shadow: 0 2px 4px var(--primary-color-shadow);
+		width: var(--node-header-size);
+	}
+
+	.focus {
+		background-color: var(--focus-color);
+
+		border-radius: 6px 0px 0px 6px;
+
+		margin-right: 5px;
+	}
+
 	.remove {
 		background-color: var(--remove-color);
-		box-shadow: 0 2px 4px var(--primary-color-shadow);
 
 		border-radius: 0px 6px 6px 0px;
 
-		width: var(--node-header-size);
 		margin-left: 5px;
 	}
 
