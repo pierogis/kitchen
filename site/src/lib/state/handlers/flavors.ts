@@ -1,44 +1,32 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
+import { createEntities, deleteEntities } from './common';
 
 const createFlavors: ActionHandler<ActionType.CreateFlavors, ActionType.DeleteFlavors> = (
-	state,
+	stores,
 	params
 ) => {
-	const uuids = params.flavors.map((flavor) => {
-		state.flavors.set(flavor.uuid, flavor);
-
-		return flavor.uuid;
-	});
+	const uuids = createEntities(stores.flavors, params.flavors);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.DeleteFlavors,
-			params: {
-				uuids
-			}
+		type: ActionType.DeleteFlavors,
+		params: {
+			uuids
 		}
 	};
 };
 
 const deleteFlavors: ActionHandler<ActionType.DeleteFlavors, ActionType.CreateFlavors> = (
-	state,
+	stores,
 	params
 ) => {
-	const flavors = params.uuids.map((uuid) => {
-		const flavor = state.flavors.get(uuid);
-		if (!flavor) throw `flavor ${uuid} does not exist`;
-
-		// delete flavor
-		state.flavors.delete(uuid);
-
-		return flavor;
-	});
+	const flavors = deleteEntities(stores.flavors, params.uuids);
 
 	return {
-		state,
-		undoAction: { type: ActionType.CreateFlavors, params: { flavors } }
+		type: ActionType.CreateFlavors,
+		params: {
+			flavors
+		}
 	};
 };
 

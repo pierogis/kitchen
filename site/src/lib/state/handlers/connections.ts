@@ -1,21 +1,20 @@
+import { get } from 'svelte/store';
+
 import { ActionType, type ActionHandler } from '@state/actions';
 import type { RecipeState } from '@recipe';
+
+import { createEntities, deleteEntities, updateEntities } from './common';
 
 const createConnections: ActionHandler<
 	ActionType.CreateConnections,
 	ActionType.DeleteConnections
-> = (state, params) => {
-	for (const connection of params.connections) {
-		state.connections.set(connection.uuid, connection);
-	}
+> = (stores, params) => {
+	const uuids = createEntities(stores.connections, params.connections);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.DeleteConnections,
-			params: {
-				uuids: params.connections.map((connection) => connection.uuid)
-			}
+		type: ActionType.DeleteConnections,
+		params: {
+			uuids
 		}
 	};
 };
@@ -23,68 +22,45 @@ const createConnections: ActionHandler<
 const updateConnections: ActionHandler<
 	ActionType.UpdateConnections,
 	ActionType.UpdateConnections
-> = (state, params) => {
-	const oldConnections = params.connections.map((connection) => {
-		const oldConnection = state.connections.get(connection.uuid);
-		if (!oldConnection) {
-			throw `connection ${connection.uuid} does not exist`;
-		}
-
-		state.connections.set(connection.uuid, connection);
-		return oldConnection;
-	});
+> = (stores, params) => {
+	const oldConnections = updateEntities(stores.connections, params.connections);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.UpdateConnections,
-			params: { connections: oldConnections }
-		}
+		type: ActionType.UpdateConnections,
+		params: { connections: oldConnections }
 	};
 };
 
 const deleteConnections: ActionHandler<
 	ActionType.DeleteConnections,
 	ActionType.CreateConnections
-> = (state, params) => {
-	const connections = params.uuids.map((uuid) => {
-		const connection = state.connections.get(uuid);
-		if (!connection) throw `connection ${uuid} not found`;
-
-		// delete connection
-		state.connections.delete(uuid);
-
-		return connection;
-	});
+> = (stores, params) => {
+	const deletedConnections = deleteEntities(stores.connections, params.uuids);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.CreateConnections,
-			params: { connections }
-		}
+		type: ActionType.CreateConnections,
+		params: { connections: deletedConnections }
 	};
 };
 
 const deleteUsages: ActionHandler<ActionType.DeleteUsages, ActionType.CreateConnections> = (
-	state,
+	stores,
 	params
 ) => {
-	const connections = [];
+	const connectionUuids: string[] = [];
+	const currentConnections = get(stores.connections);
 	for (const uuid of params.uuids) {
-		for (const connection of state.connections.values()) {
+		for (const connection of currentConnections.values()) {
 			if (connection.inUsageUuid == uuid || connection.outUsageUuid == uuid) {
 				// this connection uses this usage
-				state.connections.delete(connection.uuid);
-				connections.push(connection);
+				connectionUuids.push(connection.uuid);
 			}
 		}
 	}
 
-	return {
-		state,
-		undoAction: { type: ActionType.CreateConnections, params: { connections } }
-	};
+	const deletedConnections = deleteEntities(stores.connections, connectionUuids);
+
+	return { type: ActionType.CreateConnections, params: { connections: deletedConnections } };
 };
 
 export function registerConnectionHandlers(recipeState: RecipeState) {

@@ -1,43 +1,31 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
+import { createEntities, deleteEntities } from './common';
+
 const createCallsFor: ActionHandler<ActionType.CreateCallsFor, ActionType.DeleteCallsFor> = (
-	state,
+	stores,
 	params
 ) => {
-	const uuids = params.callsFor.map((callFor) => {
-		state.callsFor.set(callFor.uuid, callFor);
-		return callFor.uuid;
-	});
+	const uuids = createEntities(stores.callsFor, params.callsFor);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.DeleteCallsFor,
-			params: {
-				uuids
-			}
+		type: ActionType.DeleteCallsFor,
+		params: {
+			uuids
 		}
 	};
 };
 
 const deleteCallsFor: ActionHandler<ActionType.DeleteCallsFor, ActionType.CreateCallsFor> = (
-	state,
+	stores,
 	params
 ) => {
-	const callsFor = params.uuids.map((uuid) => {
-		const callFor = state.callsFor.get(uuid);
-		if (!callFor) throw `callFor ${uuid} does not exist`;
-
-		// delete call for
-		state.callsFor.delete(uuid);
-
-		return callFor;
-	});
+	const deletedCallsFor = deleteEntities(stores.callsFor, params.uuids);
 
 	return {
-		state,
-		undoAction: { type: ActionType.CreateCallsFor, params: { callsFor } }
+		type: ActionType.CreateCallsFor,
+		params: { callsFor: deletedCallsFor }
 	};
 };
 

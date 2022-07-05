@@ -1,4 +1,4 @@
-import { writable, type Readable, derived } from 'svelte/store';
+import { writable, type Readable, get } from 'svelte/store';
 
 import type {
 	CallFor,
@@ -44,47 +44,74 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 	// update all at once
 	// subscribe to all at once
 	// subscribe to just 1
+	// const store = writable(recipe);
+
+	const recipeUuid = writable(recipe.recipeUuid);
+	const focusedUsageUuid = writable(recipe.focusedUsageUuid);
+	const ingredients = writable(recipe.ingredients);
+	const flavors = writable(recipe.flavors);
+	const callsFor = writable(recipe.callsFor);
+	const connections = writable(recipe.connections);
+	const shaders = writable(recipe.shaders);
+	const parameters = writable(recipe.parameters);
+	const locations = writable(recipe.locations);
+	const usages = writable(recipe.usages);
+
+	const stores = {
+		recipeUuid,
+		focusedUsageUuid,
+		ingredients,
+		flavors,
+		callsFor,
+		connections,
+		shaders,
+		parameters,
+		locations,
+		usages
+	};
+
+	const actionsDispatcher = dispatcher(stores);
+
 	const store = writable(recipe);
 
-	const actionsDispatcher = dispatcher(store);
+	function dispatch(action: Action<ActionType>) {
+		actionsDispatcher.dispatch(action);
+		store.set({
+			recipeUuid: get(recipeUuid),
+			focusedUsageUuid: get(focusedUsageUuid),
+			ingredients: get(ingredients),
+			flavors: get(flavors),
+			callsFor: get(callsFor),
+			connections: get(connections),
+			shaders: get(shaders),
+			parameters: get(parameters),
+			locations: get(locations),
+			usages: get(usages)
+		});
+	}
+
+	function batchDispatch(actions: Action<ActionType>[]) {
+		actionsDispatcher.batchDispatch(actions);
+		store.set({
+			recipeUuid: get(recipeUuid),
+			focusedUsageUuid: get(focusedUsageUuid),
+			ingredients: get(ingredients),
+			flavors: get(flavors),
+			callsFor: get(callsFor),
+			connections: get(connections),
+			shaders: get(shaders),
+			parameters: get(parameters),
+			locations: get(locations),
+			usages: get(usages)
+		});
+	}
 
 	return {
 		subscribe: store.subscribe,
-
 		register: actionsDispatcher.register,
-		dispatch: actionsDispatcher.dispatch,
-		batchDispatch: actionsDispatcher.batchDispatch,
+		dispatch: dispatch,
+		batchDispatch: batchDispatch,
 
-		// ...stores
-		recipeUuid: derived(store, (currentState) => {
-			return currentState.recipeUuid;
-		}),
-		focusedUsageUuid: derived(store, (currentState) => {
-			return currentState.focusedUsageUuid;
-		}),
-		ingredients: derived(store, (currentState) => {
-			return currentState.ingredients;
-		}),
-		flavors: derived(store, (currentState) => {
-			return currentState.flavors;
-		}),
-		callsFor: derived(store, (currentState) => {
-			return currentState.callsFor;
-		}),
-		connections: derived(store, (currentState) => {
-			return currentState.connections;
-		}),
-		shaders: derived(store, (currentState) => {
-			return currentState.shaders;
-		}),
-		parameters: derived(store, (currentState) => {
-			return currentState.parameters;
-		}),
-		locations: derived(store, (currentState) => {
-			return currentState.locations;
-		}),
-		usages: derived(store, (currentState) => {
-			return currentState.usages;
-		})
+		...stores
 	};
 }

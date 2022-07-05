@@ -1,5 +1,6 @@
 import type { CallFor, Connection, Flavor, Ingredient, Location, Parameter, Usage } from '@types';
 import type { FlatRecipe } from '@recipe';
+import type { Writable } from 'svelte/store';
 
 export enum ActionType {
 	CreateIngredients,
@@ -49,6 +50,8 @@ export interface Action<T extends ActionType> {
 }
 
 export type ActionHandler<E extends ActionType, U extends ActionType> = (
-	state: FlatRecipe,
+	stores: {
+		[key in keyof FlatRecipe]: Writable<FlatRecipe[key]>;
+	},
 	params: ActionParams<E>
-) => { state: FlatRecipe; undoAction: Action<U> };
+) => Action<U>;

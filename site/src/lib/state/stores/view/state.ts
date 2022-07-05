@@ -18,7 +18,7 @@ import {
 	createTerminalsCoordinates,
 	type TerminalsCoordinatesState
 } from './terminals';
-import { createPayloads, type PayloadsState } from './payloads';
+import { createFillings, type FillingsState } from './fillings';
 
 export interface ViewState {
 	cables: Readable<Cable[]>;
@@ -30,8 +30,12 @@ export interface ViewState {
 	liveTerminal: Readable<Terminal | undefined>;
 	terminals: Readable<Terminal[]>;
 	terminalsCoordinates: TerminalsCoordinatesState;
-	payloads: PayloadsState;
+	fillings: FillingsState;
 }
+
+// dont use the derived properties thing for recipe store
+// update pulse on action
+// view state derives from this update pulse
 
 export function readableViewState(recipeState: RecipeState): ViewState {
 	const focusedIngredientUuid = derived(
@@ -48,18 +52,16 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	);
 
 	// get the ingredient that is currently focused
-	const focusedIngredient = derived(
-		[recipeState.ingredients, focusedIngredientUuid],
-		([$ingredients, $focusedIngredientUuid]) => {
-			const ingredient = $ingredients.get($focusedIngredientUuid);
-			if (ingredient) {
-				// return the focused ingredient
-				return ingredient;
-			} else {
-				throw `ingredient ${$focusedIngredientUuid} not found`;
-			}
+	const focusedIngredient = derived(focusedIngredientUuid, ($focusedIngredientUuid) => {
+		const currentIngredients = get(recipeState.ingredients);
+		const ingredient = currentIngredients.get($focusedIngredientUuid);
+		if (ingredient) {
+			// return the focused ingredient
+			return ingredient;
+		} else {
+			throw `ingredient ${$focusedIngredientUuid} not found`;
 		}
-	);
+	});
 
 	const cursorCoordinates = writable(undefined);
 
@@ -177,7 +179,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const nodes = createNodes(recipeState, inFocusSubIngredients, inFocusSubUsages);
 
 	// centrally track values that go in inputs/monitors so they can be edited from anywhere
-	const payloads = createPayloads(recipeState);
+	const fillings = createFillings(recipeState);
 
 	return {
 		cables,
@@ -189,6 +191,6 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		liveTerminal,
 		terminals,
 		terminalsCoordinates,
-		payloads
+		fillings
 	};
 }

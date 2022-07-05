@@ -28,19 +28,8 @@
 			// monitorElement.style.display = 'flex';
 		}
 
-		// this is so fucked
-		let fired = false;
-		paramsStore.subscribe((newParams) => {
-			if (fired) {
-				if (newParams[key] != params[key]) {
-					params[key] = newParams[key];
-					inputApi.refresh();
-				}
-			}
-			fired = true;
-		});
-
 		return () => {
+			inputApi.dispose();
 			folder.remove(inputApi);
 		};
 	});

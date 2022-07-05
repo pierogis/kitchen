@@ -1,56 +1,49 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
+import { createEntities, deleteEntities } from './common';
+import { get } from 'svelte/store';
 
 const createUsages: ActionHandler<ActionType.CreateUsages, ActionType.DeleteUsages> = (
-	state,
+	stores,
 	params
 ) => {
-	const uuids = params.usages.map((usage) => {
-		state.usages.set(usage.uuid, usage);
-
-		return usage.uuid;
-	});
+	const uuids = createEntities(stores.usages, params.usages);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.DeleteUsages,
-			params: {
-				uuids
-			}
+		type: ActionType.DeleteUsages,
+		params: {
+			uuids
 		}
 	};
 };
 
 const deleteUsages: ActionHandler<ActionType.DeleteUsages, ActionType.CreateUsages> = (
-	state,
+	stores,
 	params
 ) => {
-	const usages = params.uuids.map((uuid) => {
-		const usage = state.usages.get(uuid);
-		if (!usage) throw 'usage ${uuid} does not exist';
-
-		// delete usage
-		state.usages.delete(uuid);
-		return usage;
-	});
+	const usages = deleteEntities(stores.usages, params.uuids);
 
 	return {
-		state,
-		undoAction: { type: ActionType.CreateUsages, params: { usages } }
+		type: ActionType.CreateUsages,
+		params: {
+			usages
+		}
 	};
 };
 
-const focusUsage: ActionHandler<ActionType.FocusUsage, ActionType.FocusUsage> = (state, params) => {
-	const oldUsageUuid = state.focusedUsageUuid;
+const focusUsage: ActionHandler<ActionType.FocusUsage, ActionType.FocusUsage> = (
+	stores,
+	params
+) => {
+	const oldUsageUuid = get(stores.focusedUsageUuid);
 
-	const usage = state.usages.get(params.uuid);
+	const usage = get(stores.usages).get(params.uuid);
 	if (!usage) throw `usage ${params.uuid} does not exist`;
-	state.focusedUsageUuid = usage.uuid;
+	stores.focusedUsageUuid.set(usage.uuid);
 
 	return {
-		state,
-		undoAction: { type: ActionType.FocusUsage, params: { uuid: oldUsageUuid } }
+		type: ActionType.FocusUsage,
+		params: { uuid: oldUsageUuid }
 	};
 };
 

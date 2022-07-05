@@ -74,7 +74,7 @@
 				{#if pane}
 					{#each flavors as flavor, index (flavor.uuid)}
 						<FlavorComponent
-							payload={viewState.payloads.getPayload(
+							filling={viewState.fillings.getFilling(
 								flavor.uuid,
 								callFor.usageUuid,
 								flavor.directions.includes(Direction.Out) ? Direction.Out : Direction.In
@@ -118,9 +118,6 @@
 
 		cursor: grab;
 	}
-	.grab:hover {
-		filter: brightness(90%) saturate(150%);
-	}
 
 	.grab-dot {
 		background-color: var(--button-color-hover);
@@ -134,6 +131,13 @@
 	.remove {
 		box-shadow: 0 2px 4px var(--primary-color-shadow);
 		width: var(--node-header-size);
+		cursor: pointer;
+	}
+
+	.remove:hover,
+	.focus:hover,
+	.grab:hover {
+		filter: brightness(90%) saturate(150%);
 	}
 
 	.focus {
@@ -150,10 +154,5 @@
 		border-radius: 0px 6px 6px 0px;
 
 		margin-left: 5px;
-	}
-
-	.remove:hover {
-		filter: brightness(90%) saturate(150%);
-		cursor: pointer;
 	}
 </style>

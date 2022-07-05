@@ -83,10 +83,10 @@ export function dispatchIngredientCreationActions(
 	};
 
 	recipeState.batchDispatch([
-		ingredientAction,
+		locationAction,
+		flavorAction,
 		usageAction,
 		callForAction,
-		flavorAction,
-		locationAction
+		ingredientAction
 	]);
 }

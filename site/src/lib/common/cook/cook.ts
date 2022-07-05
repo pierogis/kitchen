@@ -52,11 +52,11 @@ export function cook(
 	camera: Camera,
 	materials: Map<string, ShaderMaterial>,
 	recipe: FlatRecipe,
-	view: ViewState
+	viewState: ViewState
 ) {
 	// this will go through the flavor usages in focus (and the docked flavors)
 	// and calculate a payload based on that flavor usage's in payload and shaders, expressions, etc.
-	// it will set these new out payloads on the view state
+	// it will set these new out fillings on the view state
 
 	knownPayloads.clear();
 	renderTargets.clear();
@@ -80,7 +80,7 @@ export function cook(
 			if (inFlavorOuterConnection) {
 				// if corresponding out flavor is in the dock of the parent usage
 				if (usage.parentUsageUuid == inFlavorOuterConnection.outUsageUuid) {
-					// the in payloads on the parent usage need to be all calculated
+					// the in fillings on the parent usage need to be all calculated
 					flavorUsagePayload = knownPayloads.get(
 						inFlavorOuterConnection.outFlavorUuid,
 						inFlavorOuterConnection.outUsageUuid,
@@ -101,10 +101,12 @@ export function cook(
 				if (!flavorUsagePayload)
 					throw `payload for flavor ${inFlavorOuterConnection.outFlavorUuid} on usage ${inFlavorOuterConnection.outUsageUuid} not found`;
 
-				view.payloads.setPayload(flavorUuid, usageUuid, Direction.In, flavorUsagePayload);
+				viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.In, flavorUsagePayload);
 			} else {
-				// fall back on parameter based or default stored in payloads
-				flavorUsagePayload = get(view.payloads.getPayload(flavorUuid, usageUuid, Direction.In));
+				// fall back on parameter based or default stored in fillings
+				flavorUsagePayload = get(
+					viewState.fillings.getFilling(flavorUuid, usageUuid, Direction.In).payload
+				);
 				if (!flavorUsagePayload)
 					throw `in payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 			}
@@ -149,8 +151,10 @@ export function cook(
 						throw `in payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 				}
 			} else {
-				// fall back on param/default stored in payloads
-				flavorUsagePayload = get(view.payloads.getPayload(flavorUuid, usageUuid, Direction.Out));
+				// fall back on param/default stored in fillings
+				flavorUsagePayload = get(
+					viewState.fillings.getFilling(flavorUuid, usageUuid, Direction.Out).payload
+				);
 				if (!flavorUsagePayload)
 					throw `out payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 			}
@@ -197,7 +201,7 @@ export function cook(
 					materials.set(shader.uuid, material);
 				}
 
-				// set uniforms on material based on the payloads input to this render call
+				// set uniforms on material based on the fillings input to this render call
 				// material.uniforms = shaderPayloads;
 
 				const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -253,18 +257,18 @@ export function cook(
 
 		for (const [flavorUuid, payload] of outUsagePayloads) {
 			knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
-			view.payloads.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
+			viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
 		}
 	}
 
 	// function works from perspective of main ingredient/usage
 	cookUsage(recipe.focusedUsageUuid);
 
-	for (const node of get(view.nodes)) {
+	for (const node of get(viewState.nodes)) {
 		cookUsage(node.callFor.usageUuid);
 	}
 
-	const focusedIngredientUuid = get(view.focusedIngredient).uuid;
+	const focusedIngredientUuid = get(viewState.focusedIngredient).uuid;
 	const dockedFlavors = Array.from(recipe.flavors.values()).filter(
 		(flavor) => flavor.ingredientUuid == focusedIngredientUuid
 	);

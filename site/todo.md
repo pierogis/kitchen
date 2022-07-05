@@ -37,9 +37,9 @@
 - [ ] pan
 
   - [ ] cooking images in progress
-      - [ ] use threejs
-      - [ ] show final output
-      - [ ] draw textures to inner shader nodes
+    - [ ] use threejs
+    - [ ] show final output
+    - [ ] draw textures to inner shader nodes
 
 - [ ] backend
   - [ ] retrieve full recipe from db on request

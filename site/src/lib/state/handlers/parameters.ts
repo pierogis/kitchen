@@ -1,66 +1,44 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
+import { createEntities, deleteEntities, updateEntities } from './common';
 
 const createParameters: ActionHandler<ActionType.CreateParameters, ActionType.DeleteParameters> = (
-	state,
+	stores,
 	params
 ) => {
-	const uuids = params.parameters.map((parameter) => {
-		state.parameters.set(parameter.uuid, parameter);
-
-		return parameter.uuid;
-	});
+	const uuids = createEntities(stores.parameters, params.parameters);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.DeleteParameters,
-			params: {
-				uuids
-			}
+		type: ActionType.DeleteParameters,
+		params: {
+			uuids
 		}
 	};
 };
 
 const updateParameters: ActionHandler<ActionType.UpdateParameters, ActionType.UpdateParameters> = (
-	state,
+	stores,
 	params
 ) => {
-	const parameters = params.parameters.map((parameter) => {
-		const oldParameter = state.parameters.get(parameter.uuid);
-		if (!oldParameter) {
-			throw `parameter ${parameter.uuid} does not exist`;
-		}
-
-		state.parameters.set(parameter.uuid, parameter);
-		return oldParameter;
-	});
+	const oldParameters = updateEntities(stores.parameters, params.parameters);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.UpdateParameters,
-			params: { parameters }
-		}
+		type: ActionType.UpdateParameters,
+		params: { parameters: oldParameters }
 	};
 };
 
 const deleteParameters: ActionHandler<ActionType.DeleteParameters, ActionType.CreateParameters> = (
-	state,
+	stores,
 	params
 ) => {
-	const parameters = params.uuids.map((uuid) => {
-		const parameter = state.parameters.get(uuid);
-		if (!parameter) throw `parameter ${uuid} does not exist`;
-
-		// delete parameter
-		state.parameters.delete(uuid);
-		return parameter;
-	});
+	const parameters = deleteEntities(stores.parameters, params.uuids);
 
 	return {
-		state,
-		undoAction: { type: ActionType.CreateParameters, params: { parameters } }
+		type: ActionType.CreateParameters,
+		params: {
+			parameters
+		}
 	};
 };
 

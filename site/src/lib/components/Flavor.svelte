@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { derived, get, type Readable, type Writable } from 'svelte/store';
+	import { derived, get, type Readable } from 'svelte/store';
 
 	import { v4 as uuid } from 'uuid';
 
 	import type { FolderApi, InputParams, TpChangeEvent } from 'tweakpane';
 
-	import { type Payload, type Flavor, FlavorType, Direction } from '@types';
+	import { type Flavor, FlavorType, Direction } from '@types';
 
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
 	import type { Terminal } from '@view';
@@ -15,6 +15,7 @@
 	import Monitor from '@components/tweakpane/Monitor.svelte';
 	import Input from '@components/tweakpane/Input.svelte';
 	import TerminalRack from '@components/TerminalRack.svelte';
+	import type { Filling } from '@view/fillings';
 
 	export let index: number;
 	export let flavor: Flavor;
@@ -24,67 +25,74 @@
 	$: inTerminals = $terminals.filter((terminal) => terminal.direction == Direction.In);
 	$: outTerminals = $terminals.filter((terminal) => terminal.direction == Direction.Out);
 
-	export let payload: Writable<Payload<FlavorType>> & { monitor: boolean; parameterUuid?: string };
+	export let filling: Filling;
 	export let folder: FolderApi;
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 
-	let onChange: (ev: TpChangeEvent<any>) => void;
-	if (!payload.monitor) {
-		onChange = (ev: TpChangeEvent<any>) => {
-			if (!payload.parameterUuid) {
-				const createParameterAction: Action<ActionType.CreateParameters> = {
-					type: ActionType.CreateParameters,
-					params: {
-						parameters: [
-							{
-								uuid: uuid(),
-								payload: {
-									type: flavor.type,
-									value: ev.value
-								},
-								recipeUuid: get(recipeState.recipeUuid),
-								flavorUuid: flavor.uuid,
-								usageUuid: usageUuid
-							}
-						]
-					}
-				};
-				recipeState.dispatch(createParameterAction);
-			} else {
-				const parameter = get(recipeState.parameters).get(payload.parameterUuid);
-
-				if (!parameter) throw `parameter ${payload.parameterUuid} not found`;
-				const updateParameterAction: Action<ActionType.UpdateParameters> = {
-					type: ActionType.UpdateParameters,
-					params: {
-						parameters: [
-							{
-								...parameter,
-								payload: {
-									type: get(payload).type,
-									value: ev.value
+	let onChange: Readable<(ev: TpChangeEvent<any>) => void> = derived(
+		[filling.monitorStatus],
+		([$monitorStatus]) => {
+			console.log();
+			return (ev: TpChangeEvent<any>) => {
+				if (!$monitorStatus.parameterUuid) {
+					const createParameterAction: Action<ActionType.CreateParameters> = {
+						type: ActionType.CreateParameters,
+						params: {
+							parameters: [
+								{
+									uuid: uuid(),
+									payload: {
+										type: flavor.type,
+										value: ev.value
+									},
+									recipeUuid: get(recipeState.recipeUuid),
+									flavorUuid: flavor.uuid,
+									usageUuid: usageUuid
 								}
-							}
-						]
-					}
-				};
-				recipeState.dispatch(updateParameterAction);
-			}
-		};
-	}
+							]
+						}
+					};
+					recipeState.dispatch(createParameterAction);
+				} else {
+					const parameter = get(recipeState.parameters).get($monitorStatus.parameterUuid);
 
-	let options: InputParams = {};
+					if (!parameter) throw `parameter ${$monitorStatus.parameterUuid} not found`;
+					const updateParameterAction: Action<ActionType.UpdateParameters> = {
+						type: ActionType.UpdateParameters,
+						params: {
+							parameters: [
+								{
+									...parameter,
+									payload: {
+										type: get(filling.payload).type,
+										value: ev.value
+									}
+								}
+							]
+						}
+					};
+					recipeState.dispatch(updateParameterAction);
+				}
+			};
+		}
+	);
+
+	let options: InputParams = flavor.options || {};
 
 	if (flavor.type == FlavorType.Color) {
 		options = { ...options, view: 'color', color: { alpha: true } };
 	}
-	const paramsStore = derived(payload, ($payload) => {
+	const paramsStore = derived(filling.payload, ($payload) => {
 		return { [flavor.name]: $payload.value };
+	});
+
+	const monitor = derived(filling.monitorStatus, ($monitorStatus) => {
+		return $monitorStatus.monitor;
 	});
 </script>
 
-{#if payload.monitor}
+{#if $monitor}
 	<Monitor {index} {folder} {paramsStore} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack
@@ -95,7 +103,15 @@
 		{/each}
 	</Monitor>
 {:else}
-	<Input {index} {folder} {paramsStore} {options} {onChange} key={flavor.name} let:inputElement>
+	<Input
+		{index}
+		{folder}
+		{paramsStore}
+		{options}
+		onChange={$onChange}
+		key={flavor.name}
+		let:inputElement
+	>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack
 				parentElement={inputElement}

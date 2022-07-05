@@ -27,47 +27,23 @@
 
 	const pressing = writable(false);
 
-	function longPressAction(element: Window) {
-		const touchDuration = 500;
-
-		// this timer will fire a callback if you press long enough
-		let longPressTimer: NodeJS.Timeout | null;
-
-		function handleMouseUp() {
-			// nullify longpress timer from click
-			$pressing = false;
-			if (longPressTimer) {
-				clearTimeout(longPressTimer);
-				longPressTimer = null;
-			}
+	function rightClickAction(element: Window) {
+		function handleDoubleClick(event: MouseEvent) {
+			// right click
+			event.preventDefault();
+			dispatchIngredientCreationActions(
+				recipeState,
+				{ x: event.clientX, y: event.clientY },
+				get(viewState.focusedIngredient).uuid
+			);
+			return false;
 		}
 
-		function handleMouseDown(event: MouseEvent) {
-			// click
-			if (!longPressTimer && event.button == 0) {
-				element.addEventListener('mouseup', handleMouseUp);
-				$pressing = true;
-				// send an event at end of timer
-				longPressTimer = setTimeout(() => {
-					longPressTimer = null;
-					element.removeEventListener('mouseup', handleMouseUp);
-					$pressing = false;
-					// notify parent that there has been a long press
-					dispatchIngredientCreationActions(
-						recipeState,
-						{ x: event.clientX, y: event.clientY },
-						get(viewState.focusedIngredient).uuid
-					);
-				}, touchDuration);
-			}
-		}
-
-		element.addEventListener('mousedown', handleMouseDown);
+		element.addEventListener('dblclick', handleDoubleClick);
 
 		return {
 			destroy: () => {
-				element.removeEventListener('mouseup', handleMouseUp);
-				element.removeEventListener('mousedown', handleMouseDown);
+				element.removeEventListener('dblclick', handleDoubleClick);
 			}
 		};
 	}
@@ -85,19 +61,20 @@
 			canvas.style.width = width + 'px';
 			canvas.style.height = height + 'px';
 		}
-		if (renderer) {
-			cook(renderer, scene, camera, materials, $recipeState, viewState);
-		}
 	}
 
 	onMount(async () => {
 		await tick();
 
 		({ renderer, scene, camera } = init(canvas));
+
+		recipeState.subscribe((recipe) => {
+			cook(renderer, scene, camera, materials, recipe, viewState);
+		});
 	});
 </script>
 
-<svelte:window use:longPressAction />
+<svelte:window use:rightClickAction />
 <canvas bind:this={canvas} {width} {height} />
 
 {#if $cursorCoordinates}
