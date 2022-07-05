@@ -17,18 +17,20 @@ export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
 	// for dragging the node
 	function dragMouseDown(event: MouseEvent) {
 		if (event.button == 0) {
+			event.preventDefault();
 			event.stopPropagation();
 			// get the mouse cursor position at startup
 			pos3 = event.clientX;
 			pos4 = event.clientY;
 			document.addEventListener('mouseup', stopDragElement);
 			// call a function whenever the cursor moves
-			document.addEventListener('mousemove', elementDrag);
+			document.addEventListener('mousemove', handleMouseMove);
 			grabTarget.style.cursor = 'grabbing';
 		}
 	}
 
-	function elementDrag(event: MouseEvent) {
+	function handleMouseMove(event: MouseEvent) {
+		event.preventDefault();
 		// calculate the new cursor position
 		pos1 = pos3 - event.clientX;
 		pos2 = pos4 - event.clientY;
@@ -50,7 +52,7 @@ export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
 			})
 		);
 		document.removeEventListener('mouseup', stopDragElement);
-		document.removeEventListener('mousemove', elementDrag);
+		document.removeEventListener('mousemove', handleMouseMove);
 	}
 
 	return {
@@ -68,7 +70,7 @@ export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
 		destroy() {
 			grabTarget.removeEventListener('mousedown', dragMouseDown);
 			document.removeEventListener('mouseup', stopDragElement);
-			document.removeEventListener('mousemove', elementDrag);
+			document.removeEventListener('mousemove', handleMouseMove);
 		}
 	};
 }

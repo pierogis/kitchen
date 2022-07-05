@@ -58,14 +58,14 @@
 >
 	{#if paneContainer}
 		<div class="header">
-			<div class="focus" on:mousedown|stopPropagation={handleFocus} />
+			<div class="focus no-select" on:mousedown|stopPropagation={handleFocus} />
 
-			<div class="grab" bind:this={grabTarget} class:dragging>
+			<div class="grab no-select" bind:this={grabTarget} class:dragging>
 				<div class="grab-dot" />
 				<div class="grab-dot" />
 			</div>
 
-			<div class="remove" on:mousedown|stopPropagation={handleRemove} />
+			<div class="remove no-select" on:mousedown|stopPropagation={handleRemove} />
 		</div>
 	{/if}
 	<div bind:this={paneContainer} class="no-select">

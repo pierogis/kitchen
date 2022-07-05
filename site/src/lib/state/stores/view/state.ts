@@ -1,17 +1,11 @@
-import { derived, writable, type Writable, type Readable, get } from 'svelte/store';
+import { derived, type Readable, get } from 'svelte/store';
 
-import {
-	Direction,
-	type Coordinates,
-	type Flavor,
-	type FlavorUsage,
-	type Ingredient
-} from '@types';
+import { Direction, type Flavor, type FlavorUsage, type Ingredient } from '@types';
 import type { RecipeState } from '@recipe';
+
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
 import { createCables, type Cable } from './cables';
 import { createNodes, type Node } from './nodes';
-
 import {
 	createTerminals,
 	type Terminal,
@@ -19,13 +13,14 @@ import {
 	type TerminalsCoordinatesState
 } from './terminals';
 import { createFillings, type FillingsState } from './fillings';
+import { createCursor, type CursorState } from './cursor';
 
 export interface ViewState {
 	cables: Readable<Cable[]>;
 	focusedIngredient: Readable<Ingredient>;
 	nodes: Readable<Node[]>;
 	dockedFlavors: Readable<Flavor[]>;
-	cursorCoordinates: Writable<Coordinates | undefined>;
+	cursor: CursorState;
 	liveConnection: LiveConnectionState;
 	liveTerminal: Readable<Terminal | undefined>;
 	terminals: Readable<Terminal[]>;
@@ -63,7 +58,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	});
 
-	const cursorCoordinates = writable(undefined);
+	const cursor = createCursor();
 
 	// these are connections, ingredient nodes, and flavors that are in the given view
 	const inFocusConnections = derived(
@@ -186,7 +181,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		nodes,
 		dockedFlavors,
 		focusedIngredient,
-		cursorCoordinates,
+		cursor,
 		liveConnection,
 		liveTerminal,
 		terminals,

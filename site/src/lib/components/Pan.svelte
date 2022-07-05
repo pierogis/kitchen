@@ -1,17 +1,14 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { get, writable, type Readable } from 'svelte/store';
+	import { get } from 'svelte/store';
 
 	import type { Camera, Scene, ShaderMaterial, WebGLRenderer } from 'three';
 
-	import type { Coordinates } from '@types';
 	import type { ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
 	import { dispatchIngredientCreationActions } from '@state/batch/ingredient';
 
 	import { init, cook } from '$lib/common/cook';
-
-	import CursorCircle from '@components/CursorCircle.svelte';
 
 	export let width: number;
 	export let height: number;
@@ -19,23 +16,23 @@
 	export let recipeState: RecipeState;
 	export let viewState: ViewState;
 
-	export let cursorCoordinates: Readable<Coordinates | undefined>;
-
 	let canvas: HTMLCanvasElement;
 
-	// export let media: (HTMLImageElement | HTMLVideoElement | HTMLAudioElement | WebGLTexture)[];
-
-	const pressing = writable(false);
-
-	function rightClickAction(element: Window) {
+	function doubleClickAction(element: HTMLElement) {
 		function handleDoubleClick(event: MouseEvent) {
 			// right click
 			event.preventDefault();
-			dispatchIngredientCreationActions(
-				recipeState,
-				{ x: event.clientX, y: event.clientY },
-				get(viewState.focusedIngredient).uuid
-			);
+
+			const elements = document.elementsFromPoint(event.clientX, event.clientY);
+			// the top most element clicked on should be an svg
+			if (elements[0].tagName == 'svg') {
+				dispatchIngredientCreationActions(
+					recipeState,
+					{ x: event.clientX, y: event.clientY },
+					get(viewState.focusedIngredient).uuid
+				);
+			}
+
 			return false;
 		}
 
@@ -74,12 +71,8 @@
 	});
 </script>
 
-<svelte:window use:rightClickAction />
-<canvas bind:this={canvas} {width} {height} />
-
-{#if $cursorCoordinates}
-	<CursorCircle cursorCoordinates={$cursorCoordinates} pressing={$pressing} />
-{/if}
+<svelte:window use:doubleClickAction />
+<canvas bind:this={canvas} {width} {height} class="no-select" />
 
 <style>
 	canvas {

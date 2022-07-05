@@ -35,7 +35,7 @@
 	setContext(viewStateContextKey, viewState);
 
 	const handleMouseMove = (ev: MouseEvent) => {
-		viewState.cursorCoordinates.set({ x: ev.clientX, y: ev.clientY });
+		viewState.cursor.coordinates.set({ x: ev.clientX, y: ev.clientY });
 	};
 </script>
 
@@ -61,10 +61,4 @@
 	height={innerHeight}
 />
 
-<Pan
-	width={innerWidth}
-	height={innerHeight}
-	{recipeState}
-	{viewState}
-	cursorCoordinates={viewState.cursorCoordinates}
-/>
+<Pan width={innerWidth} height={innerHeight} {recipeState} {viewState} />
