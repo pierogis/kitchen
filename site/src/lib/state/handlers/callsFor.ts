@@ -7,12 +7,12 @@ const createCallsFor: ActionHandler<ActionType.CreateCallsFor, ActionType.Delete
 	stores,
 	params
 ) => {
-	const uuids = createEntities(stores.callsFor, params.callsFor);
+	const callsFor = createEntities(stores.callsFor, params.callsFor);
 
 	return {
 		type: ActionType.DeleteCallsFor,
 		params: {
-			uuids
+			callsFor
 		}
 	};
 };
@@ -21,11 +21,11 @@ const deleteCallsFor: ActionHandler<ActionType.DeleteCallsFor, ActionType.Create
 	stores,
 	params
 ) => {
-	const deletedCallsFor = deleteEntities(stores.callsFor, params.uuids);
+	deleteEntities(stores.callsFor, params.callsFor);
 
 	return {
 		type: ActionType.CreateCallsFor,
-		params: { callsFor: deletedCallsFor }
+		params: { callsFor: params.callsFor }
 	};
 };
 

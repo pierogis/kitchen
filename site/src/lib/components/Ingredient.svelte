@@ -10,7 +10,6 @@
 	import type { RecipeState } from '@recipe';
 	import type { ViewState } from '@view';
 	import { ActionType, type Action } from '@state/actions';
-	import { dispatchDeleteCallForActions } from '@state/batch/callFor';
 
 	import Pane from '@components/tweakpane/Pane.svelte';
 	import FlavorComponent from '@components/Flavor.svelte';
@@ -30,7 +29,7 @@
 	function handleFocus(_event: MouseEvent) {
 		const focusUsageAction: Action<ActionType.FocusUsage> = {
 			type: ActionType.FocusUsage,
-			params: { uuid: callFor.usageUuid }
+			params: { usageUuid: callFor.usageUuid }
 		};
 
 		recipeState.dispatch(focusUsageAction);
@@ -38,7 +37,11 @@
 
 	// delete node on close button
 	function handleRemove(_event: MouseEvent) {
-		dispatchDeleteCallForActions(recipeState, callFor);
+		const callForAction: Action<ActionType.DeleteCallsFor> = {
+			type: ActionType.DeleteCallsFor,
+			params: { callsFor: [callFor] }
+		};
+		recipeState.dispatch(callForAction);
 	}
 
 	const nodeHeaderSize = 12;

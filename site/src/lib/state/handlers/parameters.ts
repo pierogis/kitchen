@@ -6,12 +6,12 @@ const createParameters: ActionHandler<ActionType.CreateParameters, ActionType.De
 	stores,
 	params
 ) => {
-	const uuids = createEntities(stores.parameters, params.parameters);
+	const parameters = createEntities(stores.parameters, params.parameters);
 
 	return {
 		type: ActionType.DeleteParameters,
 		params: {
-			uuids
+			parameters
 		}
 	};
 };
@@ -32,12 +32,12 @@ const deleteParameters: ActionHandler<ActionType.DeleteParameters, ActionType.Cr
 	stores,
 	params
 ) => {
-	const parameters = deleteEntities(stores.parameters, params.uuids);
+	deleteEntities(stores.parameters, params.parameters);
 
 	return {
 		type: ActionType.CreateParameters,
 		params: {
-			parameters
+			parameters: params.parameters
 		}
 	};
 };

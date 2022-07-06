@@ -4,17 +4,18 @@ import { ActionType, type ActionHandler } from '@state/actions';
 import type { RecipeState } from '@recipe';
 
 import { createEntities, deleteEntities, updateEntities } from './common';
+import type { Connection } from '$lib/common/types';
 
 const createConnections: ActionHandler<
 	ActionType.CreateConnections,
 	ActionType.DeleteConnections
 > = (stores, params) => {
-	const uuids = createEntities(stores.connections, params.connections);
+	const connections = createEntities(stores.connections, params.connections);
 
 	return {
 		type: ActionType.DeleteConnections,
 		params: {
-			uuids
+			connections
 		}
 	};
 };
@@ -35,11 +36,11 @@ const deleteConnections: ActionHandler<
 	ActionType.DeleteConnections,
 	ActionType.CreateConnections
 > = (stores, params) => {
-	const deletedConnections = deleteEntities(stores.connections, params.uuids);
+	deleteEntities(stores.connections, params.connections);
 
 	return {
 		type: ActionType.CreateConnections,
-		params: { connections: deletedConnections }
+		params: { connections: params.connections }
 	};
 };
 
@@ -47,20 +48,20 @@ const deleteUsages: ActionHandler<ActionType.DeleteUsages, ActionType.CreateConn
 	stores,
 	params
 ) => {
-	const connectionUuids: string[] = [];
+	const connections: Connection[] = [];
 	const currentConnections = get(stores.connections);
-	for (const uuid of params.uuids) {
+	for (const usage of params.usages) {
 		for (const connection of currentConnections.values()) {
-			if (connection.inUsageUuid == uuid || connection.outUsageUuid == uuid) {
+			if (connection.inUsageUuid == usage.uuid || connection.outUsageUuid == usage.uuid) {
 				// this connection uses this usage
-				connectionUuids.push(connection.uuid);
+				connections.push(connection);
 			}
 		}
 	}
 
-	const deletedConnections = deleteEntities(stores.connections, connectionUuids);
+	deleteEntities(stores.connections, connections);
 
-	return { type: ActionType.CreateConnections, params: { connections: deletedConnections } };
+	return { type: ActionType.CreateConnections, params: { connections } };
 };
 
 export function registerConnectionHandlers(recipeState: RecipeState) {

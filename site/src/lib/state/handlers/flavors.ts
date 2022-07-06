@@ -6,12 +6,12 @@ const createFlavors: ActionHandler<ActionType.CreateFlavors, ActionType.DeleteFl
 	stores,
 	params
 ) => {
-	const uuids = createEntities(stores.flavors, params.flavors);
+	const flavors = createEntities(stores.flavors, params.flavors);
 
 	return {
 		type: ActionType.DeleteFlavors,
 		params: {
-			uuids
+			flavors
 		}
 	};
 };
@@ -20,12 +20,12 @@ const deleteFlavors: ActionHandler<ActionType.DeleteFlavors, ActionType.CreateFl
 	stores,
 	params
 ) => {
-	const flavors = deleteEntities(stores.flavors, params.uuids);
+	deleteEntities(stores.flavors, params.flavors);
 
 	return {
 		type: ActionType.CreateFlavors,
 		params: {
-			flavors
+			flavors: params.flavors
 		}
 	};
 };

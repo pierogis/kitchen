@@ -24,22 +24,22 @@ export enum ActionType {
 
 type ActionParamsMapper = {
 	[ActionType.CreateIngredients]: { ingredients: Ingredient[] };
-	[ActionType.DeleteIngredients]: { uuids: string[] };
+	[ActionType.DeleteIngredients]: { ingredients: Ingredient[] };
 	[ActionType.CreateFlavors]: { flavors: Flavor[] };
-	[ActionType.DeleteFlavors]: { uuids: string[] };
+	[ActionType.DeleteFlavors]: { flavors: Flavor[] };
 	[ActionType.CreateUsages]: { usages: Usage[] };
-	[ActionType.DeleteUsages]: { uuids: string[] };
+	[ActionType.DeleteUsages]: { usages: Usage[] };
 	[ActionType.CreateCallsFor]: { callsFor: CallFor[] };
-	[ActionType.DeleteCallsFor]: { uuids: string[] };
+	[ActionType.DeleteCallsFor]: { callsFor: CallFor[] };
 	[ActionType.CreateLocations]: { locations: Location[] };
-	[ActionType.DeleteLocations]: { uuids: string[] };
+	[ActionType.DeleteLocations]: { locations: Location[] };
 	[ActionType.CreateConnections]: { connections: Connection[] };
 	[ActionType.UpdateConnections]: { connections: Connection[] };
-	[ActionType.DeleteConnections]: { uuids: string[] };
+	[ActionType.DeleteConnections]: { connections: Connection[] };
 	[ActionType.CreateParameters]: { parameters: Parameter[] };
 	[ActionType.UpdateParameters]: { parameters: Parameter[] };
-	[ActionType.DeleteParameters]: { uuids: string[] };
-	[ActionType.FocusUsage]: { uuid: string };
+	[ActionType.DeleteParameters]: { parameters: Parameter[] };
+	[ActionType.FocusUsage]: { usageUuid: string };
 };
 
 export type ActionParams<T> = T extends ActionType ? ActionParamsMapper[T] : never;

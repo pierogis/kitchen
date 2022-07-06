@@ -54,32 +54,13 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 			flavorUsageFillingsMap.set([flavorUuid, usageUuid, direction].join(','), filling)
 	};
 
-	const payloadInputs = derived(
-		[
-			recipeState.callsFor,
-			recipeState.parameters,
-			recipeState.connections,
-			recipeState.usages,
-			recipeState.flavors
-		],
-		([$callsFor, $parameters, $connections, $usages, $flavors]) => {
-			return {
-				callsFor: $callsFor,
-				parameters: $parameters,
-				connections: $connections,
-				flavors: $flavors,
-				usages: $usages
-			};
-		}
-	);
-
-	payloadInputs.subscribe(($payloadInputs) => {
+	recipeState.subscribe(($recipe) => {
 		// each flavor should have a payload
-		const currentCallsFor = $payloadInputs.callsFor;
-		const currentParameters = Array.from($payloadInputs.parameters.values());
-		const currentConnections = Array.from($payloadInputs.connections.values());
-		const currentFlavors = Array.from($payloadInputs.flavors.values());
-		const currentUsages = $payloadInputs.usages;
+		const currentCallsFor = $recipe.callsFor;
+		const currentParameters = Array.from($recipe.parameters.values());
+		const currentConnections = Array.from($recipe.connections.values());
+		const currentFlavors = Array.from($recipe.flavors.values());
+		const currentUsages = $recipe.usages;
 
 		// if a entry does not exist for every flavor in current flavors, add
 		for (const callFor of currentCallsFor.values()) {

@@ -1,6 +1,6 @@
 import { derived, type Readable, get } from 'svelte/store';
 
-import { Direction, type Flavor, type FlavorUsage, type Ingredient } from '@types';
+import { Direction, type Flavor, type FlavorUsage, type Ingredient, type Usage } from '@types';
 import type { RecipeState } from '@recipe';
 
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
@@ -75,15 +75,16 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 				(ingredient) => ingredient.parentIngredientUuid == $focusedIngredient.uuid
 			)
 	);
-	const inFocusSubUsages = derived(
-		[inFocusSubIngredients, recipeState.usages],
-		([$inFocusSubIngredients, $usages]) => {
-			const currentFocusedSubIngredientUuids = $inFocusSubIngredients.map(
-				(ingredient) => ingredient.uuid
-			);
-			return Array.from($usages.values()).filter((usage) =>
-				currentFocusedSubIngredientUuids.includes(usage.ingredientUuid)
-			);
+	const inFocusSubComponents: Readable<{ usage: Usage; ingredient: Ingredient }[]> = derived(
+		[recipeState.usages, recipeState.ingredients, focusedIngredientUuid],
+		([$usages, $ingredients, $focusedIngredientUuid]) => {
+			return Array.from($usages.values()).flatMap((usage) => {
+				const ingredient = $ingredients.get(usage.ingredientUuid);
+
+				return ingredient && ingredient.parentIngredientUuid == $focusedIngredientUuid
+					? [{ ingredient, usage }]
+					: [];
+			});
 		}
 	);
 
@@ -171,7 +172,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const cables = createCables(terminals, liveTerminal);
 
 	// callsFor/ingredients/nodes in the current view and their components
-	const nodes = createNodes(recipeState, inFocusSubIngredients, inFocusSubUsages);
+	const nodes = createNodes(recipeState, inFocusSubComponents);
 
 	// centrally track values that go in inputs/monitors so they can be edited from anywhere
 	const fillings = createFillings(recipeState);

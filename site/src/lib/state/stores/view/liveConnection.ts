@@ -87,7 +87,7 @@ export function createLiveConnection(
 				recipeState.dispatch({
 					type: ActionType.DeleteConnections,
 					params: {
-						uuids: [terminal.connectionUuid]
+						connections: [connection]
 					}
 				});
 

@@ -7,12 +7,12 @@ const createUsages: ActionHandler<ActionType.CreateUsages, ActionType.DeleteUsag
 	stores,
 	params
 ) => {
-	const uuids = createEntities(stores.usages, params.usages);
+	const usages = createEntities(stores.usages, params.usages);
 
 	return {
 		type: ActionType.DeleteUsages,
 		params: {
-			uuids
+			usages
 		}
 	};
 };
@@ -21,13 +21,32 @@ const deleteUsages: ActionHandler<ActionType.DeleteUsages, ActionType.CreateUsag
 	stores,
 	params
 ) => {
-	const usages = deleteEntities(stores.usages, params.uuids);
+	deleteEntities(stores.usages, params.usages);
 
 	return {
 		type: ActionType.CreateUsages,
 		params: {
-			usages
+			usages: params.usages
 		}
+	};
+};
+
+const deleteCallsFor: ActionHandler<ActionType.DeleteCallsFor, ActionType.CreateUsages> = (
+	stores,
+	params
+) => {
+	const currentUsages = get(stores.usages);
+
+	const oldUsages = params.callsFor.flatMap((callFor) => {
+		const usage = currentUsages.get(callFor.usageUuid);
+		return usage ? [usage] : [];
+	});
+
+	deleteEntities(stores.usages, oldUsages);
+
+	return {
+		type: ActionType.CreateUsages,
+		params: { usages: oldUsages }
 	};
 };
 
@@ -37,18 +56,19 @@ const focusUsage: ActionHandler<ActionType.FocusUsage, ActionType.FocusUsage> = 
 ) => {
 	const oldUsageUuid = get(stores.focusedUsageUuid);
 
-	const usage = get(stores.usages).get(params.uuid);
-	if (!usage) throw `usage ${params.uuid} does not exist`;
+	const usage = get(stores.usages).get(params.usageUuid);
+	if (!usage) throw `usage ${params.usageUuid} does not exist`;
 	stores.focusedUsageUuid.set(usage.uuid);
 
 	return {
 		type: ActionType.FocusUsage,
-		params: { uuid: oldUsageUuid }
+		params: { usageUuid: oldUsageUuid }
 	};
 };
 
 export function registerUsageHandlers(recipeState: RecipeState) {
 	recipeState.register(ActionType.CreateUsages, createUsages);
 	recipeState.register(ActionType.DeleteUsages, deleteUsages);
+	recipeState.register(ActionType.DeleteCallsFor, deleteCallsFor);
 	recipeState.register(ActionType.FocusUsage, focusUsage);
 }
