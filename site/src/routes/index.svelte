@@ -4,12 +4,13 @@
 	import { viewStateContextKey } from '@view';
 
 	import { defaultRecipe } from './_recipe';
+	import { shaderRecipe } from './_shader';
 
 	/** @type {import('./index').Load} */
 	export async function load() {
 		return {
 			props: {
-				recipe: defaultRecipe
+				recipe: shaderRecipe
 			}
 		};
 	}

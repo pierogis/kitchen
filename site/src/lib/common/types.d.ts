@@ -24,6 +24,12 @@ export type FlavorUsage = Flavor & {
 	usageUuid: string;
 };
 
+export interface Prep {
+	uuid: string;
+	name: string;
+	ingredientUuid: string;
+}
+
 export interface Ingredient {
 	uuid: string;
 	name: string;
