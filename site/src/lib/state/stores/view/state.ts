@@ -1,6 +1,14 @@
 import { derived, type Readable, get } from 'svelte/store';
 
-import { Direction, type Flavor, type FlavorUsage, type Ingredient, type Usage } from '@types';
+import {
+	Direction,
+	type Flavor,
+	type FlavorUsage,
+	type Ingredient,
+	type Usage,
+	type FullPrep,
+	PrepType
+} from '@types';
 import type { RecipeState } from '@recipe';
 
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
@@ -14,6 +22,8 @@ import {
 } from './terminals';
 import { createFillings, type FillingsState } from './fillings';
 import { createCursor, type CursorState } from './cursor';
+import { createPreps } from './preps';
+import { prepPrimitives } from '$lib/common/preps';
 
 export interface ViewState {
 	cables: Readable<Cable[]>;
@@ -26,6 +36,7 @@ export interface ViewState {
 	terminals: Readable<Terminal[]>;
 	terminalsCoordinates: TerminalsCoordinatesState;
 	fillings: FillingsState;
+	preps: Readable<FullPrep[]>;
 }
 
 // dont use the derived properties thing for recipe store
@@ -116,23 +127,43 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		}
 	);
 
+	// centrally track values that go in inputs/monitors so they can be edited from anywhere
+	const preps = createPreps(recipeState, focusedIngredientUuid);
+
 	// flavors belonging to the focused ingredient
 	const dockedFlavors: Readable<FlavorUsage[]> = derived(
-		[recipeState.flavors, focusedIngredient],
-		([$flavors, $focusedIngredient]) => {
+		[recipeState.flavors, preps, focusedIngredientUuid],
+		([$flavors, $preps, $focusedIngredientUuid]) => {
+			const focusedUsageUuid = get(recipeState.focusedUsageUuid);
 			return Array.from($flavors.values())
-				.filter((flavor) => flavor.ingredientUuid == $focusedIngredient.uuid)
+				.filter((flavor) => flavor.ingredientUuid == $focusedIngredientUuid)
 				.flatMap((flavor) =>
-					flavor.directions.map<FlavorUsage>((direction) => {
-						return {
-							uuid: flavor.uuid,
-							ingredientUuid: flavor.ingredientUuid,
-							type: flavor.type,
-							name: flavor.name,
-							options: flavor.options,
-							directions: direction == Direction.In ? [Direction.Out] : [Direction.In],
-							usageUuid: get(recipeState.focusedUsageUuid)
-						};
+					flavor.directions.flatMap<FlavorUsage>((direction) => {
+						const prep = $preps.find((prep) => prep.ingredientUuid == flavor.ingredientUuid);
+						// filter out flavors that are already in preps
+						const prepFlavorEntry =
+							prep &&
+							Object.entries(prep.flavorMap).find(
+								([_prepFlavorName, flavorUuid]) => flavorUuid == flavor.uuid
+							);
+						const directedFlavorInPrep =
+							prepFlavorEntry &&
+							prepPrimitives[prep.type].flavors[prepFlavorEntry[0]].directions.includes(direction);
+						if (directedFlavorInPrep) {
+							return [];
+						} else {
+							return [
+								{
+									uuid: flavor.uuid,
+									ingredientUuid: flavor.ingredientUuid,
+									type: flavor.type,
+									name: flavor.name,
+									options: flavor.options,
+									directions: direction == Direction.In ? [Direction.Out] : [Direction.In],
+									usageUuid: focusedUsageUuid
+								}
+							];
+						}
 					})
 				);
 		}
@@ -187,6 +218,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		liveTerminal,
 		terminals,
 		terminalsCoordinates,
-		fillings
+		fillings,
+		preps
 	};
 }

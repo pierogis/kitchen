@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Readable } from 'svelte/store';
 
-	import { Direction, type Flavor } from '@types';
+	import { Direction, type Flavor, type FullPrep } from '@types';
 
 	import type { Terminal, Node, Cable } from '@view';
 	import type { TerminalsCoordinatesState } from '@view/terminals';
@@ -15,6 +15,7 @@
 
 	export let focusedUsageUuid: Readable<string>;
 	export let dockedFlavors: Readable<Flavor[]>;
+	export let preps: Readable<FullPrep[]>;
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
 	export let terminalsCoordinates: TerminalsCoordinatesState;
@@ -55,6 +56,7 @@
 />
 <Dock
 	direction={Direction.Out}
+	preps={$preps}
 	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.In))}
 	focusedUsageUuid={$focusedUsageUuid}
 />

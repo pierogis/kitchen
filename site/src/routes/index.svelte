@@ -4,13 +4,12 @@
 	import { viewStateContextKey } from '@view';
 
 	import { defaultRecipe } from './_recipe';
-	import { shaderRecipe } from './_shader';
 
 	/** @type {import('./index').Load} */
 	export async function load() {
 		return {
 			props: {
-				recipe: shaderRecipe
+				recipe: defaultRecipe
 			}
 		};
 	}
@@ -54,6 +53,7 @@
 <Recipe
 	focusedUsageUuid={recipeState.focusedUsageUuid}
 	dockedFlavors={viewState.dockedFlavors}
+	preps={viewState.preps}
 	nodes={viewState.nodes}
 	cables={viewState.cables}
 	terminalsCoordinates={viewState.terminalsCoordinates}

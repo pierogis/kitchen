@@ -1,4 +1,4 @@
-import { Direction, type FullRecipe, FlavorType } from '@types';
+import { Direction, type FullRecipe, FlavorType, PrepType } from '@types';
 
 export const defaultRecipe: FullRecipe = {
 	uuid: '0',
@@ -58,28 +58,16 @@ export const defaultRecipe: FullRecipe = {
 					ingredientUuid: '0',
 					parentUsageUuid: undefined
 				}
-			]
-		},
-		{
-			uuid: '1',
-			parentIngredientUuid: '0',
-			name: 'code',
-			flavors: [
-				{
-					uuid: '4',
-					ingredientUuid: '1',
-					name: 'code',
-					type: FlavorType.Text,
-					directions: [Direction.Out],
-					options: null
-				}
 			],
-			connections: [],
-			usages: [
+			preps: [
 				{
-					uuid: '1',
-					ingredientUuid: '1',
-					parentUsageUuid: '0'
+					uuid: '0',
+					name: 'image out',
+					ingredientUuid: '0',
+					type: PrepType.Image,
+					flavorMap: {
+						image: '0'
+					}
 				}
 			]
 		},
@@ -97,17 +85,17 @@ export const defaultRecipe: FullRecipe = {
 					options: null
 				},
 				{
-					uuid: '6',
-					ingredientUuid: '2',
-					name: 'code',
-					type: FlavorType.Text,
-					directions: [Direction.In],
-					options: null
-				},
-				{
 					uuid: '7',
 					ingredientUuid: '2',
-					name: 'color',
+					name: 'replace color',
+					type: FlavorType.Color,
+					directions: [Direction.In],
+					options: { view: 'color', color: { alpha: true } }
+				},
+				{
+					uuid: '8',
+					ingredientUuid: '2',
+					name: 'target color',
 					type: FlavorType.Color,
 					directions: [Direction.In],
 					options: { view: 'color', color: { alpha: true } }
@@ -130,6 +118,15 @@ export const defaultRecipe: FullRecipe = {
 					ingredientUuid: '2',
 					parentUsageUuid: '0'
 				}
+			],
+			preps: [
+				{
+					uuid: '1',
+					ingredientUuid: '1',
+					name: 'shader',
+					type: PrepType.Shader,
+					flavorMap: { texture: '5' }
+				}
 			]
 		}
 	],
@@ -142,17 +139,6 @@ export const defaultRecipe: FullRecipe = {
 				uuid: '0',
 				callForUuid: '0',
 				x: 100,
-				y: 200
-			}
-		},
-		{
-			uuid: '1',
-			recipeUuid: '0',
-			usageUuid: '1',
-			location: {
-				uuid: '1',
-				callForUuid: '1',
-				x: 200,
 				y: 200
 			}
 		},
@@ -211,16 +197,6 @@ export const defaultRecipe: FullRecipe = {
 			}
 		},
 		{
-			uuid: '4',
-			recipeUuid: '0',
-			flavorUuid: '4',
-			usageUuid: '1',
-			payload: {
-				type: FlavorType.Text,
-				value: ''
-			}
-		},
-		{
 			uuid: '5',
 			recipeUuid: '0',
 			flavorUuid: '5',
@@ -247,15 +223,24 @@ export const defaultRecipe: FullRecipe = {
 			usageUuid: '2',
 			payload: {
 				type: FlavorType.Color,
-				value: '#0088ff'
+				value: '#b008ff'
+			}
+		},
+		{
+			uuid: '8',
+			recipeUuid: '0',
+			flavorUuid: '8',
+			usageUuid: '2',
+			payload: {
+				type: FlavorType.Color,
+				value: '#0588af'
 			}
 		}
 	],
 	shaders: [
 		{
 			uuid: '0',
-			ingredientUuid: '0',
-			imageFlavorUuid: '0',
+			prepUuid: '1',
 			recipeUuid: '0',
 			vertexSource: '',
 			fragmentSource: ''

@@ -1,19 +1,13 @@
 import { Direction, FlavorType } from '@types';
-import { SphereGeometry, type Scene } from 'three';
-import type { Prep } from '.';
+import { SphereGeometry } from 'three';
+import type { PrepPrimitive } from '.';
 
-export const Sphere: Prep = {
-	flavors: [
-		{
-			name: 'lower',
-			type: FlavorType.Number,
-			directions: [Direction.In],
-			options: {
-				min: 0,
-				max: 255
-			}
-		}
-	],
+export const sphere: PrepPrimitive = {
+	flavors: {
+		radius: { directions: [Direction.In], type: FlavorType.Number },
+		// FlavorType.Geometry
+		sphere: { directions: [Direction.Out], type: FlavorType.Number }
+	},
 	cook: () => {
 		return new SphereGeometry();
 	}

@@ -1,27 +1,21 @@
 import { Direction, FlavorType } from '@types';
-import type { Prep } from '.';
+import type { PrepPrimitive } from '.';
 
-export const add: Prep = {
-	flavors: [
-		{
-			name: 'sum',
+export const add: PrepPrimitive = {
+	flavors: {
+		sum: {
 			type: FlavorType.Number,
-			directions: [Direction.Out],
-			options: null
+			directions: [Direction.Out]
 		},
-		{
-			name: 'operand 1',
+		'operand 1': {
 			type: FlavorType.Number,
-			directions: [Direction.In],
-			options: null
+			directions: [Direction.In]
 		},
-		{
-			name: 'operand 2',
+		'operand 2': {
 			type: FlavorType.Number,
-			directions: [Direction.In],
-			options: null
+			directions: [Direction.In]
 		}
-	],
+	},
 	cook: (parameters: { 'operand 1': number; 'operand 2': number }) => {
 		return {
 			sum: parameters['operand 1'] + parameters['operand 2']

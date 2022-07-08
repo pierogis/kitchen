@@ -5,12 +5,18 @@ export enum FlavorType {
 	Image = 'Image'
 }
 
+export enum PrepType {
+	Shader = 'Shader',
+	Image = 'Image',
+	Texture = 'Texture'
+}
+
 export enum Direction {
 	In = 'In',
 	Out = 'Out'
 }
 
-// types with for api contract
+// types for api contract
 export interface Flavor {
 	uuid: string;
 	ingredientUuid: string;
@@ -20,14 +26,15 @@ export interface Flavor {
 	directions: Direction[];
 }
 
-export type FlavorUsage = Flavor & {
-	usageUuid: string;
-};
-
 export interface Prep {
 	uuid: string;
 	name: string;
 	ingredientUuid: string;
+	type: PrepType;
+	// map from default names on prep operands and outputs to flavor uuids
+	flavorMap: {
+		[prepFlavorName: string]: string;
+	};
 }
 
 export interface Ingredient {
@@ -40,10 +47,18 @@ export interface Connection {
 	uuid: string;
 	parentIngredientUuid: string;
 	flavorType: FlavorType;
+
+	// connection can be usage/usage or usage/prep
+
 	inFlavorUuid: string;
+	// should have either of these two
+	inUsageUuid?: string;
+	inPrepUuid?: string;
+
 	outFlavorUuid: string;
-	inUsageUuid: string;
-	outUsageUuid: string;
+	// should have either of these two
+	outUsageUuid?: string;
+	outPrepUuid?: string;
 }
 
 export interface Usage {
@@ -57,13 +72,6 @@ export interface Recipe {
 	mainCallForUuid: string;
 }
 
-export type FullRecipe = Recipe & {
-	ingredients: FullIngredient[];
-	callsFor: FullCallFor[];
-	parameters: Parameter[];
-	shaders: Shader[];
-};
-
 export interface CallFor {
 	uuid: string;
 	recipeUuid: string;
@@ -73,8 +81,7 @@ export interface CallFor {
 export interface Shader {
 	uuid: string;
 	recipeUuid: string;
-	ingredientUuid: string;
-	imageFlavorUuid: string;
+	prepUuid: string;
 	vertexSource: string;
 	fragmentSource: string;
 }
@@ -101,8 +108,6 @@ export interface Parameter {
 	usageUuid: string;
 }
 
-export type Coordinates = Pick<Location, 'x' | 'y'>;
-
 export interface Location {
 	uuid: string;
 	callForUuid: string;
@@ -110,13 +115,31 @@ export interface Location {
 	y: number;
 }
 
-// types with relations included
+// types derived from relationships/specifics
+export type FlavorUsage = Flavor & {
+	usageUuid: string;
+};
+
+export type FullPrep = Prep & {
+	flavors: Flavor[];
+};
+
+export type Coordinates = Pick<Location, 'x' | 'y'>;
+
 export type FullIngredient = Ingredient & {
 	flavors: Flavor[];
 	connections: Connection[];
 	usages: Usage[];
+	preps: Prep[];
 };
 
 export type FullCallFor = CallFor & {
 	location: Location;
+};
+
+export type FullRecipe = Recipe & {
+	ingredients: FullIngredient[];
+	callsFor: FullCallFor[];
+	parameters: Parameter[];
+	shaders: Shader[];
 };

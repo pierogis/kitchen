@@ -8,7 +8,8 @@ import type {
 	Parameter,
 	Shader,
 	Location,
-	Usage
+	Usage,
+	Prep
 } from '@types';
 
 import type { Action, ActionHandler, ActionType } from '@state/actions';
@@ -25,6 +26,7 @@ export interface FlatRecipe {
 	parameters: Map<string, Parameter>;
 	locations: Map<string, Location>;
 	usages: Map<string, Usage>;
+	preps: Map<string, Prep>;
 }
 
 export type RecipeState = {
@@ -56,6 +58,7 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 	const parameters = writable(recipe.parameters);
 	const locations = writable(recipe.locations);
 	const usages = writable(recipe.usages);
+	const preps = writable(recipe.preps);
 
 	const stores = {
 		recipeUuid,
@@ -67,7 +70,8 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 		shaders,
 		parameters,
 		locations,
-		usages
+		usages,
+		preps
 	};
 
 	const actionsDispatcher = dispatcher(stores);
@@ -86,7 +90,8 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 			shaders: get(shaders),
 			parameters: get(parameters),
 			locations: get(locations),
-			usages: get(usages)
+			usages: get(usages),
+			preps: get(preps)
 		});
 	}
 
@@ -102,7 +107,8 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 			shaders: get(shaders),
 			parameters: get(parameters),
 			locations: get(locations),
-			usages: get(usages)
+			usages: get(usages),
+			preps: get(preps)
 		});
 	}
 
