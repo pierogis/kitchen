@@ -160,7 +160,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 									name: flavor.name,
 									options: flavor.options,
 									directions: direction == Direction.In ? [Direction.Out] : [Direction.In],
-									usageUuid: focusedUsageUuid
+									usageUuid: undefined
 								}
 							];
 						}
@@ -176,6 +176,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		inFocusConnections,
 		inFocusFlavorUsages,
 		liveConnection,
+		preps,
 		dockedFlavors
 	);
 

@@ -12,9 +12,9 @@ export type LiveConnection = {
 	dragDirection: Direction;
 	flavorType: FlavorType;
 	anchorFlavorUuid: string;
-	anchorUsageUuid: string;
+	anchorUsageUuid?: string;
 	disconnectedFlavorUuid: string | undefined;
-	disconnectedUsageUuid: string | undefined;
+	disconnectedUsageUuid?: string | undefined;
 	connect: (
 		targetFlavorUuid: string,
 		targetUsageUuid: string,
@@ -52,7 +52,7 @@ export function createLiveConnection(
 		}
 
 		const dragDirection = terminal.direction == Direction.In ? Direction.Out : Direction.In;
-		if (terminal.flavorUuid && terminal.usageUuid) {
+		if (terminal.flavorUuid) {
 			// set store with data on this new connection
 			store.set({
 				connectionUuid: terminal.connectionUuid,
@@ -61,8 +61,8 @@ export function createLiveConnection(
 				dragDirection,
 
 				anchorFlavorUuid: terminal.flavorUuid,
-				disconnectedFlavorUuid: undefined,
 				anchorUsageUuid: terminal.usageUuid,
+				disconnectedFlavorUuid: undefined,
 				disconnectedUsageUuid: undefined,
 
 				drop,

@@ -14,6 +14,7 @@ export const defaultRecipe: FullRecipe = {
 					ingredientUuid: '0',
 					name: 'image',
 					type: FlavorType.Image,
+					prepUuid: '0',
 					directions: [Direction.In, Direction.Out],
 					options: null
 				},
@@ -81,6 +82,7 @@ export const defaultRecipe: FullRecipe = {
 					ingredientUuid: '2',
 					name: 'texture',
 					type: FlavorType.Image,
+					prepUuid: '1',
 					directions: [Direction.In, Direction.Out],
 					options: null
 				},

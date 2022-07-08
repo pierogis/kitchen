@@ -118,11 +118,11 @@ export interface Location {
 
 // types derived from relationships/specifics
 export type FlavorUsage = Flavor & {
-	usageUuid: string;
+	usageUuid?: string;
 };
 
-export type FullPrep = Prep & {
-	flavors: Flavor[];
+export type FullPrep = Prep<PrepType> & {
+	flavors: FlavorUsage[];
 };
 
 export type Coordinates = Pick<Location, 'x' | 'y'>;
