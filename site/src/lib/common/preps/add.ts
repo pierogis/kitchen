@@ -1,7 +1,22 @@
-import { Direction, FlavorType } from '@types';
-import type { PrepPrimitive } from '.';
+import type * as THREE from 'three';
 
-export const add: PrepPrimitive = {
+import { Direction, FlavorType, type Payload } from '@types';
+import type { FlavorMap, PrepPrimitive } from '.';
+
+export interface AddOperands extends FlavorMap {
+	'operand 1': FlavorType.Number;
+	'operand 2': FlavorType.Number;
+}
+
+type AddOperandPayloads = {
+	[prepOperandName in keyof AddOperands]: Payload<AddOperands[prepOperandName]>;
+};
+
+export interface AddOutputs extends FlavorMap {
+	sum: FlavorType.Number;
+}
+
+export const add: PrepPrimitive<AddOperands, AddOutputs> = {
 	flavors: {
 		sum: {
 			type: FlavorType.Number,
@@ -16,9 +31,19 @@ export const add: PrepPrimitive = {
 			directions: [Direction.In]
 		}
 	},
-	cook: (parameters: { 'operand 1': number; 'operand 2': number }) => {
+	cook: (
+		scene: THREE.Scene,
+		camera: THREE.Camera,
+		inPayloads: {
+			[prepOperandName: string]: Payload<FlavorType>;
+		}
+	) => {
+		const operand1 = Number(inPayloads['operand 1'].value);
+		const operand2 = Number(inPayloads['operand 1'].value);
+
+		const value = operand1 + operand2;
 		return {
-			sum: parameters['operand 1'] + parameters['operand 2']
+			sum: { type: FlavorType.Number, value }
 		};
 	}
 };

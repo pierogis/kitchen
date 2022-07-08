@@ -1,4 +1,4 @@
-import type { Connection, Flavor, FullRecipe, Prep, Usage } from '@types';
+import type { Connection, Flavor, FullRecipe, Prep, PrepType, Usage } from '@types';
 
 import { registerCallForHandlers } from './handlers/callsFor';
 import { registerConnectionHandlers } from './handlers/connections';
@@ -46,7 +46,7 @@ export function storeRecipe(recipe: FullRecipe) {
 		recipe.callsFor.map((callFor) => [callFor.location.uuid, callFor.location])
 	);
 	const initialPreps = new Map(
-		recipe.ingredients.reduce<[string, Prep][]>((previous, ingredient) => {
+		recipe.ingredients.reduce<[string, Prep<PrepType>][]>((previous, ingredient) => {
 			previous = previous.concat(ingredient.preps.map((prep) => [prep.uuid, prep]));
 
 			return previous;

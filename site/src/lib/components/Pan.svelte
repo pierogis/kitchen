@@ -2,7 +2,7 @@
 	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 
-	import type { Camera, Scene, ShaderMaterial, WebGLRenderer } from 'three';
+	import type * as THREE from 'three';
 
 	import type { ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
@@ -45,11 +45,11 @@
 		};
 	}
 
-	const materials: Map<string, ShaderMaterial> = new Map();
+	const materials: Map<string, THREE.ShaderMaterial> = new Map();
 
-	let renderer: WebGLRenderer;
-	let scene: Scene;
-	let camera: Camera;
+	let renderer: THREE.WebGLRenderer;
+	let scene: THREE.Scene;
+	let camera: THREE.Camera;
 
 	$: {
 		if (canvas) {

@@ -132,15 +132,15 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 
 	// flavors belonging to the focused ingredient
 	const dockedFlavors: Readable<FlavorUsage[]> = derived(
-		[recipeState.flavors, preps, focusedIngredientUuid],
+		[recipeState.flavors, recipeState.preps, focusedIngredientUuid],
 		([$flavors, $preps, $focusedIngredientUuid]) => {
 			const focusedUsageUuid = get(recipeState.focusedUsageUuid);
 			return Array.from($flavors.values())
 				.filter((flavor) => flavor.ingredientUuid == $focusedIngredientUuid)
 				.flatMap((flavor) =>
 					flavor.directions.flatMap<FlavorUsage>((direction) => {
-						const prep = $preps.find((prep) => prep.ingredientUuid == flavor.ingredientUuid);
-						// filter out flavors that are already in preps
+						// filter out directed flavors that are already in preps
+						const prep = flavor.prepUuid && $preps.get(flavor.prepUuid);
 						const prepFlavorEntry =
 							prep &&
 							Object.entries(prep.flavorMap).find(

@@ -1,3 +1,5 @@
+import type { PrepOutputs } from './preps';
+
 export enum FlavorType {
 	Number = 'Number',
 	Color = 'Color',
@@ -6,7 +8,9 @@ export enum FlavorType {
 }
 
 export enum PrepType {
+	Add = 'Add',
 	Shader = 'Shader',
+	Sphere = 'Sphere',
 	Image = 'Image',
 	Texture = 'Texture'
 }
@@ -24,16 +28,17 @@ export interface Flavor {
 	name: string;
 	options: { [optionKey: string]: any } | null;
 	directions: Direction[];
+	prepUuid?: string;
 }
 
-export interface Prep {
+export interface Prep<T extends PrepType> {
 	uuid: string;
 	name: string;
 	ingredientUuid: string;
-	type: PrepType;
+	type: T;
 	// map from default names on prep operands and outputs to flavor uuids
 	flavorMap: {
-		[prepFlavorName: string]: string;
+		[prepFlavorName in keyof (PrepOperands[T] | PrepOutputs[T])]: string;
 	};
 }
 
@@ -51,14 +56,10 @@ export interface Connection {
 	// connection can be usage/usage or usage/prep
 
 	inFlavorUuid: string;
-	// should have either of these two
-	inUsageUuid?: string;
-	inPrepUuid?: string;
-
 	outFlavorUuid: string;
-	// should have either of these two
+
+	inUsageUuid?: string;
 	outUsageUuid?: string;
-	outPrepUuid?: string;
 }
 
 export interface Usage {
