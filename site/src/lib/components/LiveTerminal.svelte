@@ -73,34 +73,39 @@
 				let anyConnected = false;
 
 				for (const targetTerminal of targetTerminals) {
-					// expanding the rect
-					const terminalCoordinates = get(
-						viewState.terminalsCoordinates.getCoordinates(
-							targetTerminal.connectionUuid,
-							targetTerminal.direction
-						)
-					);
-
-					if (terminalCoordinates) {
-						const left = terminalCoordinates.x - (terminalHeight / 2 + nearTerminalDistance);
-						const top = terminalCoordinates.y - (terminalHeight / 2 + nearTerminalDistance);
-						const right = terminalCoordinates.x + (terminalHeight / 2 + nearTerminalDistance);
-						const bottom = terminalCoordinates.y + (terminalHeight / 2 + nearTerminalDistance);
-
-						if (
-							checkPointWithinBox(
-								{ x: event.clientX, y: event.clientY },
-								{ top: top, bottom: bottom, left: left, right: right }
+					if (
+						targetTerminal.flavorUuid != liveConnection.anchorFlavorUuid ||
+						(liveConnection.anchorUsageUuid == undefined && targetTerminal.usageUuid == undefined)
+					) {
+						// expanding the rect
+						const terminalCoordinates = get(
+							viewState.terminalsCoordinates.getCoordinates(
+								targetTerminal.connectionUuid,
+								targetTerminal.direction
 							)
-						) {
-							if (targetTerminal.flavorUuid && targetTerminal.usageUuid) {
-								liveConnection.connect(
-									targetTerminal.flavorUuid,
-									targetTerminal.usageUuid,
-									targetTerminal.cabled ? targetTerminal.connectionUuid : undefined
-								);
-								anyConnected = true;
-								break;
+						);
+
+						if (terminalCoordinates) {
+							const left = terminalCoordinates.x - (terminalHeight / 2 + nearTerminalDistance);
+							const top = terminalCoordinates.y - (terminalHeight / 2 + nearTerminalDistance);
+							const right = terminalCoordinates.x + (terminalHeight / 2 + nearTerminalDistance);
+							const bottom = terminalCoordinates.y + (terminalHeight / 2 + nearTerminalDistance);
+
+							if (
+								checkPointWithinBox(
+									{ x: event.clientX, y: event.clientY },
+									{ top: top, bottom: bottom, left: left, right: right }
+								)
+							) {
+								if (targetTerminal.flavorUuid) {
+									liveConnection.connect(
+										targetTerminal.flavorUuid,
+										targetTerminal.usageUuid,
+										targetTerminal.cabled ? targetTerminal.connectionUuid : undefined
+									);
+									anyConnected = true;
+									break;
+								}
 							}
 						}
 					}

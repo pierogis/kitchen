@@ -152,26 +152,29 @@ export function createTerminals(
 								});
 							}
 						} else {
-							// do the same for out terminal
-							let outNovelConnectionUuid = flavorNovelConnectionUuids.get(
-								flavorUsage.uuid + Direction.Out
-							);
-							if (!outNovelConnectionUuid) {
-								outNovelConnectionUuid = uuid();
-								flavorNovelConnectionUuids.set(
-									flavorUsage.uuid + Direction.Out,
-									outNovelConnectionUuid
+							// don't create a terminal pointing out of the focused ingredient
+							if (!flavorUsage.prepUuid || flavorUsage.usageUuid) {
+								// do the same for out terminal
+								let outNovelConnectionUuid = flavorNovelConnectionUuids.get(
+									flavorUsage.uuid + Direction.Out
 								);
-							}
+								if (!outNovelConnectionUuid) {
+									outNovelConnectionUuid = uuid();
+									flavorNovelConnectionUuids.set(
+										flavorUsage.uuid + Direction.Out,
+										outNovelConnectionUuid
+									);
+								}
 
-							novelTerminals.push({
-								flavorUuid: flavorUsage.uuid,
-								direction: Direction.Out,
-								connectionUuid: outNovelConnectionUuid,
-								cabled: false,
-								flavorType: flavorUsage.type,
-								usageUuid: flavorUsage.usageUuid
-							});
+								novelTerminals.push({
+									flavorUuid: flavorUsage.uuid,
+									direction: Direction.Out,
+									connectionUuid: outNovelConnectionUuid,
+									cabled: false,
+									flavorType: flavorUsage.type,
+									usageUuid: flavorUsage.usageUuid
+								});
+							}
 						}
 					}
 				});

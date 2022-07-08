@@ -236,25 +236,35 @@ export function cook(
 				if (!payload) throw `out payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 				return payload;
 			}
-		}
+		} else {
+			const flavorInConnection = Array.from(recipe.connections.values()).find((connection) => {
+				const sameFlavor = connection.inFlavorUuid == flavor.uuid;
+				const isInOwnIngredient = connection.parentIngredientUuid == flavor.ingredientUuid;
+				return sameFlavor && isInOwnIngredient;
+			});
 
-		const flavorInConnection = Array.from(recipe.connections.values()).find((connection) => {
-			const sameFlavor = connection.inFlavorUuid == flavor.uuid;
-			const isInOwnIngredient = connection.parentIngredientUuid == flavor.ingredientUuid;
-			return sameFlavor && isInOwnIngredient;
-		});
+			if (flavorInConnection) {
+				// if there is no out usage, this connection goes to a parentIngredient in(!) flavor
+				const outFlavorTrueDirection = flavorInConnection.outUsageUuid
+					? Direction.Out
+					: Direction.In;
 
-		if (flavorInConnection) {
-			// if there is no out usage, this connection goes to a parentIngredient in(!) flavor
-			const outFlavorTrueDirection = flavorInConnection.outUsageUuid ? Direction.Out : Direction.In;
+				const payload = cookFlavor(
+					flavorInConnection.outFlavorUuid,
+					flavorInConnection.outUsageUuid || usageUuid,
+					outFlavorTrueDirection
+				);
 
-			const payload = cookFlavor(
-				flavorInConnection.outFlavorUuid,
-				flavorInConnection.outUsageUuid || usageUuid,
-				outFlavorTrueDirection
-			);
+				return payload;
+			} else {
+				// fall back on param/default stored in fillings
+				const payload = get(
+					viewState.fillings.getFilling(flavorUuid, usageUuid, direction).payload
+				);
+				if (!payload) throw `out payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 
-			return payload;
+				return payload;
+			}
 		}
 
 		throw `could not cook flavor ${flavorUuid}`;

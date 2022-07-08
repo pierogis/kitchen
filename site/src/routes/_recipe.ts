@@ -159,16 +159,6 @@ export const defaultRecipe: FullRecipe = {
 	],
 	parameters: [
 		{
-			uuid: '0',
-			recipeUuid: '0',
-			flavorUuid: '0',
-			usageUuid: '0',
-			payload: {
-				type: FlavorType.Image,
-				value: ''
-			}
-		},
-		{
 			uuid: '1',
 			recipeUuid: '0',
 			flavorUuid: '1',

@@ -134,7 +134,6 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const dockedFlavors: Readable<FlavorUsage[]> = derived(
 		[recipeState.flavors, recipeState.preps, focusedIngredientUuid],
 		([$flavors, $preps, $focusedIngredientUuid]) => {
-			const focusedUsageUuid = get(recipeState.focusedUsageUuid);
 			return Array.from($flavors.values())
 				.filter((flavor) => flavor.ingredientUuid == $focusedIngredientUuid)
 				.flatMap((flavor) =>

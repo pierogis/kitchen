@@ -1,6 +1,6 @@
 import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
 
-import { Direction, type Flavor, type FlavorType, type Ingredient } from '@types';
+import { Direction, type Flavor, type FlavorType, type Ingredient, type Usage } from '@types';
 
 import { ActionType, type ActionParams } from '@state/actions';
 import type { RecipeState } from '@recipe';
@@ -17,7 +17,7 @@ export type LiveConnection = {
 	disconnectedUsageUuid?: string | undefined;
 	connect: (
 		targetFlavorUuid: string,
-		targetUsageUuid: string,
+		targetUsageUuid?: string,
 		existingConnectionUuid?: string
 	) => void;
 	drop: () => void;
@@ -38,11 +38,6 @@ export function createLiveConnection(
 	// including callback should a new connection happen in ui
 
 	const store: Writable<LiveConnection | undefined> = writable();
-
-	const focusedIngredientUuid = derived(
-		focusedIngredient,
-		(currentFocusedIngredient) => currentFocusedIngredient.uuid
-	);
 
 	function anchor(terminal: Terminal) {
 		const liveConnection = get(store);
@@ -119,7 +114,7 @@ export function createLiveConnection(
 
 	function connect(
 		targetFlavorUuid: string,
-		targetUsageUuid: string,
+		targetUsageUuid?: string,
 		existingConnectionUuid?: string
 	) {
 		const liveConnection = get(store);
@@ -138,11 +133,14 @@ export function createLiveConnection(
 					actionType = ActionType.CreateConnections;
 				}
 
+				const parentIngredientUuid = get(focusedIngredient).uuid;
+
 				const params: ActionParams<ActionType.CreateConnections> = {
 					connections: [
 						{
 							uuid: connectionUuid,
-							parentIngredientUuid: get(focusedIngredientUuid),
+							parentIngredientUuid: parentIngredientUuid,
+							flavorType: liveConnection.flavorType,
 							inFlavorUuid:
 								liveConnection.anchorDirection == Direction.In
 									? liveConnection.anchorFlavorUuid
@@ -151,14 +149,13 @@ export function createLiveConnection(
 								liveConnection.anchorDirection == Direction.In
 									? targetFlavorUuid
 									: liveConnection.anchorFlavorUuid,
-							flavorType: liveConnection.flavorType,
 							inUsageUuid:
 								liveConnection.anchorDirection == Direction.In
 									? liveConnection.anchorUsageUuid
-									: targetUsageUuid,
+									: targetFlavorUuid,
 							outUsageUuid:
 								liveConnection.anchorDirection == Direction.In
-									? targetUsageUuid
+									? targetFlavorUuid
 									: liveConnection.anchorUsageUuid
 						}
 					]

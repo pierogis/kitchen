@@ -2,6 +2,7 @@ import { derived, get, writable, type Writable } from 'svelte/store';
 
 import { Direction, FlavorType, type Payload, type PayloadValue } from '@types';
 import type { RecipeState } from '@recipe';
+import { prepPrimitives } from '$lib/common/preps';
 
 export type FillingsState = {
 	getFilling: (flavorUuid: string, usageUuid: string, direction: Direction) => Filling;
@@ -55,7 +56,8 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 	};
 
 	recipeState.subscribe(($recipe) => {
-		// each flavor should have a payload
+		// each flavor on each usage should have a payload
+
 		const currentCallsFor = $recipe.callsFor;
 		const currentParameters = Array.from($recipe.parameters.values());
 		const currentConnections = Array.from($recipe.connections.values());
@@ -78,54 +80,48 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 						type: flavor.type,
 						value: valueDefaults[flavor.type]
 					};
-					const inMonitor = currentConnections.some(
-						(connection) =>
-							connection.inFlavorUuid == flavor.uuid &&
-							connection.inUsageUuid == usage.uuid &&
-							connection.parentIngredientUuid != usage.ingredientUuid
-					);
+					const prep = flavor.prepUuid ? $recipe.preps.get(flavor.prepUuid) : undefined;
 
-					const outMonitor = currentConnections.some(
-						(connection) =>
-							connection.inFlavorUuid == flavor.uuid &&
-							connection.inUsageUuid == usage.uuid &&
-							connection.parentIngredientUuid == usage.ingredientUuid
-					);
+					for (const direction of flavor.directions) {
+						let filling: Filling | undefined = flavorUsageFillings.get(
+							flavor.uuid,
+							usage.uuid,
+							direction
+						);
 
-					let inFilling: Filling | undefined = flavorUsageFillings.get(
-						flavor.uuid,
-						usage.uuid,
-						Direction.In
-					);
-					let outFilling: Filling | undefined = flavorUsageFillings.get(
-						flavor.uuid,
-						usage.uuid,
-						Direction.Out
-					);
+						const monitor =
+							direction == Direction.In
+								? currentConnections.some((connection) => {
+										const flavorHasInConnection = connection.inFlavorUuid == flavor.uuid;
 
-					const inMonitorStatus = { monitor: inMonitor, parameterUuid: parameter?.uuid };
-					const outMonitorStatus = { monitor: outMonitor, parameterUuid: parameter?.uuid };
+										// if the flavor is on connection's parentIngredient,
+										// connection leading into it would have no usageUuid
+										const flavorIsOnConnectionsParentIngredient =
+											flavor.ingredientUuid == connection.parentIngredientUuid;
 
-					if (!inFilling) {
-						inFilling = {
-							payload: writable(payload),
-							monitorStatus: writable(inMonitorStatus)
-						};
+										const usageUuid = flavorIsOnConnectionsParentIngredient
+											? undefined
+											: usage.uuid;
 
-						flavorUsageFillings.set(flavor.uuid, usage.uuid, Direction.In, inFilling);
-					} else {
-						setMonitorStatus(flavor.uuid, usage.uuid, Direction.In, inMonitorStatus);
-						setPayload(flavor.uuid, usage.uuid, Direction.In, payload);
-					}
-					if (!outFilling) {
-						outFilling = {
-							payload: writable(payload),
-							monitorStatus: writable(outMonitorStatus)
-						};
-						flavorUsageFillings.set(flavor.uuid, usage.uuid, Direction.Out, outFilling);
-					} else {
-						setMonitorStatus(flavor.uuid, usage.uuid, Direction.Out, outMonitorStatus);
-						setPayload(flavor.uuid, usage.uuid, Direction.Out, payload);
+										const connectionIsToFlavorsUsage = connection.inUsageUuid == usageUuid;
+
+										return flavorHasInConnection && connectionIsToFlavorsUsage;
+								  })
+								: prep !== undefined;
+
+						const monitorStatus = { monitor: monitor, parameterUuid: parameter?.uuid };
+
+						if (!filling) {
+							filling = {
+								payload: writable(payload),
+								monitorStatus: writable(monitorStatus)
+							};
+
+							flavorUsageFillings.set(flavor.uuid, usage.uuid, direction, filling);
+						} else {
+							setMonitorStatus(flavor.uuid, usage.uuid, direction, monitorStatus);
+							setPayload(flavor.uuid, usage.uuid, direction, payload);
+						}
 					}
 				}
 			}
