@@ -276,17 +276,22 @@ export function cook(
 		} = {};
 		// cook in side of preps (copy from parameters/input)
 		for (const [prepFlavorName, flavorUuid] of Object.entries(prep.flavorMap)) {
-			inPayloads[prepFlavorName] = cookFlavor(flavorUuid, usageUuid, Direction.In);
+			const flavor = recipe.flavors.get(flavorUuid);
+
+			if (flavor?.directions.includes(Direction.In)) {
+				// why does this keep looping on connect
+				const payload = cookFlavor(flavorUuid, usageUuid, Direction.In);
+				inPayloads[prepFlavorName] = payload;
+
+				knownPayloads.set(flavorUuid, usageUuid, Direction.In, payload);
+				viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.In, payload);
+			}
 		}
 
 		const outPayloads = prepPrimitives[prep.type].cook(scene, camera, inPayloads);
 
-		for (const [flavorUuid, payload] of Object.entries(inPayloads)) {
-			knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
-			viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
-		}
-
-		for (const [flavorUuid, payload] of Object.entries(outPayloads)) {
+		for (const [prepFlavorName, payload] of Object.entries(outPayloads)) {
+			const flavorUuid = prep.flavorMap[prepFlavorName];
 			knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
 			viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
 		}
