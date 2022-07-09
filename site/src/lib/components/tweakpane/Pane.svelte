@@ -2,7 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import { Pane } from 'tweakpane';
 
-	import { registerPlugins } from '$lib/flavors/plugins';
+	import { registerPlugins } from '$lib/common/plugins';
 
 	export let container: HTMLElement;
 	export let title: string | undefined = undefined;

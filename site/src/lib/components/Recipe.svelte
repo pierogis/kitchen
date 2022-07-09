@@ -6,8 +6,6 @@
 	import type { Terminal, Node, Cable } from '@view';
 	import type { TerminalsCoordinatesState } from '@view/terminals';
 
-	import {} from '$lib/flavors/plugins';
-
 	import IngredientComponent from '@components/Ingredient.svelte';
 	import Dock from '@components/Dock.svelte';
 	import CableComponent from '@components/Cable.svelte';

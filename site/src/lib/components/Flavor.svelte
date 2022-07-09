@@ -82,7 +82,10 @@
 
 	if (flavor.type == FlavorType.Color) {
 		options = { ...options, view: 'color', color: { alpha: true } };
+	} else if (flavor.type == FlavorType.Geometry) {
+		options = { ...options, view: 'geometry' };
 	}
+
 	const paramsStore = derived(filling.payload, ($payload) => {
 		return { [flavor.name]: $payload.value };
 	});

@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { Readable } from 'svelte/store';
 
 	import type { InputBindingApi, TpChangeEvent } from '@tweakpane/core';
 	import type { FolderApi, InputParams } from 'tweakpane';
-	import type { Readable } from 'svelte/store';
+	import type * as THREE from 'three';
 
 	export let folder: FolderApi;
-	export let paramsStore: Readable<{ [key: string]: string | number }>;
-	export let onChange: (ev: TpChangeEvent<string | number>) => void;
+	export let paramsStore: Readable<{ [key: string]: string | number | THREE.Object3D }>;
+	export let onChange: (ev: TpChangeEvent<string | number | THREE.Object3D>) => void;
 	export let key: string;
 	export let options: InputParams | undefined = undefined;
 	export let index: number | undefined = undefined;
@@ -15,7 +16,7 @@
 	let inputElement: HTMLElement;
 
 	onMount(() => {
-		let inputApi: InputBindingApi<unknown, string | number>;
+		let inputApi: InputBindingApi<unknown, string | number | THREE.Object3D>;
 
 		let params = $paramsStore;
 		inputApi = folder.addInput(params, key, { ...options, index }).on('change', onChange);

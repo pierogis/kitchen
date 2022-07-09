@@ -6,6 +6,7 @@ import { image, type ImageOperands, type ImageOutputs } from './image';
 import { shader, type ShaderOperands, type ShaderOutputs } from './shader';
 import { sphere, type SphereOperands, type SphereOutputs } from './sphere';
 import { texture, type TextureOperands, type TextureOutputs } from './texture';
+import { scene, type SceneOperands, type SceneOutputs } from './scene';
 
 export type PrepOperands = {
 	[PrepType.Add]: AddOperands;
@@ -13,6 +14,7 @@ export type PrepOperands = {
 	[PrepType.Shader]: ShaderOperands;
 	[PrepType.Sphere]: SphereOperands;
 	[PrepType.Texture]: TextureOperands;
+	[PrepType.Scene]: SceneOperands;
 };
 
 export type PrepOutputs = {
@@ -21,6 +23,7 @@ export type PrepOutputs = {
 	[PrepType.Shader]: ShaderOutputs;
 	[PrepType.Sphere]: SphereOutputs;
 	[PrepType.Texture]: TextureOutputs;
+	[PrepType.Scene]: SceneOutputs;
 };
 
 export type FlavorMap = { [prepFlavorName: string]: FlavorType };
@@ -43,5 +46,6 @@ export const prepPrimitives: {
 	[PrepType.Image]: image,
 	[PrepType.Shader]: shader,
 	[PrepType.Sphere]: sphere,
-	[PrepType.Texture]: texture
+	[PrepType.Texture]: texture,
+	[PrepType.Scene]: scene
 };

@@ -12,8 +12,8 @@ export const defaultRecipe: FullRecipe = {
 				{
 					uuid: '0',
 					ingredientUuid: '0',
-					name: 'image',
-					type: FlavorType.Image,
+					name: 'geometry',
+					type: FlavorType.Geometry,
 					prepUuid: '0',
 					directions: [Direction.In, Direction.Out],
 					options: null
@@ -21,34 +21,12 @@ export const defaultRecipe: FullRecipe = {
 				{
 					uuid: '1',
 					ingredientUuid: '0',
-					name: 'angle',
+					name: 'radius',
 					type: FlavorType.Number,
 					directions: [Direction.In],
 					options: {
 						min: 0,
 						max: 360
-					}
-				},
-				{
-					uuid: '2',
-					ingredientUuid: '0',
-					name: 'lower',
-					type: FlavorType.Number,
-					directions: [Direction.In],
-					options: {
-						min: 0,
-						max: 255
-					}
-				},
-				{
-					uuid: '3',
-					ingredientUuid: '0',
-					name: 'upper',
-					type: FlavorType.Number,
-					directions: [Direction.In],
-					options: {
-						min: 0,
-						max: 255
 					}
 				}
 			],
@@ -63,11 +41,11 @@ export const defaultRecipe: FullRecipe = {
 			preps: [
 				{
 					uuid: '0',
-					name: 'image out',
+					name: 'scene',
 					ingredientUuid: '0',
-					type: PrepType.Image,
+					type: PrepType.Scene,
 					flavorMap: {
-						image: '0'
+						geometry: '0'
 					}
 				}
 			]
@@ -75,45 +53,27 @@ export const defaultRecipe: FullRecipe = {
 		{
 			uuid: '2',
 			parentIngredientUuid: '0',
-			name: 'shader',
+			name: 'sphere',
 			flavors: [
 				{
 					uuid: '5',
 					ingredientUuid: '2',
-					name: 'texture',
-					type: FlavorType.Image,
+					name: 'sphere',
+					type: FlavorType.Geometry,
 					prepUuid: '1',
-					directions: [Direction.In, Direction.Out],
+					directions: [Direction.Out],
 					options: null
 				},
 				{
 					uuid: '7',
 					ingredientUuid: '2',
-					name: 'replace color',
-					type: FlavorType.Color,
+					name: 'radius',
+					type: FlavorType.Number,
 					directions: [Direction.In],
-					options: { view: 'color', color: { alpha: true } }
-				},
-				{
-					uuid: '8',
-					ingredientUuid: '2',
-					name: 'target color',
-					type: FlavorType.Color,
-					directions: [Direction.In],
-					options: { view: 'color', color: { alpha: true } }
+					options: null
 				}
 			],
-			connections: [
-				{
-					uuid: '0',
-					parentIngredientUuid: '2',
-					flavorType: FlavorType.Image,
-					inFlavorUuid: '5',
-					outFlavorUuid: '5',
-					inUsageUuid: '2',
-					outUsageUuid: '2'
-				}
-			],
+			connections: [],
 			usages: [
 				{
 					uuid: '2',
@@ -125,9 +85,9 @@ export const defaultRecipe: FullRecipe = {
 				{
 					uuid: '1',
 					ingredientUuid: '1',
-					name: 'shader',
-					type: PrepType.Shader,
-					flavorMap: { texture: '5' }
+					name: 'sphere',
+					type: PrepType.Sphere,
+					flavorMap: { radius: '7' }
 				}
 			]
 		}
@@ -214,18 +174,8 @@ export const defaultRecipe: FullRecipe = {
 			flavorUuid: '7',
 			usageUuid: '2',
 			payload: {
-				type: FlavorType.Color,
-				value: '#b008ff'
-			}
-		},
-		{
-			uuid: '8',
-			recipeUuid: '0',
-			flavorUuid: '8',
-			usageUuid: '2',
-			payload: {
-				type: FlavorType.Color,
-				value: '#0588af'
+				type: FlavorType.Number,
+				value: '1'
 			}
 		}
 	],

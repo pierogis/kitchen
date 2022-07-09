@@ -1,10 +1,12 @@
 import type { PrepOutputs } from './preps';
+import type * as THREE from 'three';
 
 export enum FlavorType {
 	Number = 'Number',
 	Color = 'Color',
 	Text = 'Text',
-	Image = 'Image'
+	Image = 'Image',
+	Geometry = 'Geometry'
 }
 
 export enum PrepType {
@@ -12,7 +14,8 @@ export enum PrepType {
 	Shader = 'Shader',
 	Sphere = 'Sphere',
 	Image = 'Image',
-	Texture = 'Texture'
+	Texture = 'Texture',
+	Scene = 'Scene'
 }
 
 export enum Direction {
@@ -92,6 +95,7 @@ type FlavorTypesPayloadMapper = {
 	[FlavorType.Image]: string;
 	[FlavorType.Number]: number;
 	[FlavorType.Text]: string;
+	[FlavorType.Geometry]: THREE.Object3D;
 };
 
 export type PayloadValue<T> = T extends FlavorType ? FlavorTypesPayloadMapper[T] : never;

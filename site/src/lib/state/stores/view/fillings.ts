@@ -1,8 +1,9 @@
-import { derived, get, writable, type Writable } from 'svelte/store';
+import { get, writable, type Writable } from 'svelte/store';
+
+import * as THREE from 'three';
 
 import { Direction, FlavorType, type Payload, type PayloadValue } from '@types';
 import type { RecipeState } from '@recipe';
-import { prepPrimitives } from '$lib/common/preps';
 
 export type FillingsState = {
 	getFilling: (flavorUuid: string, usageUuid: string, direction: Direction) => Filling;
@@ -40,7 +41,8 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 		[FlavorType.Color]: '#0088ff',
 		[FlavorType.Image]: '',
 		[FlavorType.Number]: 0,
-		[FlavorType.Text]: ''
+		[FlavorType.Text]: '',
+		[FlavorType.Geometry]: new THREE.Object3D()
 	};
 
 	const flavorUsageFillingsMap: Map<string, Filling> = new Map();

@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { Readable } from 'svelte/store';
 
 	import type { FolderApi, MonitorParams } from 'tweakpane';
 	import type { MonitorBindingApi } from '@tweakpane/core';
-	import type { Readable } from 'svelte/store';
+	import type * as THREE from 'three';
 
 	export let folder: FolderApi;
-	export let paramsStore: Readable<{ [key: string]: string | number }>;
+	export let paramsStore: Readable<{ [key: string]: string | number | THREE.Object3D }>;
 	export let key: string;
 	export let options: MonitorParams | undefined = undefined;
 	export let index: number | undefined = undefined;
@@ -14,7 +15,7 @@
 	let monitorElement: HTMLElement;
 
 	onMount(() => {
-		let monitorApi: MonitorBindingApi<string | number>;
+		let monitorApi: MonitorBindingApi<string | number | THREE.Object3D>;
 
 		let params = $paramsStore;
 		monitorApi = folder.addMonitor(params, key, { ...options, index });

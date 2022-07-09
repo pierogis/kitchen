@@ -6,8 +6,7 @@ import {
 	type FlavorUsage,
 	type Ingredient,
 	type Usage,
-	type FullPrep,
-	PrepType
+	type FullPrep
 } from '@types';
 import type { RecipeState } from '@recipe';
 
