@@ -1,150 +1,183 @@
-import { Direction, type FullRecipe, FlavorType, PrepType } from '@types';
+import {
+	Direction,
+	type FullRecipe,
+	FlavorType,
+	PrepType,
+	type Prep,
+	type FullIngredient,
+	type Usage,
+	type FullCallFor,
+	type Parameter,
+	type Flavor
+} from '@types';
 
+const recipeUuid = '0-recipe';
+
+// main ingredient
+const mainIngredientUuid = 'main-ingredient';
+
+const mainUsage: Usage = {
+	uuid: 'main-usage',
+	ingredientUuid: mainIngredientUuid,
+	parentUsageUuid: undefined
+};
+
+const scenePrepUuid = 'scene-prep';
+
+const geometryPrepFlavor: Flavor = {
+	uuid: 'geometry-prep-flavor',
+	ingredientUuid: mainIngredientUuid,
+	name: 'geometry',
+	type: FlavorType.Geometry,
+	prepUuid: scenePrepUuid,
+	directions: [Direction.In],
+	options: null
+};
+
+const scenePrepFlavor: Flavor = {
+	uuid: 'scene-prep-flavor',
+	ingredientUuid: mainIngredientUuid,
+	name: 'geometry',
+	type: FlavorType.Object,
+	prepUuid: scenePrepUuid,
+	directions: [Direction.Out],
+	options: null
+};
+
+const radiusInputFlavor: Flavor = {
+	uuid: 'radius-input-flavor',
+	ingredientUuid: mainIngredientUuid,
+	name: 'radius',
+	type: FlavorType.Number,
+	directions: [Direction.In],
+	options: {
+		min: 0,
+		max: 360
+	}
+};
+
+const scenePrep: Prep<PrepType.Scene> = {
+	uuid: scenePrepUuid,
+	name: 'scene',
+	ingredientUuid: mainIngredientUuid,
+	type: PrepType.Scene,
+	flavorMap: {
+		geometry: geometryPrepFlavor.uuid,
+		scene: scenePrepFlavor.uuid
+	}
+};
+
+const mainIngredient: FullIngredient = {
+	uuid: mainIngredientUuid,
+	parentIngredientUuid: undefined,
+	name: 'sort',
+	flavors: [geometryPrepFlavor, scenePrepFlavor, radiusInputFlavor],
+	connections: [],
+	usages: [mainUsage],
+	preps: [scenePrep]
+};
+
+const sphereIngredientUuid = 'sphere-ingredient';
+const sphereUsage: Usage = {
+	uuid: 'sphere-usage',
+	ingredientUuid: sphereIngredientUuid,
+	parentUsageUuid: mainUsage.uuid
+};
+
+const spherePrepUuid = 'sphere-prep';
+
+const spherePrepFlavor = {
+	uuid: 'sphere-prep-flavor',
+	ingredientUuid: sphereIngredientUuid,
+	name: 'sphere',
+	type: FlavorType.Geometry,
+	prepUuid: spherePrepUuid,
+	directions: [Direction.Out],
+	options: null
+};
+
+const radiusPrepFlavor = {
+	uuid: 'radius-prep-flavor',
+	ingredientUuid: sphereIngredientUuid,
+	name: 'radius',
+	type: FlavorType.Number,
+	prepUuid: spherePrepUuid,
+	directions: [Direction.In],
+	options: null
+};
+
+const radiusSphereFlavor = {
+	uuid: 'radius-sphere-flavor',
+	ingredientUuid: sphereIngredientUuid,
+	name: 'radius',
+	type: FlavorType.Number,
+	directions: [Direction.In],
+	options: {
+		min: 0,
+		max: 360
+	}
+};
+
+const spherePrep: Prep<PrepType.Sphere> = {
+	uuid: spherePrepUuid,
+	ingredientUuid: 'sphere-ingredient',
+	name: 'sphere',
+	type: PrepType.Sphere,
+	flavorMap: { sphere: spherePrepFlavor.uuid, radius: radiusPrepFlavor.uuid }
+};
+const sphereIngredient: FullIngredient = {
+	uuid: sphereIngredientUuid,
+	parentIngredientUuid: mainIngredient.uuid,
+	name: 'sphere',
+	flavors: [spherePrepFlavor, radiusPrepFlavor, radiusSphereFlavor],
+	connections: [],
+	usages: [sphereUsage],
+	preps: [spherePrep]
+};
+
+const mainCallForUuid = 'main-callFor';
+const mainCallFor: FullCallFor = {
+	uuid: mainCallForUuid,
+	recipeUuid,
+	usageUuid: mainUsage.uuid,
+	location: {
+		uuid: 'main-location',
+		callForUuid: mainCallForUuid,
+		x: 100,
+		y: 200
+	}
+};
+
+const sphereCallForUuid = 'sphere-callFor';
+const sphereCallFor: FullCallFor = {
+	uuid: sphereCallForUuid,
+	recipeUuid,
+	usageUuid: sphereUsage.uuid,
+	location: {
+		uuid: 'sphere-location',
+		callForUuid: sphereCallForUuid,
+		x: 500,
+		y: 200
+	}
+};
+
+const radiusInputParameter: Parameter<FlavorType.Number> = {
+	uuid: 'radius-input-parameter',
+	recipeUuid,
+	flavorUuid: radiusInputFlavor.uuid,
+	usageUuid: sphereUsage.uuid,
+	payload: {
+		type: FlavorType.Number,
+		value: 1
+	}
+};
+
+// const asd: FlavorMap<PrepType.Scene> = {};
 export const defaultRecipe: FullRecipe = {
-	uuid: '0',
-	mainCallForUuid: '0',
-	ingredients: [
-		{
-			uuid: '0',
-			parentIngredientUuid: undefined,
-			name: 'sort',
-			flavors: [
-				{
-					uuid: '0',
-					ingredientUuid: '0',
-					name: 'geometry',
-					type: FlavorType.Geometry,
-					prepUuid: '0',
-					directions: [Direction.In, Direction.Out],
-					options: null
-				},
-				{
-					uuid: '1',
-					ingredientUuid: '0',
-					name: 'radius',
-					type: FlavorType.Number,
-					directions: [Direction.In],
-					options: {
-						min: 0,
-						max: 360
-					}
-				}
-			],
-			connections: [],
-			usages: [
-				{
-					uuid: '0',
-					ingredientUuid: '0',
-					parentUsageUuid: undefined
-				}
-			],
-			preps: [
-				{
-					uuid: '0',
-					name: 'scene',
-					ingredientUuid: '0',
-					type: PrepType.Scene,
-					flavorMap: {
-						geometry: '0'
-					}
-				}
-			]
-		},
-		{
-			uuid: '2',
-			parentIngredientUuid: '0',
-			name: 'sphere',
-			flavors: [
-				{
-					uuid: '5',
-					ingredientUuid: '2',
-					name: 'sphere',
-					type: FlavorType.Geometry,
-					prepUuid: '1',
-					directions: [Direction.Out],
-					options: null
-				},
-				{
-					uuid: '6',
-					ingredientUuid: '2',
-					name: 'radius',
-					type: FlavorType.Number,
-					prepUuid: '1',
-					directions: [Direction.In],
-					options: null
-				},
-				{
-					uuid: '7',
-					ingredientUuid: '2',
-					name: 'radius',
-					type: FlavorType.Number,
-					directions: [Direction.In],
-					options: null
-				}
-			],
-			connections: [],
-			usages: [
-				{
-					uuid: '2',
-					ingredientUuid: '2',
-					parentUsageUuid: '0'
-				}
-			],
-			preps: [
-				{
-					uuid: '1',
-					ingredientUuid: '1',
-					name: 'sphere',
-					type: PrepType.Sphere,
-					flavorMap: { sphere: '5', radius: '6' }
-				}
-			]
-		}
-	],
-	callsFor: [
-		{
-			uuid: '0',
-			recipeUuid: '0',
-			usageUuid: '0',
-			location: {
-				uuid: '0',
-				callForUuid: '0',
-				x: 100,
-				y: 200
-			}
-		},
-		{
-			uuid: '2',
-			recipeUuid: '0',
-			usageUuid: '2',
-
-			location: {
-				uuid: '2',
-				callForUuid: '2',
-				x: 500,
-				y: 200
-			}
-		}
-	],
-	parameters: [
-		{
-			uuid: '7',
-			recipeUuid: '0',
-			flavorUuid: '7',
-			usageUuid: '2',
-			payload: {
-				type: FlavorType.Number,
-				value: 1
-			}
-		}
-	],
-	shaders: [
-		{
-			uuid: '0',
-			prepUuid: '1',
-			recipeUuid: '0',
-			vertexSource: '',
-			fragmentSource: ''
-		}
-	]
+	uuid: recipeUuid,
+	mainCallForUuid: mainCallFor.uuid,
+	ingredients: [mainIngredient, sphereIngredient],
+	callsFor: [mainCallFor, sphereCallFor],
+	parameters: [radiusInputParameter],
+	shaders: []
 };

@@ -10,7 +10,8 @@ import type {
 	Location,
 	Usage,
 	Prep,
-	PrepType
+	PrepType,
+	FlavorType
 } from '@types';
 
 import type { Action, ActionHandler, ActionType } from '@state/actions';
@@ -24,7 +25,7 @@ export interface FlatRecipe {
 	callsFor: Map<string, CallFor>;
 	connections: Map<string, Connection>;
 	shaders: Map<string, Shader>;
-	parameters: Map<string, Parameter>;
+	parameters: Map<string, Parameter<FlavorType>>;
 	locations: Map<string, Location>;
 	usages: Map<string, Usage>;
 	preps: Map<string, Prep<PrepType>>;

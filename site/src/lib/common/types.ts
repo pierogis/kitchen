@@ -1,4 +1,4 @@
-import type { PrepOutputs } from './preps';
+import type { PrepOperands, PrepOutputs } from './preps';
 import type * as THREE from 'three';
 
 export enum FlavorType {
@@ -37,15 +37,17 @@ export interface Flavor {
 	prepUuid?: string;
 }
 
+export type FlavorMap<T> = T extends PrepType
+	? { [prepFlavorName in keyof (typeof PrepOperands[T] | typeof PrepOutputs[T])]: string }
+	: never;
+
 export interface Prep<T extends PrepType> {
 	uuid: string;
 	name: string;
 	ingredientUuid: string;
 	type: T;
 	// map from default names on prep operands and outputs to flavor uuids
-	flavorMap: {
-		[prepFlavorName in keyof (PrepOperands[T] | PrepOutputs[T])]: string;
-	};
+	flavorMap: FlavorMap<T>;
 }
 
 export interface Ingredient {
@@ -111,9 +113,9 @@ export interface Payload<T extends FlavorType> {
 	value: PayloadValue<T>;
 }
 
-export interface Parameter {
+export interface Parameter<T extends FlavorType> {
 	uuid: string;
-	payload: Payload<FlavorType>;
+	payload: Payload<T>;
 	recipeUuid: string;
 	flavorUuid: string;
 	usageUuid: string;
@@ -141,7 +143,7 @@ export type FullIngredient = Ingredient & {
 	flavors: Flavor[];
 	connections: Connection[];
 	usages: Usage[];
-	preps: Prep[];
+	preps: Prep<PrepType>[];
 };
 
 export type FullCallFor = CallFor & {
@@ -151,6 +153,6 @@ export type FullCallFor = CallFor & {
 export type FullRecipe = Recipe & {
 	ingredients: FullIngredient[];
 	callsFor: FullCallFor[];
-	parameters: Parameter[];
+	parameters: Parameter<FlavorType>[];
 	shaders: Shader[];
 };

@@ -1,17 +1,17 @@
 import type * as THREE from 'three';
 
-import type { PrepPrimitive, FlavorMap } from '.';
-import { Direction, FlavorType, type Payload } from '@types';
+import type { PrepPrimitive } from '.';
+import { Direction, FlavorType, PrepType, type Payload } from '@types';
 
-export interface ImageOperands extends FlavorMap {
-	image: FlavorType.Image;
-}
+export const ImageOperands = {
+	image: FlavorType.Image
+} as const;
 
-export interface ImageOutputs extends FlavorMap {
-	image: FlavorType.Image;
-}
+export const ImageOutputs = {
+	image: FlavorType.Image
+} as const;
 
-export const ImagePrep: PrepPrimitive<ImageOperands, ImageOutputs> = {
+export const ImagePrep: PrepPrimitive<PrepType.Image> = {
 	flavors: {
 		image: { directions: [Direction.In, Direction.Out], type: FlavorType.Image }
 	},

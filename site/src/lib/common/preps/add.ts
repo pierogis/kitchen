@@ -1,18 +1,18 @@
 import type * as THREE from 'three';
 
-import { Direction, FlavorType, type Payload } from '@types';
-import type { FlavorMap, PrepPrimitive } from '.';
+import { Direction, FlavorType, PrepType, type Payload } from '@types';
+import type { PrepPrimitive } from '.';
 
-export interface AddOperands extends FlavorMap {
-	'operand 1': FlavorType.Number;
-	'operand 2': FlavorType.Number;
-}
+export const AddOperands = {
+	'operand 1': FlavorType.Number,
+	'operand 2': FlavorType.Number
+} as const;
 
-export interface AddOutputs extends FlavorMap {
-	sum: FlavorType.Number;
-}
+export const AddOutputs = {
+	sum: FlavorType.Number
+};
 
-export const AddPrep: PrepPrimitive<AddOperands, AddOutputs> = {
+export const AddPrep: PrepPrimitive<PrepType.Add> = {
 	flavors: {
 		sum: {
 			type: FlavorType.Number,

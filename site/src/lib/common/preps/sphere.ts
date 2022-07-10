@@ -1,17 +1,17 @@
 import * as THREE from 'three';
 
-import { Direction, FlavorType, type Payload } from '@types';
-import type { PrepPrimitive, FlavorMap } from '.';
+import { Direction, FlavorType, type Payload, PrepType } from '@types';
+import type { PrepPrimitive } from '.';
 
-export interface SphereOperands extends FlavorMap {
-	radius: FlavorType.Number;
-}
+export const SphereOperands = {
+	radius: FlavorType.Number
+};
 
-export interface SphereOutputs extends FlavorMap {
-	sphere: FlavorType.Geometry;
-}
+export const SphereOutputs = {
+	sphere: FlavorType.Geometry
+};
 
-export const SpherePrep: PrepPrimitive<SphereOperands, SphereOutputs> = {
+export const SpherePrep: PrepPrimitive<PrepType.Sphere> = {
 	flavors: {
 		radius: { directions: [Direction.In], type: FlavorType.Number },
 		sphere: { directions: [Direction.Out], type: FlavorType.Geometry }

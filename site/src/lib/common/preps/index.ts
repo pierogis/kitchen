@@ -1,46 +1,60 @@
 import type * as THREE from 'three';
 
 import { Direction, PrepType, FlavorType, type Payload } from '@types';
-import { AddPrep, type AddOperands, type AddOutputs } from './add';
-import { ImagePrep, type ImageOperands, type ImageOutputs } from './image';
-import { ShaderPrep, type ShaderOperands, type ShaderOutputs } from './shader';
-import { SpherePrep, type SphereOperands, type SphereOutputs } from './sphere';
-import { TexturePrep, type TextureOperands, type TextureOutputs } from './texture';
-import { ScenePrep, type SceneOperands, type SceneOutputs } from './scene';
+import { AddPrep, AddOperands, AddOutputs } from './add';
+import { ImagePrep, ImageOperands, ImageOutputs } from './image';
+import { ShaderPrep, ShaderOperands, ShaderOutputs } from './shader';
+import { SpherePrep, SphereOperands, SphereOutputs } from './sphere';
+import { TexturePrep, TextureOperands, TextureOutputs } from './texture';
+import { ScenePrep, SceneOperands, SceneOutputs } from './scene';
 
-export type PrepOperands = {
-	[PrepType.Add]: AddOperands;
-	[PrepType.Image]: ImageOperands;
-	[PrepType.Shader]: ShaderOperands;
-	[PrepType.Sphere]: SphereOperands;
-	[PrepType.Texture]: TextureOperands;
-	[PrepType.Scene]: SceneOperands;
+export const PrepOperands: {
+	[key in PrepType]: FlavorMap;
+} = {
+	[PrepType.Add]: AddOperands,
+	[PrepType.Image]: ImageOperands,
+	[PrepType.Shader]: ShaderOperands,
+	[PrepType.Sphere]: SphereOperands,
+	[PrepType.Texture]: TextureOperands,
+	[PrepType.Scene]: SceneOperands
 };
 
-export type PrepOutputs = {
-	[PrepType.Add]: AddOutputs;
-	[PrepType.Image]: ImageOutputs;
-	[PrepType.Shader]: ShaderOutputs;
-	[PrepType.Sphere]: SphereOutputs;
-	[PrepType.Texture]: TextureOutputs;
-	[PrepType.Scene]: SceneOutputs;
+export const PrepOutputs: {
+	[key in PrepType]: FlavorMap;
+} = {
+	[PrepType.Add]: AddOutputs,
+	[PrepType.Image]: ImageOutputs,
+	[PrepType.Shader]: ShaderOutputs,
+	[PrepType.Sphere]: SphereOutputs,
+	[PrepType.Texture]: TextureOutputs,
+	[PrepType.Scene]: SceneOutputs
 };
 
-export type FlavorMap = { [prepFlavorName: string]: FlavorType };
+type FlavorMap = { [prepFlavorName: string]: FlavorType };
 
-export interface PrepPrimitive<I extends FlavorMap, O extends FlavorMap> {
-	flavors: { [prepFlavorName in keyof (I | O)]: { directions: Direction[]; type: FlavorType } };
-	cook: (
-		scene: THREE.Scene,
-		camera: THREE.Camera,
-		inPayloads: {
-			[prepOperandName: string]: Payload<FlavorType>;
-		}
-	) => { [prepOutputName in keyof O]: Payload<O[prepOutputName]> };
+type Operands<T> = T extends PrepType ? typeof PrepOperands[T] : never;
+type Outputs<T> = T extends PrepType ? typeof PrepOutputs[T] : never;
+
+export type InPayloads<T> = T extends PrepType
+	? { [prepOutputName in keyof typeof PrepOperands[T]]: Payload<Operands<T>[prepOutputName]> }
+	: never;
+
+export type OutPayloads<T> = T extends PrepType
+	? { [prepOutputName in keyof typeof PrepOutputs[T]]: Payload<Outputs<T>[prepOutputName]> }
+	: never;
+
+export interface PrepPrimitive<T extends PrepType> {
+	flavors: {
+		[prepFlavorName in keyof (typeof PrepOperands[T] | typeof PrepOutputs[T])]: {
+			directions: Direction[];
+			type: FlavorType;
+		};
+	};
+	cook: (scene: THREE.Scene, camera: THREE.Camera, inPayloads: InPayloads<T>) => OutPayloads<T>;
 }
 
 export const prepPrimitives: {
-	[prepType in PrepType]: PrepPrimitive<PrepOperands[prepType], PrepOutputs[prepType]>;
+	[prepType in PrepType]: PrepPrimitive<prepType>;
 } = {
 	[PrepType.Add]: AddPrep,
 	[PrepType.Image]: ImagePrep,

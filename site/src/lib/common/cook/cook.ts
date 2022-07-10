@@ -5,7 +5,7 @@ import type * as THREE from 'three';
 import type { FlatRecipe } from '@recipe';
 import type { ViewState } from '@view';
 import { FlavorType, Direction, type Payload, type Prep, PrepType } from '@types';
-import { prepPrimitives } from '../preps';
+import { prepPrimitives, type InPayloads } from '../preps';
 
 const knownPayloadsMap: Map<string, Payload<FlavorType>> = new Map();
 const knownPayloads = {
@@ -270,9 +270,7 @@ export function cook(
 	}
 
 	function cookPrep<T extends PrepType>(prep: Prep<T>, usageUuid: string) {
-		const inPayloads: {
-			[prepOperandName: string]: Payload<FlavorType>;
-		} = {};
+		const inPayloads: { [prepFlavorName: string]: Payload<FlavorType> } = {};
 		// cook in side of preps (copy from parameters/input)
 		for (const [prepFlavorName, flavorUuid] of Object.entries(prep.flavorMap)) {
 			const flavor = recipe.flavors.get(flavorUuid);
@@ -287,7 +285,7 @@ export function cook(
 			}
 		}
 
-		const outPayloads = prepPrimitives[prep.type].cook(scene, camera, inPayloads);
+		const outPayloads = prepPrimitives[prep.type].cook(scene, camera, inPayloads as InPayloads<T>);
 
 		for (const [prepFlavorName, payload] of Object.entries(outPayloads)) {
 			const flavorUuid = prep.flavorMap[prepFlavorName];

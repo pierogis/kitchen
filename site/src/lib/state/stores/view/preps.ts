@@ -12,7 +12,7 @@ export function createPreps(recipeState: RecipeState, focusedIngredientUuid: Rea
 			);
 
 			const prepFlavors = preps.map((prep) => {
-				const prepFlavors = Object.values(prep.flavorMap).map(([flavorUuid]) => {
+				const prepFlavors = Object.values(prep.flavorMap).map((flavorUuid) => {
 					const prepFlavor = $flavors.get(flavorUuid);
 					if (!prepFlavor) throw `flavor ${flavorUuid} for prep ${prep.uuid} not found`;
 

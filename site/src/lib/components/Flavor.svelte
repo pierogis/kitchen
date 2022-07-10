@@ -33,7 +33,6 @@
 	let onChange: Readable<(ev: TpChangeEvent<any>) => void> = derived(
 		[filling.monitorStatus],
 		([$monitorStatus]) => {
-			console.log();
 			return (ev: TpChangeEvent<any>) => {
 				if (!$monitorStatus.parameterUuid) {
 					const createParameterAction: Action<ActionType.CreateParameters> = {

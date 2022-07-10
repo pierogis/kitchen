@@ -1,4 +1,13 @@
-import type { CallFor, Connection, Flavor, Ingredient, Location, Parameter, Usage } from '@types';
+import type {
+	CallFor,
+	Connection,
+	Flavor,
+	FlavorType,
+	Ingredient,
+	Location,
+	Parameter,
+	Usage
+} from '@types';
 import type { FlatRecipe } from '@recipe';
 import type { Writable } from 'svelte/store';
 
@@ -36,9 +45,9 @@ type ActionParamsMapper = {
 	[ActionType.CreateConnections]: { connections: Connection[] };
 	[ActionType.UpdateConnections]: { connections: Connection[] };
 	[ActionType.DeleteConnections]: { connections: Connection[] };
-	[ActionType.CreateParameters]: { parameters: Parameter[] };
-	[ActionType.UpdateParameters]: { parameters: Parameter[] };
-	[ActionType.DeleteParameters]: { parameters: Parameter[] };
+	[ActionType.CreateParameters]: { parameters: Parameter<FlavorType>[] };
+	[ActionType.UpdateParameters]: { parameters: Parameter<FlavorType>[] };
+	[ActionType.DeleteParameters]: { parameters: Parameter<FlavorType>[] };
 	[ActionType.FocusUsage]: { usageUuid: string };
 };
 

@@ -5,6 +5,14 @@ import * as THREE from 'three';
 import { Direction, FlavorType, type Payload, type PayloadValue } from '@types';
 import type { RecipeState } from '@recipe';
 
+export interface Filling {
+	payload: Writable<Payload<FlavorType>>;
+	monitorStatus: Writable<{
+		monitor: boolean;
+		parameterUuid?: string;
+	}>;
+}
+
 export type FillingsState = {
 	getFilling: (flavorUuid: string, usageUuid: string, direction: Direction) => Filling;
 
@@ -25,14 +33,6 @@ export type FillingsState = {
 		}
 	) => void;
 };
-
-export interface Filling {
-	payload: Writable<Payload<FlavorType>>;
-	monitorStatus: Writable<{
-		monitor: boolean;
-		parameterUuid?: string;
-	}>;
-}
 
 export function createFillings(recipeState: RecipeState): FillingsState {
 	const valueDefaults: {
@@ -139,7 +139,8 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 
 	function getFilling(flavorUuid: string, usageUuid: string, direction: Direction) {
 		const filling = flavorUsageFillings.get(flavorUuid, usageUuid, direction);
-		if (!filling) throw `filling for flavor ${flavorUuid} on usage ${usageUuid} not found`;
+		if (!filling)
+			throw `filling for ${direction} flavor ${flavorUuid} on usage ${usageUuid} not found`;
 
 		return filling;
 	}
@@ -150,8 +151,7 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 		direction: Direction,
 		newPayload: Payload<FlavorType>
 	) {
-		const filling = flavorUsageFillings.get(flavorUuid, usageUuid, direction);
-		if (!filling) throw `filling for flavor ${flavorUuid} on usage ${usageUuid} not found`;
+		const filling = getFilling(flavorUuid, usageUuid, direction);
 
 		const value = get(filling.payload).value;
 
@@ -166,8 +166,7 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 		direction: Direction,
 		newMonitorStatus: { monitor: boolean; parameterUuid?: string }
 	) {
-		const filling = flavorUsageFillings.get(flavorUuid, usageUuid, direction);
-		if (!filling) throw `filling for flavor ${flavorUuid} on usage ${usageUuid} not found`;
+		const filling = getFilling(flavorUuid, usageUuid, direction);
 
 		const monitorStatus = get(filling.monitorStatus);
 		const monitor = monitorStatus.monitor;

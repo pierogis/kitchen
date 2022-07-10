@@ -1,15 +1,15 @@
 import type * as THREE from 'three';
 
-import type { PrepPrimitive, FlavorMap } from '.';
-import { Direction, FlavorType, type Payload } from '@types';
+import type { PrepPrimitive } from '.';
+import { Direction, FlavorType, PrepType, type Payload } from '@types';
 
-export type ShaderOperands = FlavorMap;
+export const ShaderOperands = {};
 
-export interface ShaderOutputs extends FlavorMap {
-	shader: FlavorType.Shader;
-}
+export const ShaderOutputs = {
+	shader: FlavorType.Shader
+} as const;
 
-export const ShaderPrep: PrepPrimitive<ShaderOperands, ShaderOutputs> = {
+export const ShaderPrep: PrepPrimitive<PrepType.Shader> = {
 	flavors: {
 		shader: { directions: [Direction.Out], type: FlavorType.Shader }
 	},
