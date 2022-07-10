@@ -8,15 +8,11 @@ export interface AddOperands extends FlavorMap {
 	'operand 2': FlavorType.Number;
 }
 
-type AddOperandPayloads = {
-	[prepOperandName in keyof AddOperands]: Payload<AddOperands[prepOperandName]>;
-};
-
 export interface AddOutputs extends FlavorMap {
 	sum: FlavorType.Number;
 }
 
-export const add: PrepPrimitive<AddOperands, AddOutputs> = {
+export const AddPrep: PrepPrimitive<AddOperands, AddOutputs> = {
 	flavors: {
 		sum: {
 			type: FlavorType.Number,
@@ -32,8 +28,8 @@ export const add: PrepPrimitive<AddOperands, AddOutputs> = {
 		}
 	},
 	cook: (
-		scene: THREE.Scene,
-		camera: THREE.Camera,
+		_scene: THREE.Scene,
+		_camera: THREE.Camera,
 		inPayloads: {
 			[prepOperandName: string]: Payload<FlavorType>;
 		}

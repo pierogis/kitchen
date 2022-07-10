@@ -15,7 +15,7 @@
 	const viewState: ViewState = getContext(viewStateContextKey);
 
 	let followCoordinates: Readable<Coordinates | undefined> = viewState.cursor.coordinates;
-	let tweenDuration: number = 50;
+	let tweenDuration = 50;
 
 	const tweenedFollowCoordinates = tweened(get(followCoordinates), {
 		duration: tweenDuration

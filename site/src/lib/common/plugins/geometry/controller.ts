@@ -1,33 +1,30 @@
-import type { BufferedValue, Controller, Value, ViewProps } from '@tweakpane/core';
+import type * as TP from '@tweakpane/core';
 
-import { PluginView } from './view';
+import { createPluginView } from './view';
 
 interface Config {
-	value: Value<THREE.Object3D> | BufferedValue<THREE.Object3D>;
-	viewProps: ViewProps;
+	value: TP.Value<THREE.BufferGeometry> | TP.BufferedValue<THREE.BufferGeometry>;
+	viewProps: TP.ViewProps;
 }
 
 // Custom controller class should implement `Controller` interface
-export class PluginController implements Controller<PluginView> {
-	public readonly value: Value<THREE.Object3D> | BufferedValue<THREE.Object3D>;
-	public readonly view: PluginView;
-	public readonly viewProps: ViewProps;
+export function createPluginController(doc: Document, config: Config): TP.Controller<TP.View> {
+	// Receive the bound value from the plugin
+	const value: TP.Value<THREE.BufferGeometry> | TP.BufferedValue<THREE.BufferGeometry> =
+		config.value;
 
-	constructor(doc: Document, config: Config) {
-		// Receive the bound value from the plugin
-		this.value = config.value;
+	// and also view props
+	const viewProps: TP.ViewProps = config.viewProps;
+	viewProps.handleDispose(() => {});
 
-		// and also view props
-		this.viewProps = config.viewProps;
-		this.viewProps.handleDispose(() => {
-			// Called when the controller is disposing
-			console.log('TODO: dispose controller');
-		});
+	// Create a custom view
+	const view = createPluginView(doc, {
+		value: value,
+		viewProps: viewProps
+	});
 
-		// Create a custom view
-		this.view = new PluginView(doc, {
-			value: this.value,
-			viewProps: this.viewProps
-		});
-	}
+	return {
+		view,
+		viewProps
+	};
 }

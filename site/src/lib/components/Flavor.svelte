@@ -96,7 +96,7 @@
 </script>
 
 {#if $monitor}
-	<Monitor {index} {folder} {paramsStore} key={flavor.name} let:monitorElement>
+	<Monitor {index} {folder} {paramsStore} {options} key={flavor.name} let:monitorElement>
 		{#each flavor.directions as direction (direction)}
 			<TerminalRack
 				parentElement={monitorElement}

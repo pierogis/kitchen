@@ -42,7 +42,14 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 		[FlavorType.Image]: '',
 		[FlavorType.Number]: 0,
 		[FlavorType.Text]: '',
-		[FlavorType.Geometry]: new THREE.Object3D()
+		[FlavorType.Geometry]: new THREE.BufferGeometry(),
+		[FlavorType.Shader]: {
+			uniforms: {},
+			vertexShader: '',
+			fragmentShader: ''
+		},
+		[FlavorType.Object]: new THREE.Object3D(),
+		[FlavorType.Texture]: new THREE.Texture()
 	};
 
 	const flavorUsageFillingsMap: Map<string, Filling> = new Map();

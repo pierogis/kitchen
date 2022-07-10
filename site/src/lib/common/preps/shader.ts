@@ -3,27 +3,31 @@ import type * as THREE from 'three';
 import type { PrepPrimitive, FlavorMap } from '.';
 import { Direction, FlavorType, type Payload } from '@types';
 
-export interface ShaderOperands extends FlavorMap {}
+export type ShaderOperands = FlavorMap;
 
 export interface ShaderOutputs extends FlavorMap {
-	shader: FlavorType.Number;
+	shader: FlavorType.Shader;
 }
 
-export const shader: PrepPrimitive<ShaderOperands, ShaderOutputs> = {
+export const ShaderPrep: PrepPrimitive<ShaderOperands, ShaderOutputs> = {
 	flavors: {
-		shader: { directions: [Direction.Out], type: FlavorType.Number }
+		shader: { directions: [Direction.Out], type: FlavorType.Shader }
 	},
 	cook: (
-		scene: THREE.Scene,
-		camera: THREE.Camera,
-		inPayloads: {
+		_scene: THREE.Scene,
+		_camera: THREE.Camera,
+		_inPayloads: {
 			[prepOperandName: string]: Payload<FlavorType>;
-			// [prepOperandName in keyof ShaderOperands]: Payload<ShaderOperands[prepOperandName]>;
 		}
 	) => {
-		const value = 0;
+		const value: THREE.Shader = {
+			uniforms: {},
+			vertexShader: '',
+			fragmentShader: ''
+		};
+
 		return {
-			shader: { type: FlavorType.Number, value }
+			shader: { type: FlavorType.Shader, value }
 		};
 	}
 };

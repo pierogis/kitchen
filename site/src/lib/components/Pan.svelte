@@ -45,8 +45,6 @@
 		};
 	}
 
-	const materials: Map<string, THREE.ShaderMaterial> = new Map();
-
 	let renderer: THREE.WebGLRenderer;
 	let scene: THREE.Scene;
 	let camera: THREE.Camera;
@@ -66,7 +64,7 @@
 		({ renderer, scene, camera } = init(canvas));
 
 		recipeState.subscribe((recipe) => {
-			cook(renderer, scene, camera, materials, recipe, viewState);
+			cook(renderer, scene, camera, recipe, viewState);
 		});
 	});
 </script>

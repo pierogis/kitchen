@@ -54,8 +54,7 @@
 />
 <Dock
 	direction={Direction.Out}
-	preps={$preps}
-	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.In))}
+	flavors={$preps.flatMap((prep) => prep.flavors)}
 	focusedUsageUuid={$focusedUsageUuid}
 />
 

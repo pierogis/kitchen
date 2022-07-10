@@ -5,7 +5,7 @@ import type * as THREE from 'three';
 import type { FlatRecipe } from '@recipe';
 import type { ViewState } from '@view';
 import { FlavorType, Direction, type Payload, type Prep, PrepType } from '@types';
-import { prepPrimitives, type PrepOperands, type PrepOutputs } from '../preps';
+import { prepPrimitives } from '../preps';
 
 const knownPayloadsMap: Map<string, Payload<FlavorType>> = new Map();
 const knownPayloads = {
@@ -37,7 +37,6 @@ export function cook(
 	renderer: THREE.WebGLRenderer,
 	scene: THREE.Scene,
 	camera: THREE.Camera,
-	materials: Map<string, THREE.ShaderMaterial>,
 	recipe: FlatRecipe,
 	viewState: ViewState
 ) {

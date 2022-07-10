@@ -4,11 +4,12 @@
 
 	import type { InputBindingApi, TpChangeEvent } from '@tweakpane/core';
 	import type { FolderApi, InputParams } from 'tweakpane';
-	import type * as THREE from 'three';
+
+	import type { FlavorType, PayloadValue } from '@types';
 
 	export let folder: FolderApi;
-	export let paramsStore: Readable<{ [key: string]: string | number | THREE.Object3D }>;
-	export let onChange: (ev: TpChangeEvent<string | number | THREE.Object3D>) => void;
+	export let paramsStore: Readable<{ [key: string]: PayloadValue<FlavorType> }>;
+	export let onChange: (ev: TpChangeEvent<PayloadValue<FlavorType>>) => void;
 	export let key: string;
 	export let options: InputParams | undefined = undefined;
 	export let index: number | undefined = undefined;
@@ -16,7 +17,7 @@
 	let inputElement: HTMLElement;
 
 	onMount(() => {
-		let inputApi: InputBindingApi<unknown, string | number | THREE.Object3D>;
+		let inputApi: InputBindingApi<unknown, PayloadValue<FlavorType>>;
 
 		let params = $paramsStore;
 		inputApi = folder.addInput(params, key, { ...options, index }).on('change', onChange);

@@ -6,7 +6,7 @@ import type { FlatRecipe } from '@recipe';
 export function dispatcher(stores: {
 	[key in keyof FlatRecipe]: Writable<FlatRecipe[key]>;
 }) {
-	let undoActions: Action<ActionType>[][] = [];
+	const undoActions: Action<ActionType>[][] = [];
 	let redoActions: Action<ActionType>[][] = [];
 
 	let lastId = 1;

@@ -11,13 +11,13 @@ export interface ImageOutputs extends FlavorMap {
 	image: FlavorType.Image;
 }
 
-export const image: PrepPrimitive<ImageOperands, ImageOutputs> = {
+export const ImagePrep: PrepPrimitive<ImageOperands, ImageOutputs> = {
 	flavors: {
 		image: { directions: [Direction.In, Direction.Out], type: FlavorType.Image }
 	},
 	cook: (
-		scene: THREE.Scene,
-		camera: THREE.Camera,
+		_scene: THREE.Scene,
+		_camera: THREE.Camera,
 		inPayloads: {
 			[prepOperandName: string]: Payload<FlavorType>;
 		}

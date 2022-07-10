@@ -1,6 +1,6 @@
-import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
+import { get, writable, type Readable, type Writable } from 'svelte/store';
 
-import { Direction, type Flavor, type FlavorType, type Ingredient, type Usage } from '@types';
+import { Direction, type Flavor, type FlavorType, type Ingredient } from '@types';
 
 import { ActionType, type ActionParams } from '@state/actions';
 import type { RecipeState } from '@recipe';
@@ -152,10 +152,10 @@ export function createLiveConnection(
 							inUsageUuid:
 								liveConnection.anchorDirection == Direction.In
 									? liveConnection.anchorUsageUuid
-									: targetFlavorUuid,
+									: targetUsageUuid,
 							outUsageUuid:
 								liveConnection.anchorDirection == Direction.In
-									? targetFlavorUuid
+									? targetUsageUuid
 									: liveConnection.anchorUsageUuid
 						}
 					]

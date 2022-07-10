@@ -1,12 +1,12 @@
 import type * as THREE from 'three';
 
 import { Direction, PrepType, FlavorType, type Payload } from '@types';
-import { add, type AddOperands, type AddOutputs } from './add';
-import { image, type ImageOperands, type ImageOutputs } from './image';
-import { shader, type ShaderOperands, type ShaderOutputs } from './shader';
-import { sphere, type SphereOperands, type SphereOutputs } from './sphere';
-import { texture, type TextureOperands, type TextureOutputs } from './texture';
-import { scene, type SceneOperands, type SceneOutputs } from './scene';
+import { AddPrep, type AddOperands, type AddOutputs } from './add';
+import { ImagePrep, type ImageOperands, type ImageOutputs } from './image';
+import { ShaderPrep, type ShaderOperands, type ShaderOutputs } from './shader';
+import { SpherePrep, type SphereOperands, type SphereOutputs } from './sphere';
+import { TexturePrep, type TextureOperands, type TextureOutputs } from './texture';
+import { ScenePrep, type SceneOperands, type SceneOutputs } from './scene';
 
 export type PrepOperands = {
 	[PrepType.Add]: AddOperands;
@@ -42,10 +42,10 @@ export interface PrepPrimitive<I extends FlavorMap, O extends FlavorMap> {
 export const prepPrimitives: {
 	[prepType in PrepType]: PrepPrimitive<PrepOperands[prepType], PrepOutputs[prepType]>;
 } = {
-	[PrepType.Add]: add,
-	[PrepType.Image]: image,
-	[PrepType.Shader]: shader,
-	[PrepType.Sphere]: sphere,
-	[PrepType.Texture]: texture,
-	[PrepType.Scene]: scene
+	[PrepType.Add]: AddPrep,
+	[PrepType.Image]: ImagePrep,
+	[PrepType.Shader]: ShaderPrep,
+	[PrepType.Sphere]: SpherePrep,
+	[PrepType.Texture]: TexturePrep,
+	[PrepType.Scene]: ScenePrep
 };

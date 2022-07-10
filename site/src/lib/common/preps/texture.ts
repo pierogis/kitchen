@@ -4,31 +4,29 @@ import type { PrepPrimitive, FlavorMap } from '.';
 import { Direction, FlavorType, type Payload } from '@types';
 
 export interface TextureOperands extends FlavorMap {
-	shader: FlavorType.Number;
+	shader: FlavorType.Shader;
 }
 
 export interface TextureOutputs extends FlavorMap {
-	texture: FlavorType.Image;
+	texture: FlavorType.Texture;
 }
 
-export const texture: PrepPrimitive<TextureOperands, TextureOutputs> = {
+export const TexturePrep: PrepPrimitive<TextureOperands, TextureOutputs> = {
 	flavors: {
-		// FlavorType.Shader
-		shader: { directions: [Direction.In], type: FlavorType.Number },
-		// FlavorType.Texture
-		texture: { directions: [Direction.Out], type: FlavorType.Image }
+		shader: { directions: [Direction.In], type: FlavorType.Shader },
+		texture: { directions: [Direction.Out], type: FlavorType.Texture }
 	},
 	cook: (
-		scene: THREE.Scene,
-		camera: THREE.Camera,
-		inPayloads: {
+		_scene: THREE.Scene,
+		_camera: THREE.Camera,
+		_inPayloads: {
 			[prepOperandName: string]: Payload<FlavorType>;
-			// [prepOperandName in keyof TextureOperands]: Payload<TextureOperands[prepOperandName]>;
 		}
 	) => {
-		const value = new THREE.SphereGeometry();
+		const value = new THREE.Texture();
+
 		return {
-			texture: { type: FlavorType.Image, value: 'texture' }
+			texture: { type: FlavorType.Texture, value }
 		};
 	}
 };

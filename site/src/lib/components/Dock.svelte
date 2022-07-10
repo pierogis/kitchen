@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { derived, writable } from 'svelte/store';
+	import { derived } from 'svelte/store';
 
-	import { Direction, type Flavor, type FullPrep } from '@types';
+	import { Direction, type Flavor } from '@types';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 
 	import { viewStateContextKey, type ViewState } from '@view';
@@ -12,7 +12,6 @@
 
 	export let focusedUsageUuid: string;
 	export let direction: Direction;
-	export let preps: FullPrep[] = [];
 	export let flavors: Flavor[];
 	let expanded = false;
 
@@ -39,25 +38,6 @@
 	>
 		{#if paneContainer}
 			<Pane container={paneContainer} let:pane>
-				{#each preps as prep, index (prep.uuid)}
-					{#each prep.flavors as flavor}
-						<FlavorComponent
-							{index}
-							{flavor}
-							filling={viewState.fillings.getFilling(flavor.uuid, focusedUsageUuid, direction)}
-							terminals={derived(viewState.terminals, (currentTerminals) =>
-								currentTerminals.filter(
-									(terminal) =>
-										terminal.flavorUuid == flavor.uuid &&
-										terminal.direction == (direction == Direction.In ? Direction.Out : Direction.In)
-								)
-							)}
-							usageUuid={focusedUsageUuid}
-							folder={pane}
-						/>
-					{/each}
-				{/each}
-
 				{#each flavors as flavor, index (flavor.uuid)}
 					<FlavorComponent
 						{index}

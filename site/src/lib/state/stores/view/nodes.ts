@@ -1,6 +1,13 @@
 import { derived, get, type Readable } from 'svelte/store';
 
-import type { CallFor, Flavor, Ingredient, Location, Usage } from '@types';
+import {
+	Direction,
+	type CallFor,
+	type Flavor,
+	type Ingredient,
+	type Location,
+	type Usage
+} from '@types';
 import type { RecipeState } from '@recipe';
 
 export type Node = {
@@ -22,7 +29,11 @@ export function createNodes(
 
 		return $inFocusSubComponents.map(({ usage, ingredient }) => {
 			// get the flavors that attach to this ingredient
-			const flavors = allFlavors.filter((flavor) => flavor.ingredientUuid == usage.ingredientUuid);
+			const flavors = allFlavors.filter(
+				(flavor) =>
+					flavor.ingredientUuid == usage.ingredientUuid &&
+					(flavor.prepUuid == undefined || flavor.directions.includes(Direction.Out))
+			);
 
 			const callFor = allCallsFor.find((callFor) => callFor.usageUuid == usage.uuid);
 			if (!callFor) throw `callFor referencing usage ${usage.uuid} not found`;

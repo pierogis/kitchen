@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
 export function init(canvas: HTMLCanvasElement) {
-	var width = canvas.width;
-	var height = canvas.height;
+	const width = canvas.width;
+	const height = canvas.height;
 
 	const renderer = new THREE.WebGLRenderer({ canvas });
 	renderer.setSize(width, height);

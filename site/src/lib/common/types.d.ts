@@ -6,7 +6,10 @@ export enum FlavorType {
 	Color = 'Color',
 	Text = 'Text',
 	Image = 'Image',
-	Geometry = 'Geometry'
+	Geometry = 'Geometry',
+	Texture = 'Texture',
+	Shader = 'Shader',
+	Object = 'Object'
 }
 
 export enum PrepType {
@@ -95,7 +98,10 @@ type FlavorTypesPayloadMapper = {
 	[FlavorType.Image]: string;
 	[FlavorType.Number]: number;
 	[FlavorType.Text]: string;
-	[FlavorType.Geometry]: THREE.Object3D;
+	[FlavorType.Geometry]: THREE.BufferGeometry;
+	[FlavorType.Texture]: THREE.Texture;
+	[FlavorType.Shader]: THREE.Shader;
+	[FlavorType.Object]: THREE.Object3D;
 };
 
 export type PayloadValue<T> = T extends FlavorType ? FlavorTypesPayloadMapper[T] : never;

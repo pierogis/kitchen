@@ -65,6 +65,15 @@ export const defaultRecipe: FullRecipe = {
 					options: null
 				},
 				{
+					uuid: '6',
+					ingredientUuid: '2',
+					name: 'radius',
+					type: FlavorType.Number,
+					prepUuid: '1',
+					directions: [Direction.In],
+					options: null
+				},
+				{
 					uuid: '7',
 					ingredientUuid: '2',
 					name: 'radius',
@@ -87,7 +96,7 @@ export const defaultRecipe: FullRecipe = {
 					ingredientUuid: '1',
 					name: 'sphere',
 					type: PrepType.Sphere,
-					flavorMap: { radius: '7' }
+					flavorMap: { sphere: '5', radius: '6' }
 				}
 			]
 		}
@@ -119,63 +128,13 @@ export const defaultRecipe: FullRecipe = {
 	],
 	parameters: [
 		{
-			uuid: '1',
-			recipeUuid: '0',
-			flavorUuid: '1',
-			usageUuid: '0',
-			payload: {
-				type: FlavorType.Number,
-				value: 0
-			}
-		},
-		{
-			uuid: '2',
-			recipeUuid: '0',
-			flavorUuid: '2',
-			usageUuid: '0',
-			payload: {
-				type: FlavorType.Number,
-				value: 40
-			}
-		},
-		{
-			uuid: '3',
-			recipeUuid: '0',
-			flavorUuid: '3',
-			usageUuid: '0',
-			payload: {
-				type: FlavorType.Number,
-				value: 180
-			}
-		},
-		{
-			uuid: '5',
-			recipeUuid: '0',
-			flavorUuid: '5',
-			usageUuid: '2',
-			payload: {
-				type: FlavorType.Image,
-				value: ''
-			}
-		},
-		{
-			uuid: '6',
-			recipeUuid: '0',
-			flavorUuid: '6',
-			usageUuid: '2',
-			payload: {
-				type: FlavorType.Text,
-				value: ''
-			}
-		},
-		{
 			uuid: '7',
 			recipeUuid: '0',
 			flavorUuid: '7',
 			usageUuid: '2',
 			payload: {
 				type: FlavorType.Number,
-				value: '1'
+				value: 1
 			}
 		}
 	],

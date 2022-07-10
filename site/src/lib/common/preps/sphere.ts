@@ -1,33 +1,32 @@
 import * as THREE from 'three';
 
-import type { PrepPrimitive, FlavorMap } from '.';
 import { Direction, FlavorType, type Payload } from '@types';
+import type { PrepPrimitive, FlavorMap } from '.';
 
 export interface SphereOperands extends FlavorMap {
 	radius: FlavorType.Number;
 }
 
 export interface SphereOutputs extends FlavorMap {
-	sphere: FlavorType.Number;
+	sphere: FlavorType.Geometry;
 }
 
-export const sphere: PrepPrimitive<SphereOperands, SphereOutputs> = {
+export const SpherePrep: PrepPrimitive<SphereOperands, SphereOutputs> = {
 	flavors: {
 		radius: { directions: [Direction.In], type: FlavorType.Number },
-		// FlavorType.Geometry
-		sphere: { directions: [Direction.Out], type: FlavorType.Number }
+		sphere: { directions: [Direction.Out], type: FlavorType.Geometry }
 	},
 	cook: (
-		scene: THREE.Scene,
-		camera: THREE.Camera,
-		inPayloads: {
+		_scene: THREE.Scene,
+		_camera: THREE.Camera,
+		_inPayloads: {
 			[prepOperandName: string]: Payload<FlavorType>;
-			// [prepOperandName in keyof SphereOperands]: Payload<SphereOperands[prepOperandName]>;
 		}
 	) => {
-		const value = new THREE.SphereGeometry();
+		const geometry = new THREE.SphereGeometry();
+
 		return {
-			sphere: { type: FlavorType.Number, value: 1 }
+			sphere: { type: FlavorType.Geometry, value: geometry }
 		};
 	}
 };

@@ -1,93 +1,67 @@
-import {
-	type BaseInputParams,
-	BindingTarget,
-	CompositeConstraint,
-	type InputBindingPlugin,
-	ParamsParsers,
-	parseParams,
-	type Constraint
-} from '@tweakpane/core';
+import * as TP from '@tweakpane/core';
 import * as THREE from 'three';
 
-import { PluginController } from './controller';
+import { createPluginController } from './controller';
 
-export interface PluginInputParams extends BaseInputParams {
+export interface GeometryInputParams extends TP.BaseInputParams {
 	view: 'geometry';
 }
 
-// NOTE: You can see JSDoc comments of `InputBindingPlugin` for details about each property
-//
-// `InputBindingPlugin<In, Ex, P>` means...
-// - The plugin receives the bound value as `Ex`,
-// - converts `Ex` into `In` and holds it
-// - P is the type of the parsed parameters
-//
-export const GeometryInputPlugin: InputBindingPlugin<
-	THREE.Object3D,
-	THREE.Object3D,
-	PluginInputParams
+export const GeometryInputPlugin: TP.InputBindingPlugin<
+	THREE.BufferGeometry,
+	THREE.BufferGeometry,
+	GeometryInputParams
 > = {
-	id: 'geometry',
-
-	// type: The plugin type.
-	// - 'input': Input binding
-	// - 'monitor': Monitor binding
+	id: 'input-geometry',
 	type: 'input',
-
-	// This plugin template injects a compiled CSS by @rollup/plugin-replace
-	// See rollup.config.js for details
 	css: '__css__',
-
 	accept(exValue: unknown, params: Record<string, unknown>) {
-		if (!(exValue instanceof THREE.Object3D)) {
-			// Return null to deny the user input
+		const object = exValue as THREE.BufferGeometry;
+		if (!object?.isBufferGeometry) {
+			// return null to deny the user input
 			return null;
 		}
 
-		// Parse parameters object
-		const p = ParamsParsers;
-		const result = parseParams<PluginInputParams>(params, {
-			// `view` option may be useful to provide a custom control for primitive values
+		const p = TP.ParamsParsers;
+		const result = TP.parseParams<GeometryInputParams>(params, {
 			view: p.required.constant('geometry')
 		});
 		if (!result) {
 			return null;
 		}
 
-		// Return a typed value and params to accept the user input
+		// return typed value and params to accept user input
 		return {
-			initialValue: exValue,
+			initialValue: object,
 			params: result
 		};
 	},
 
 	binding: {
 		reader(_args) {
-			return (exValue: unknown): THREE.Object3D => {
-				// Convert an external unknown value into the internal value
-				return exValue instanceof THREE.Object3D ? exValue : new THREE.Object3D();
+			return (exValue: unknown): THREE.BufferGeometry => {
+				let object = exValue as THREE.BufferGeometry;
+				if (!object.isBufferGeometry) {
+					object = new THREE.BufferGeometry();
+				}
+				return object;
 			};
 		},
 
 		constraint(_args) {
-			// Create a value constraint from the user input
-			const constraints: Constraint<THREE.Object3D>[] = [];
-			// Use `CompositeConstraint` to combine multiple constraints
-			return new CompositeConstraint(constraints);
+			const constraints: TP.Constraint<THREE.BufferGeometry>[] = [];
+			return new TP.CompositeConstraint(constraints);
 		},
 
 		writer(_args) {
-			return (target: BindingTarget, inValue) => {
-				// Use `target.write()` to write the primitive value to the target,
-				// or `target.writeProperty()` to write a property of the target
+			return (target: TP.BindingTarget, inValue) => {
 				target.write(inValue);
 			};
 		}
 	},
 
 	controller(args) {
-		// Create a controller for the plugin
-		return new PluginController(args.document, {
+		return createPluginController(args.document, {
 			value: args.value,
 			viewProps: args.viewProps
 		});
