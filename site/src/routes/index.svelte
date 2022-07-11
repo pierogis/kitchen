@@ -56,7 +56,6 @@
 	preps={viewState.preps}
 	nodes={viewState.nodes}
 	cables={viewState.cables}
-	terminalsCoordinates={viewState.terminalsCoordinates}
 	liveTerminal={viewState.liveTerminal}
 	width={innerWidth}
 	height={innerHeight}

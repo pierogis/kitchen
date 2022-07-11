@@ -13,14 +13,11 @@ import {
 
 const recipeUuid = '0-recipe';
 
-// main ingredient
+// ingredientUuids
 const mainIngredientUuid = 'main-ingredient';
+const sphereIngredientUuid = 'sphere-ingredient';
 
-const mainUsage: Usage = {
-	uuid: 'main-usage',
-	ingredientUuid: mainIngredientUuid,
-	parentUsageUuid: undefined
-};
+// preps
 
 const scenePrepUuid = 'scene-prep';
 
@@ -54,23 +51,6 @@ const scenePrep: Prep<PrepType.Scene> = {
 	flavorUuidMap: {
 		scene: scenePrepFlavor.uuid
 	}
-};
-
-const mainIngredient: FullIngredient = {
-	uuid: mainIngredientUuid,
-	parentIngredientUuid: undefined,
-	name: 'sort',
-	flavors: [scenePrepFlavor, radiusInputFlavor],
-	connections: [],
-	usages: [mainUsage],
-	preps: [scenePrep]
-};
-
-const sphereIngredientUuid = 'sphere-ingredient';
-const sphereUsage: Usage = {
-	uuid: 'sphere-usage',
-	ingredientUuid: sphereIngredientUuid,
-	parentUsageUuid: mainUsage.uuid
 };
 
 const spherePrepUuid = 'sphere-prep';
@@ -114,12 +94,56 @@ const spherePrep: Prep<PrepType.Sphere> = {
 	type: PrepType.Sphere,
 	flavorUuidMap: { sphere: spherePrepFlavor.uuid, radius: radiusPrepFlavor.uuid }
 };
+
+// usages and ingredients
+const mainUsage: Usage = {
+	uuid: 'main-usage',
+	ingredientUuid: mainIngredientUuid,
+	parentUsageUuid: undefined
+};
+
+const sphereUsage: Usage = {
+	uuid: 'sphere-usage',
+	ingredientUuid: sphereIngredientUuid,
+	parentUsageUuid: mainUsage.uuid
+};
+
+const mainIngredient: FullIngredient = {
+	uuid: mainIngredientUuid,
+	parentIngredientUuid: undefined,
+	name: 'sort',
+	flavors: [scenePrepFlavor, radiusInputFlavor],
+	connections: [
+		{
+			uuid: 'main-sphere-scene-connection',
+			flavorType: FlavorType.Geometry,
+			parentIngredientUuid: mainIngredientUuid,
+			inFlavorUuid: scenePrepFlavor.uuid,
+			outFlavorUuid: spherePrepFlavor.uuid,
+			inUsageUuid: undefined,
+			outUsageUuid: sphereUsage.uuid
+		}
+	],
+	usages: [mainUsage],
+	preps: [scenePrep]
+};
+
 const sphereIngredient: FullIngredient = {
 	uuid: sphereIngredientUuid,
 	parentIngredientUuid: mainIngredient.uuid,
 	name: 'sphere',
 	flavors: [spherePrepFlavor, radiusPrepFlavor, radiusSphereFlavor],
-	connections: [],
+	connections: [
+		{
+			uuid: 'sphere-radius-connection',
+			flavorType: FlavorType.Number,
+			parentIngredientUuid: sphereIngredientUuid,
+			inFlavorUuid: radiusPrepFlavor.uuid,
+			outFlavorUuid: radiusSphereFlavor.uuid,
+			inUsageUuid: undefined,
+			outUsageUuid: undefined
+		}
+	],
 	usages: [sphereUsage],
 	preps: [spherePrep]
 };

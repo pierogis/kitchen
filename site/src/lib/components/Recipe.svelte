@@ -16,7 +16,6 @@
 	export let preps: Readable<FullPrep<PrepType>[]>;
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
-	export let terminalsCoordinates: TerminalsCoordinatesState;
 	export let liveTerminal: Readable<Terminal | undefined>;
 
 	export let width: number;
@@ -40,10 +39,7 @@
 
 <svg style:--path-stroke-width="{pathStrokeWidth}px" {width} {height}>
 	{#each $cables as cable (cable.connectionUuid)}
-		<CableComponent
-			outCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
-			inCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
-		/>
+		<CableComponent {cable} />
 	{/each}
 </svg>
 
