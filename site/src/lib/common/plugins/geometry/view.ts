@@ -51,14 +51,20 @@ export function createPluginView(doc: Document, config: Config): TP.View {
 
 	element.appendChild(canvas);
 
+	const width = canvas.width;
+	const height = canvas.height;
+
 	const renderer = new THREE.WebGLRenderer({ canvas });
 	const scene = new THREE.Scene();
-	const camera = new THREE.Camera();
+	const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+	camera.position.z = 2;
 
 	// Apply the initial value
 	update();
 
-	config.viewProps.handleDispose(() => {});
+	config.viewProps.handleDispose(() => {
+		renderer.dispose();
+	});
 
 	return { element };
 }
