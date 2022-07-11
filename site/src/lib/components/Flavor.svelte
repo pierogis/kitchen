@@ -91,39 +91,38 @@
 	if (flavor.type == FlavorType.Geometry) {
 		options = { ...options, view: 'canvas' };
 		const scene = new THREE.Scene();
-		const camera = get(viewState.defaultCamera);
 
-		paramsStore = derived(filling.payload, ($payload) => {
+		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
 			scene.clear();
 			const geometry = $payload.value as THREE.BufferGeometry;
+
 			if (geometry.isBufferGeometry) {
 				scene.add(new THREE.Mesh(geometry));
 			} else {
 				throw 'payload value is wrong type';
 			}
-			return { [flavor.name]: { scene, camera } };
+			return { [flavor.name]: { scene, camera: $camera } };
 		});
 	} else if (flavor.type == FlavorType.Object) {
 		options = { ...options, view: 'canvas' };
 		const scene = new THREE.Scene();
-		const camera = get(viewState.defaultCamera);
 
-		paramsStore = derived(filling.payload, ($payload) => {
+		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
 			scene.clear();
+
 			const object = $payload.value as THREE.Object3D;
 			if (object.isObject3D) {
 				scene.add(object);
 			} else {
 				throw 'payload value is wrong type';
 			}
-			return { [flavor.name]: { scene, camera } };
+			return { [flavor.name]: { scene, camera: $camera } };
 		});
 	} else if (flavor.type == FlavorType.Texture) {
 		options = { ...options, view: 'canvas' };
 		const scene = new THREE.Scene();
-		const camera = get(viewState.defaultCamera);
 
-		paramsStore = derived(filling.payload, ($payload) => {
+		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
 			scene.clear();
 			const texture = $payload.value as THREE.Texture;
 			if (texture.isTexture) {
@@ -134,7 +133,7 @@
 			} else {
 				throw 'payload value is wrong type';
 			}
-			return { [flavor.name]: { scene, camera } };
+			return { [flavor.name]: { scene, camera: $camera } };
 		});
 	} else {
 		paramsStore = derived(filling.payload, ($payload) => {

@@ -40,7 +40,7 @@ const radiusInputFlavor: Flavor = {
 	directions: [Direction.In],
 	options: {
 		min: 0,
-		max: 360
+		max: 1
 	}
 };
 
@@ -49,6 +49,7 @@ const addToScenePrep: Prep<PrepType.AddToScene> = {
 	name: 'add to Scene',
 	ingredientUuid: mainIngredientUuid,
 	type: PrepType.AddToScene,
+	direction: Direction.Out,
 	flavorUuidMap: {
 		object: addToScenePrepFlavor.uuid
 	}
@@ -82,10 +83,7 @@ const radiusSphereFlavor = {
 	name: 'radius',
 	type: FlavorType.Number,
 	directions: [Direction.In],
-	options: {
-		min: 0,
-		max: 360
-	}
+	options: null
 };
 
 const spherePrep: Prep<PrepType.Sphere> = {
@@ -93,10 +91,21 @@ const spherePrep: Prep<PrepType.Sphere> = {
 	ingredientUuid: sphereIngredientUuid,
 	name: 'sphere',
 	type: PrepType.Sphere,
+	direction: Direction.Out,
 	flavorUuidMap: { sphere: spherePrepFlavor.uuid, radius: radiusPrepFlavor.uuid }
 };
 
 const meshPrepUuid = 'mesh-prep';
+
+const meshRadiusInputFlavor: Flavor = {
+	uuid: 'mesh-radius-input-flavor',
+	ingredientUuid: meshIngredientUuid,
+	name: 'radius',
+	type: FlavorType.Number,
+	prepUuid: undefined,
+	directions: [Direction.In],
+	options: null
+};
 
 const meshPrepFlavor = {
 	uuid: 'mesh-prep-flavor',
@@ -133,6 +142,7 @@ const meshPrep: Prep<PrepType.Mesh> = {
 	ingredientUuid: meshIngredientUuid,
 	name: 'sphere',
 	type: PrepType.Mesh,
+	direction: Direction.Out,
 	flavorUuidMap: {
 		mesh: meshPrepFlavor.uuid,
 		material: materialPrepFlavor.uuid,
@@ -173,6 +183,15 @@ const mainIngredient: FullIngredient = {
 			outFlavorUuid: meshPrepFlavor.uuid,
 			inUsageUuid: undefined,
 			outUsageUuid: meshUsage.uuid
+		},
+		{
+			uuid: 'main-radius-connection',
+			flavorType: FlavorType.Object,
+			parentIngredientUuid: mainIngredientUuid,
+			inFlavorUuid: meshRadiusInputFlavor.uuid,
+			outFlavorUuid: radiusInputFlavor.uuid,
+			inUsageUuid: meshUsage.uuid,
+			outUsageUuid: undefined
 		}
 	],
 	usages: [mainUsage],
@@ -183,7 +202,7 @@ const meshIngredient: FullIngredient = {
 	uuid: meshIngredientUuid,
 	parentIngredientUuid: mainIngredient.uuid,
 	name: 'mesh',
-	flavors: [meshPrepFlavor, materialPrepFlavor, geometryPrepFlavor],
+	flavors: [meshPrepFlavor, materialPrepFlavor, geometryPrepFlavor, meshRadiusInputFlavor],
 	connections: [
 		{
 			uuid: 'mesh-geometry-connection',
@@ -193,6 +212,15 @@ const meshIngredient: FullIngredient = {
 			outFlavorUuid: spherePrepFlavor.uuid,
 			inUsageUuid: undefined,
 			outUsageUuid: sphereUsage.uuid
+		},
+		{
+			uuid: 'mesh-radius-connection',
+			flavorType: FlavorType.Object,
+			parentIngredientUuid: meshIngredientUuid,
+			outFlavorUuid: meshRadiusInputFlavor.uuid,
+			inFlavorUuid: radiusSphereFlavor.uuid,
+			outUsageUuid: undefined,
+			inUsageUuid: sphereUsage.uuid
 		}
 	],
 	usages: [meshUsage],
@@ -262,7 +290,7 @@ const radiusInputParameter: Parameter<FlavorType.Number> = {
 	uuid: 'radius-input-parameter',
 	recipeUuid,
 	flavorUuid: radiusInputFlavor.uuid,
-	usageUuid: sphereUsage.uuid,
+	usageUuid: mainUsage.uuid,
 	payload: {
 		type: FlavorType.Number,
 		value: 1

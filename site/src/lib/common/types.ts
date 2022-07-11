@@ -50,6 +50,7 @@ export interface Prep<P extends PrepType> {
 	type: P;
 	// map from default names on prep operands and outputs to flavor uuids
 	flavorUuidMap: FlavorUuidMap<P>;
+	direction: Direction;
 }
 
 export interface Ingredient {

@@ -56,8 +56,6 @@ export function createPluginView(doc: Document, config: Config): TP.View {
 
 	element.appendChild(canvas);
 
-	const aspect = canvas.width / canvas.height;
-
 	const renderer = new THREE.WebGLRenderer({ canvas });
 	// camera.position.z = 2;
 

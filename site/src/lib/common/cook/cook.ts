@@ -17,27 +17,10 @@ import { prepPrimitives, type InPayloads } from '../preps';
 const knownPayloadsMap: Map<string, Payload<FlavorType>> = new Map();
 const knownPayloads = {
 	clear: () => knownPayloadsMap.clear(),
-	get: (flavorUuid: string, usageUuid: string, direction: Direction) =>
-		knownPayloadsMap.get([flavorUuid, usageUuid, direction].join(',')),
-	set: (
-		flavorUuid: string,
-		usageUuid: string,
-		direction: Direction,
-		payload: Payload<FlavorType>
-	) => knownPayloadsMap.set([flavorUuid, usageUuid, direction].join(','), payload)
-};
-
-const renderTargetsMap: Map<string, THREE.WebGLRenderTarget> = new Map();
-const renderTargets = {
-	clear: () => renderTargetsMap.clear(),
-	get: (flavorUuid: string, usageUuid: string, direction: Direction) =>
-		renderTargetsMap.get([flavorUuid, usageUuid, direction].join(',')),
-	set: (
-		flavorUuid: string,
-		usageUuid: string,
-		direction: Direction,
-		renderTarget: THREE.WebGLRenderTarget
-	) => renderTargetsMap.set([flavorUuid, usageUuid, direction].join(','), renderTarget)
+	get: (flavorUuid: string, usageUuid: string) =>
+		knownPayloadsMap.get([flavorUuid, usageUuid].join(',')),
+	set: (flavorUuid: string, usageUuid: string, payload: Payload<FlavorType>) =>
+		knownPayloadsMap.set([flavorUuid, usageUuid].join(','), payload)
 };
 
 export function cook(
@@ -52,7 +35,6 @@ export function cook(
 	// it will set these new out fillings on the view state
 
 	knownPayloads.clear();
-	renderTargets.clear();
 
 	function cookFlavor(
 		flavorUuid: string,
@@ -60,7 +42,7 @@ export function cook(
 		direction: Direction
 	): Payload<FlavorType> {
 		// memoize
-		const payload = knownPayloads.get(flavorUuid, usageUuid, direction);
+		let payload = knownPayloads.get(flavorUuid, usageUuid);
 		if (payload) return payload;
 
 		const flavor = recipe.flavors.get(flavorUuid);
@@ -71,9 +53,8 @@ export function cook(
 			const prep = flavor.prepUuid && recipe.preps.get(flavor.prepUuid);
 			if (prep) {
 				cookPrep(prep, usageUuid);
-				const payload = knownPayloads.get(flavorUuid, usageUuid, direction);
-				if (!payload) throw `out payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
-				return payload;
+				payload = knownPayloads.get(flavorUuid, usageUuid);
+				if (!payload) throw `prep payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 			}
 		} else {
 			const flavorInConnection = Array.from(recipe.connections.values()).find((connection) => {
@@ -88,23 +69,22 @@ export function cook(
 					? Direction.Out
 					: Direction.In;
 
-				const payload = cookFlavor(
+				payload = cookFlavor(
 					flavorInConnection.outFlavorUuid,
 					flavorInConnection.outUsageUuid || usageUuid,
 					outFlavorTrueDirection
 				);
-
-				return payload;
 			} else {
 				// fall back on param/default stored in fillings
-				const payload = get(viewState.fillings.getFilling(flavorUuid, usageUuid).payload);
-				if (!payload) throw `out payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
-
-				return payload;
+				payload = get(viewState.fillings.getFilling(flavorUuid, usageUuid).payload);
+				if (!payload)
+					throw `default/parameter payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 			}
 		}
 
-		throw `could not cook flavor ${flavorUuid}`;
+		if (!payload) throw `could not cook flavor ${flavorUuid}`;
+
+		return payload;
 	}
 
 	function cookPrep<P extends PrepType>(prep: Prep<P>, usageUuid: string) {
@@ -118,7 +98,7 @@ export function cook(
 				const payload = cookFlavor(flavorUuid, usageUuid, Direction.In);
 				inPayloads[prepFlavorName] = payload;
 
-				knownPayloads.set(flavorUuid, usageUuid, Direction.In, payload);
+				knownPayloads.set(flavorUuid, usageUuid, payload);
 				viewState.fillings.setPayload(flavorUuid, usageUuid, payload);
 			}
 		}
@@ -129,7 +109,8 @@ export function cook(
 			const flavorUuid = prep.flavorUuidMap[prepFlavorName as keyof FlavorUuidMap<P>];
 			if (typeof flavorUuid != 'string')
 				throw `${prepFlavorName} not found in prep ${prep.uuid} flavorUuidMap`;
-			knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
+
+			knownPayloads.set(flavorUuid, usageUuid, payload);
 			viewState.fillings.setPayload(flavorUuid, usageUuid, payload);
 		}
 	}
@@ -155,6 +136,5 @@ export function cook(
 		cookUsage(node.callFor.usageUuid);
 	}
 
-	renderer.setRenderTarget(null);
 	renderer.render(scene, camera);
 }

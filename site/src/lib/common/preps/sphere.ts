@@ -16,9 +16,8 @@ export const SpherePrep: PrepPrimitive<PrepType.Sphere> = {
 		sphere: { directions: [Direction.Out], type: FlavorType.Geometry }
 	},
 	cook: (_scene, _camera, _inPayloads: InPayloads<PrepType.Sphere>) => {
-		// const radius = _inPayloads['radius'].value;
-		// const geometry = new THREE.SphereGeometry(radius);
-		const geometry = new THREE.SphereGeometry();
+		const radius = _inPayloads['radius'].value;
+		const geometry = new THREE.SphereGeometry(radius);
 
 		return {
 			sphere: { type: FlavorType.Geometry, value: geometry }

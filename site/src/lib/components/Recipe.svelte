@@ -44,7 +44,9 @@
 
 <Dock
 	direction={Direction.In}
-	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.Out))}
+	flavors={$dockedFlavors.filter(
+		(flavor) => flavor.directions.includes(Direction.Out) && !flavor.prepUuid
+	)}
 	focusedUsageUuid={$focusedUsageUuid}
 />
 <Dock
