@@ -1,9 +1,9 @@
 import { derived, type Readable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
-import { Direction, FlavorType, type Connection, type FlavorUsage, type FullPrep } from '@types';
+import { Direction, FlavorType, type Connection, type FlavorUsage } from '@types';
 
-import type { LiveConnectionState } from '@view';
+import type { LiveConnectionState, Node } from '@view';
 
 export { createTerminalsCoordinates, type TerminalsCoordinatesState } from './coordinates';
 
@@ -20,9 +20,8 @@ export type Terminal = {
 
 export function createTerminals(
 	inFocusConnections: Readable<Connection[]>,
-	inFocusFlavorUsages: Readable<FlavorUsage[]>,
+	nodes: Readable<Node[]>,
 	liveConnection: LiveConnectionState,
-	preps: Readable<FullPrep[]>,
 	dockedFlavors: Readable<FlavorUsage[]>
 ): Readable<Terminal[]> {
 	const flavorNovelConnectionUuids: Map<string, string> = new Map();
@@ -93,8 +92,8 @@ export function createTerminals(
 	);
 
 	const novelTerminals: Readable<Terminal[]> = derived(
-		[inFocusFlavorUsages, preps, dockedFlavors, connectedTerminals, liveConnection],
-		([$inFocusFlavorUsages, $preps, $dockedFlavors, $connectedTerminals, $liveConnection]) => {
+		[nodes, dockedFlavors, connectedTerminals, liveConnection],
+		([$nodes, $dockedFlavors, $connectedTerminals, $liveConnection]) => {
 			const novelTerminals: Terminal[] = [];
 			// maintain terminal for a disconnected flavor
 			if ($liveConnection && $liveConnection.disconnectedFlavorUuid) {
@@ -108,9 +107,14 @@ export function createTerminals(
 				});
 			}
 
-			const prepFlavors = $preps.flatMap((prep) => prep.flavors);
-
-			const allFlavorUsages = [...$inFocusFlavorUsages, ...$dockedFlavors, ...prepFlavors];
+			const allFlavorUsages = [
+				...$nodes.flatMap((node) =>
+					node.flavors.map((flavor) => {
+						return { ...flavor, usageUuid: node.callFor.usageUuid };
+					})
+				),
+				...$dockedFlavors
+			];
 
 			// creating novel terminals for each flavor
 			allFlavorUsages.forEach((flavorUsage) => {

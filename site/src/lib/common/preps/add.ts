@@ -1,6 +1,4 @@
-import type * as THREE from 'three';
-
-import { Direction, FlavorType, PrepType, type Payload } from '@types';
+import { Direction, FlavorType, PrepType } from '@types';
 import type { PrepPrimitive } from '.';
 
 export const AddOperands = {
@@ -10,7 +8,7 @@ export const AddOperands = {
 
 export const AddOutputs = {
 	sum: FlavorType.Number
-};
+} as const;
 
 export const AddPrep: PrepPrimitive<PrepType.Add> = {
 	flavors: {
@@ -27,15 +25,9 @@ export const AddPrep: PrepPrimitive<PrepType.Add> = {
 			directions: [Direction.In]
 		}
 	},
-	cook: (
-		_scene: THREE.Scene,
-		_camera: THREE.Camera,
-		inPayloads: {
-			[prepOperandName: string]: Payload<FlavorType>;
-		}
-	) => {
-		const operand1 = Number(inPayloads['operand 1'].value);
-		const operand2 = Number(inPayloads['operand 1'].value);
+	cook: (_scene, _camera, inPayloads) => {
+		const operand1 = inPayloads['operand 1'].value;
+		const operand2 = inPayloads['operand 2'].value;
 
 		const value = operand1 + operand2;
 		return {

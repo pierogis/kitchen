@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Readable } from 'svelte/store';
 
-	import { Direction, type Flavor, type FullPrep } from '@types';
+	import { Direction, type Flavor, type FullPrep, type PrepType } from '@types';
 
 	import type { Terminal, Node, Cable } from '@view';
 	import type { TerminalsCoordinatesState } from '@view/terminals';
@@ -13,7 +13,7 @@
 
 	export let focusedUsageUuid: Readable<string>;
 	export let dockedFlavors: Readable<Flavor[]>;
-	export let preps: Readable<FullPrep[]>;
+	export let preps: Readable<FullPrep<PrepType>[]>;
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
 	export let terminalsCoordinates: TerminalsCoordinatesState;

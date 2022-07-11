@@ -14,19 +14,19 @@ export interface Filling {
 }
 
 export type FillingsState = {
-	getFilling: (flavorUuid: string, usageUuid: string, direction: Direction) => Filling;
+	getFilling: (flavorUuid: string, usageUuid: string) => Filling;
 
 	setPayload: (
 		flavorUuid: string,
 		usageUuid: string,
-		direction: Direction,
+
 		newPayload: Payload<FlavorType>
 	) => void;
 
 	setMonitorStatus: (
 		flavorUuid: string,
 		usageUuid: string,
-		direction: Direction,
+
 		newMonitorStatus: {
 			monitor: boolean;
 			parameterUuid?: string;
@@ -56,12 +56,12 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 
 	const flavorUsageFillings = {
 		clear: () => flavorUsageFillingsMap.clear(),
-		has: (flavorUuid: string, usageUuid: string, direction: Direction) =>
-			flavorUsageFillingsMap.has([flavorUuid, usageUuid, direction].join(',')),
-		get: (flavorUuid: string, usageUuid: string, direction: Direction) =>
-			flavorUsageFillingsMap.get([flavorUuid, usageUuid, direction].join(',')),
-		set: (flavorUuid: string, usageUuid: string, direction: Direction, filling: Filling) =>
-			flavorUsageFillingsMap.set([flavorUuid, usageUuid, direction].join(','), filling)
+		has: (flavorUuid: string, usageUuid: string) =>
+			flavorUsageFillingsMap.has([flavorUuid, usageUuid].join(',')),
+		get: (flavorUuid: string, usageUuid: string) =>
+			flavorUsageFillingsMap.get([flavorUuid, usageUuid].join(',')),
+		set: (flavorUuid: string, usageUuid: string, filling: Filling) =>
+			flavorUsageFillingsMap.set([flavorUuid, usageUuid].join(','), filling)
 	};
 
 	recipeState.subscribe(($recipe) => {
@@ -92,11 +92,7 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 					const prep = flavor.prepUuid ? $recipe.preps.get(flavor.prepUuid) : undefined;
 
 					for (const direction of flavor.directions) {
-						let filling: Filling | undefined = flavorUsageFillings.get(
-							flavor.uuid,
-							usage.uuid,
-							direction
-						);
+						let filling: Filling | undefined = flavorUsageFillings.get(flavor.uuid, usage.uuid);
 
 						const monitor =
 							direction == Direction.In
@@ -126,10 +122,10 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 								monitorStatus: writable(monitorStatus)
 							};
 
-							flavorUsageFillings.set(flavor.uuid, usage.uuid, direction, filling);
+							flavorUsageFillings.set(flavor.uuid, usage.uuid, filling);
 						} else {
-							setMonitorStatus(flavor.uuid, usage.uuid, direction, monitorStatus);
-							setPayload(flavor.uuid, usage.uuid, direction, payload);
+							setMonitorStatus(flavor.uuid, usage.uuid, monitorStatus);
+							setPayload(flavor.uuid, usage.uuid, payload);
 						}
 					}
 				}
@@ -137,10 +133,9 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 		}
 	});
 
-	function getFilling(flavorUuid: string, usageUuid: string, direction: Direction) {
-		const filling = flavorUsageFillings.get(flavorUuid, usageUuid, direction);
-		if (!filling)
-			throw `filling for ${direction} flavor ${flavorUuid} on usage ${usageUuid} not found`;
+	function getFilling(flavorUuid: string, usageUuid: string) {
+		const filling = flavorUsageFillings.get(flavorUuid, usageUuid);
+		if (!filling) throw `filling flavor ${flavorUuid} on usage ${usageUuid} not found`;
 
 		return filling;
 	}
@@ -148,10 +143,10 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 	function setPayload(
 		flavorUuid: string,
 		usageUuid: string,
-		direction: Direction,
+
 		newPayload: Payload<FlavorType>
 	) {
-		const filling = getFilling(flavorUuid, usageUuid, direction);
+		const filling = getFilling(flavorUuid, usageUuid);
 
 		const value = get(filling.payload).value;
 
@@ -163,10 +158,10 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 	function setMonitorStatus(
 		flavorUuid: string,
 		usageUuid: string,
-		direction: Direction,
+
 		newMonitorStatus: { monitor: boolean; parameterUuid?: string }
 	) {
-		const filling = getFilling(flavorUuid, usageUuid, direction);
+		const filling = getFilling(flavorUuid, usageUuid);
 
 		const monitorStatus = get(filling.monitorStatus);
 		const monitor = monitorStatus.monitor;

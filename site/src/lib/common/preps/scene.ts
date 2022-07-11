@@ -1,33 +1,21 @@
-import type * as THREE from 'three';
-
 import type { PrepPrimitive } from '.';
-import { Direction, FlavorType, PrepType, type Payload } from '@types';
+import { Direction, FlavorType, PrepType } from '@types';
 import { Mesh } from 'three';
 
 export const SceneOperands = {
-	geometry: FlavorType.Geometry
-};
+	scene: FlavorType.Geometry
+} as const;
 
 export const SceneOutputs = {
 	scene: FlavorType.Object
-};
+} as const;
 
 export const ScenePrep: PrepPrimitive<PrepType.Scene> = {
 	flavors: {
-		geometry: { directions: [Direction.In], type: FlavorType.Geometry },
-		scene: { directions: [Direction.Out], type: FlavorType.Object }
+		scene: { directions: [Direction.In, Direction.Out], type: FlavorType.Geometry }
 	},
-	cook: (
-		scene: THREE.Scene,
-		_camera: THREE.Camera,
-		inPayloads: {
-			[prepOperandName: string]: Payload<FlavorType>;
-		}
-	) => {
-		const geometry = inPayloads['geometry'].value as THREE.BufferGeometry;
-		if (!geometry?.isBufferGeometry) {
-			throw `in payload is ${typeof geometry} instead of THREE.BufferGeometry`;
-		}
+	cook: (scene, _camera, inPayloads) => {
+		const geometry = inPayloads['scene'].value;
 
 		const mesh = new Mesh(geometry);
 

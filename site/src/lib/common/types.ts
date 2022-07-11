@@ -37,17 +37,17 @@ export interface Flavor {
 	prepUuid?: string;
 }
 
-export type FlavorMap<T> = T extends PrepType
-	? { [prepFlavorName in keyof (typeof PrepOperands[T] | typeof PrepOutputs[T])]: string }
+export type FlavorUuidMap<P> = P extends PrepType
+	? { [prepFlavorName in keyof (PrepOperands<P> & PrepOutputs<P>)]: string }
 	: never;
 
-export interface Prep<T extends PrepType> {
+export interface Prep<P extends PrepType> {
 	uuid: string;
 	name: string;
 	ingredientUuid: string;
-	type: T;
+	type: P;
 	// map from default names on prep operands and outputs to flavor uuids
-	flavorMap: FlavorMap<T>;
+	flavorUuidMap: FlavorUuidMap<P>;
 }
 
 export interface Ingredient {
@@ -133,7 +133,7 @@ export type FlavorUsage = Flavor & {
 	usageUuid?: string;
 };
 
-export type FullPrep = Prep<PrepType> & {
+export type FullPrep<T extends PrepType> = Prep<T> & {
 	flavors: FlavorUsage[];
 };
 

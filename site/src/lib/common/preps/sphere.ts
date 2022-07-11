@@ -1,12 +1,11 @@
 import * as THREE from 'three';
 
-import { Direction, FlavorType, type Payload, PrepType } from '@types';
-import type { PrepPrimitive } from '.';
+import { Direction, FlavorType, PrepType } from '@types';
+import type { PrepPrimitive, InPayloads } from '.';
 
 export const SphereOperands = {
 	radius: FlavorType.Number
-};
-
+} as const;
 export const SphereOutputs = {
 	sphere: FlavorType.Geometry
 };
@@ -16,13 +15,9 @@ export const SpherePrep: PrepPrimitive<PrepType.Sphere> = {
 		radius: { directions: [Direction.In], type: FlavorType.Number },
 		sphere: { directions: [Direction.Out], type: FlavorType.Geometry }
 	},
-	cook: (
-		_scene: THREE.Scene,
-		_camera: THREE.Camera,
-		_inPayloads: {
-			[prepOperandName: string]: Payload<FlavorType>;
-		}
-	) => {
+	cook: (_scene, _camera, _inPayloads: InPayloads<PrepType.Sphere>) => {
+		// const radius = _inPayloads['radius'].value;
+		// const geometry = new THREE.SphereGeometry(radius);
 		const geometry = new THREE.SphereGeometry();
 
 		return {

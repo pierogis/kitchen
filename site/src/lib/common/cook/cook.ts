@@ -4,7 +4,14 @@ import type * as THREE from 'three';
 
 import type { FlatRecipe } from '@recipe';
 import type { ViewState } from '@view';
-import { FlavorType, Direction, type Payload, type Prep, PrepType } from '@types';
+import {
+	FlavorType,
+	Direction,
+	type Payload,
+	type Prep,
+	PrepType,
+	type FlavorUuidMap
+} from '@types';
 import { prepPrimitives, type InPayloads } from '../preps';
 
 const knownPayloadsMap: Map<string, Payload<FlavorType>> = new Map();
@@ -46,173 +53,6 @@ export function cook(
 
 	knownPayloads.clear();
 	renderTargets.clear();
-
-	// get the main ingredient that we are cooking
-
-	// function cookFlavorUsageInPayload(flavorUuid: string, usageUuid: string) {
-	// 	let flavorUsagePayload = knownPayloads.get(flavorUuid, usageUuid, Direction.In);
-
-	// 	const usage = recipe.usages.get(usageUuid);
-	// 	if (!usage) throw `usage ${usageUuid} not found`;
-
-	// 	if (!flavorUsagePayload) {
-	// 		// find a connection leading in to this flavor usage outside of the usage
-	// 		const inFlavorOuterConnection = Array.from(recipe.connections.values()).find(
-	// 			(connection) =>
-	// 				connection.inFlavorUuid == flavorUuid &&
-	// 				connection.inUsageUuid == usage.uuid &&
-	// 				connection.parentIngredientUuid != usage.ingredientUuid
-	// 		);
-	// 		if (inFlavorOuterConnection) {
-	// 			// if corresponding out flavor is in the dock of the parent usage
-	// 			if (usage.parentUsageUuid == inFlavorOuterConnection.outUsageUuid) {
-	// 				// the in fillings on the parent usage need to be all calculated
-	// 				flavorUsagePayload = knownPayloads.get(
-	// 					inFlavorOuterConnection.outFlavorUuid,
-	// 					inFlavorOuterConnection.outUsageUuid,
-	// 					Direction.In
-	// 				);
-	// 			} else {
-	// 				// calculate all of the flavors on this usage
-	// 				cookUsage(inFlavorOuterConnection.outUsageUuid);
-
-	// 				// now it should be in the map
-	// 				flavorUsagePayload = knownPayloads.get(
-	// 					inFlavorOuterConnection.outFlavorUuid,
-	// 					inFlavorOuterConnection.outUsageUuid,
-	// 					Direction.Out
-	// 				);
-	// 			}
-
-	// 			if (!flavorUsagePayload)
-	// 				throw `payload for flavor ${inFlavorOuterConnection.outFlavorUuid} on usage ${inFlavorOuterConnection.outUsageUuid} not found`;
-
-	// 			viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.In, flavorUsagePayload);
-	// 		} else {
-	// 			// fall back on parameter based or default stored in fillings
-	// 			flavorUsagePayload = get(
-	// 				viewState.fillings.getFilling(flavorUuid, usageUuid, Direction.In).payload
-	// 			);
-	// 			if (!flavorUsagePayload)
-	// 				throw `in payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
-	// 		}
-	// 	}
-
-	// 	return flavorUsagePayload;
-	// }
-
-	// function cookFlavorUsageOutPayload(flavorUuid: string, usageUuid: string): Payload<FlavorType> {
-	// 	// memoize
-	// 	let flavorUsagePayload = knownPayloads.get(flavorUuid, usageUuid, Direction.Out);
-
-	// 	const usage = recipe.usages.get(usageUuid);
-	// 	if (!usage) throw `usage ${usageUuid} not found`;
-
-	// 	if (!flavorUsagePayload) {
-	// 		// find a connection leading in to this flavor usage inside of the usage
-	// 		const outFlavorInnerConnection = Array.from(recipe.connections.values()).find(
-	// 			(connection) =>
-	// 				connection.inFlavorUuid == flavorUuid &&
-	// 				connection.inUsageUuid == usage.uuid &&
-	// 				connection.parentIngredientUuid == usage.ingredientUuid
-	// 		);
-
-	// 		if (outFlavorInnerConnection) {
-	// 			// avoid infinite recursion
-	// 			const outUsageIsSame = outFlavorInnerConnection.outUsageUuid == usageUuid;
-	// 			if (!outUsageIsSame) {
-	// 				// calculate all of the flavors on the previous usage
-	// 				cookUsage(outFlavorInnerConnection.outUsageUuid);
-	// 				// target out payload should now be in the map
-	// 				flavorUsagePayload = knownPayloads.get(
-	// 					outFlavorInnerConnection.outFlavorUuid,
-	// 					outFlavorInnerConnection.outUsageUuid,
-	// 					Direction.Out
-	// 				);
-	// 				if (!flavorUsagePayload)
-	// 					throw `out payload for flavor ${outFlavorInnerConnection.outFlavorUuid} on usage ${outFlavorInnerConnection.outUsageUuid} not found`;
-	// 			} else {
-	// 				flavorUsagePayload = knownPayloads.get(flavorUuid, usageUuid, Direction.In);
-	// 				if (!flavorUsagePayload)
-	// 					throw `in payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
-	// 			}
-	// 		} else {
-	// 			// fall back on param/default stored in fillings
-	// 			flavorUsagePayload = get(
-	// 				viewState.fillings.getFilling(flavorUuid, usageUuid, Direction.Out).payload
-	// 			);
-	// 			if (!flavorUsagePayload)
-	// 				throw `out payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
-	// 		}
-	// 	}
-
-	// 	return flavorUsagePayload;
-	// }
-
-	// function render(
-	// 	usagePayloads: Map<string, Payload<FlavorType>>,
-	// 	usageUuid: string,
-	// 	direction: Direction
-	// ) {
-	// 	// find if this flavor is an image associated with a shader
-	// 	for (const shader of recipe.shaders.values()) {
-	// 		const payload = usagePayloads.get(shader.imageFlavorUuid);
-
-	// 		if (payload) {
-	// 			// get compiled shader program, or compile
-	// 			const shaderPayloads: Map<string, Payload<FlavorType>> = new Map();
-
-	// 			// now get the other flavors on this shader ingredient
-	// 			for (const [flavorUuid, payload] of usagePayloads) {
-	// 				const flavor = recipe.flavors.get(flavorUuid);
-	// 				if (!flavor) throw `flavor ${flavorUuid} not found`;
-	// 				shaderPayloads.set(flavor.name, payload);
-	// 			}
-
-	// 			let material = materials.get(shader.uuid);
-	// 			if (material === undefined) {
-	// 				// const customShader: Shader = {
-	// 				// 	uniforms: {},
-	// 				// 	vertexShader: shader.vertexSource,
-	// 				// 	fragmentShader: shader.fragmentSource
-	// 				// };
-	// 				const customShader: Shader = ColorShader;
-
-	// 				material = new ShaderMaterial({
-	// 					uniforms: customShader.uniforms,
-	// 					vertexShader: customShader.vertexShader,
-	// 					fragmentShader: customShader.fragmentShader
-	// 				});
-
-	// 				materials.set(shader.uuid, material);
-	// 			}
-
-	// 			// set uniforms on material based on the fillings input to this render call
-	// 			// material.uniforms = shaderPayloads;
-
-	// 			const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-	// 			const geometry = new BufferGeometry();
-	// 			geometry.setAttribute(
-	// 				'position',
-	// 				new Float32BufferAttribute([-1, 3, 0, -1, -1, 0, 3, -1, 0], 3)
-	// 			);
-	// 			geometry.setAttribute('uv', new Float32BufferAttribute([0, 2, 0, 0, 2, 0], 2));
-
-	// 			// combine shader material and geometry
-	// 			const mesh = new Mesh(geometry, material);
-
-	// 			const renderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight);
-
-	// 			renderer.setRenderTarget(renderTarget);
-	// 			renderer.render(mesh, camera);
-
-	// 			renderTargets.set(shader.imageFlavorUuid, usageUuid, direction, renderTarget);
-	// 		}
-	// 	}
-
-	// 	return usagePayloads;
-	// }
 
 	function cookFlavor(
 		flavorUuid: string,
@@ -257,9 +97,7 @@ export function cook(
 				return payload;
 			} else {
 				// fall back on param/default stored in fillings
-				const payload = get(
-					viewState.fillings.getFilling(flavorUuid, usageUuid, direction).payload
-				);
+				const payload = get(viewState.fillings.getFilling(flavorUuid, usageUuid).payload);
 				if (!payload) throw `out payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 
 				return payload;
@@ -269,10 +107,10 @@ export function cook(
 		throw `could not cook flavor ${flavorUuid}`;
 	}
 
-	function cookPrep<T extends PrepType>(prep: Prep<T>, usageUuid: string) {
+	function cookPrep<P extends PrepType>(prep: Prep<P>, usageUuid: string) {
 		const inPayloads: { [prepFlavorName: string]: Payload<FlavorType> } = {};
 		// cook in side of preps (copy from parameters/input)
-		for (const [prepFlavorName, flavorUuid] of Object.entries(prep.flavorMap)) {
+		for (const [prepFlavorName, flavorUuid] of Object.entries(prep.flavorUuidMap)) {
 			const flavor = recipe.flavors.get(flavorUuid);
 
 			if (flavor?.directions.includes(Direction.In)) {
@@ -281,16 +119,17 @@ export function cook(
 				inPayloads[prepFlavorName] = payload;
 
 				knownPayloads.set(flavorUuid, usageUuid, Direction.In, payload);
-				viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.In, payload);
+				viewState.fillings.setPayload(flavorUuid, usageUuid, payload);
 			}
 		}
 
-		const outPayloads = prepPrimitives[prep.type].cook(scene, camera, inPayloads as InPayloads<T>);
+		const outPayloads = prepPrimitives[prep.type].cook(scene, camera, inPayloads as InPayloads<P>);
 
 		for (const [prepFlavorName, payload] of Object.entries(outPayloads)) {
-			const flavorUuid = prep.flavorMap[prepFlavorName];
+			const flavorUuid = prep.flavorUuidMap[prepFlavorName as keyof FlavorUuidMap<P>];
+			if (typeof flavorUuid != 'string') throw `asdasd`;
 			knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
-			viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
+			viewState.fillings.setPayload(flavorUuid, usageUuid, payload);
 		}
 	}
 
@@ -298,9 +137,6 @@ export function cook(
 		// work through the flavors on this usage's ingredient
 		const usage = recipe.usages.get(usageUuid);
 		if (!usage) throw `usage ${usageUuid} not found`;
-		// const flavors = Array.from(recipe.flavors.values()).filter(
-		// 	(flavor) => flavor.ingredientUuid == usage.ingredientUuid
-		// );
 
 		const preps = Array.from(recipe.preps.values()).filter(
 			(prep) => prep.ingredientUuid == usage.ingredientUuid
@@ -309,30 +145,6 @@ export function cook(
 		preps.forEach((prep) => {
 			cookPrep(prep, usageUuid);
 		});
-
-		// // loop each flavor on the usage's ingredient
-		// flavors.forEach((flavor) => {
-		// 	if (flavor.directions.includes(Direction.In)) {
-		// 		const flavorUsagePayload = cookFlavorUsageInPayload(flavor.uuid, usageUuid);
-		// 		knownPayloads.set(flavor.uuid, usageUuid, Direction.In, flavorUsagePayload);
-		// 	}
-		// });
-
-		// let outUsagePayloads: Map<string, Payload<FlavorType>> = new Map();
-
-		// flavors.forEach((flavor) => {
-		// 	if (flavor.directions.includes(Direction.Out)) {
-		// 		const flavorUsagePayload = cookFlavorUsageOutPayload(flavor.uuid, usageUuid);
-		// 		outUsagePayloads.set(flavor.uuid, flavorUsagePayload);
-		// 	}
-		// });
-
-		// outUsagePayloads = render(outUsagePayloads, usageUuid, Direction.Out);
-
-		// for (const [flavorUuid, payload] of outUsagePayloads) {
-		// 	knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
-		// 	viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
-		// }
 	}
 
 	// function works from perspective of main ingredient/usage
@@ -341,28 +153,6 @@ export function cook(
 	for (const node of get(viewState.nodes)) {
 		cookUsage(node.callFor.usageUuid);
 	}
-
-	// const dockedFlavors = get(viewState.dockedFlavors);
-
-	// for (const flavor of dockedFlavors) {
-	// 	// for image out flavors on the main ingredient
-	// 	if (flavor.directions.includes(Direction.Out) && flavor.type == FlavorType.Image) {
-	// 		const target = renderTargets.get(flavor.uuid, recipe.focusedUsageUuid, Direction.Out);
-
-	// 		if (!target)
-	// 			throw `target for flavor ${flavor.uuid} on usage ${recipe.focusedUsageUuid} not found`;
-
-	// 		const plane = new PlaneBufferGeometry(window.innerWidth, window.innerHeight);
-	// 		const material = new MeshBasicMaterial({ map: target.texture });
-	// 		const quad = new Mesh(plane, material);
-
-	// 		scene.add(quad);
-
-	// 		renderer.setRenderTarget(null);
-	// 		renderer.clearColor();
-	// 		renderer.render(scene, camera);
-	// 	}
-	// }
 
 	renderer.setRenderTarget(null);
 	renderer.clearColor();

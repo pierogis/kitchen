@@ -24,23 +24,13 @@ const mainUsage: Usage = {
 
 const scenePrepUuid = 'scene-prep';
 
-const geometryPrepFlavor: Flavor = {
-	uuid: 'geometry-prep-flavor',
-	ingredientUuid: mainIngredientUuid,
-	name: 'geometry',
-	type: FlavorType.Geometry,
-	prepUuid: scenePrepUuid,
-	directions: [Direction.In],
-	options: null
-};
-
 const scenePrepFlavor: Flavor = {
 	uuid: 'scene-prep-flavor',
 	ingredientUuid: mainIngredientUuid,
-	name: 'geometry',
-	type: FlavorType.Object,
+	name: 'scene',
+	type: FlavorType.Geometry,
 	prepUuid: scenePrepUuid,
-	directions: [Direction.Out],
+	directions: [Direction.In, Direction.Out],
 	options: null
 };
 
@@ -61,8 +51,7 @@ const scenePrep: Prep<PrepType.Scene> = {
 	name: 'scene',
 	ingredientUuid: mainIngredientUuid,
 	type: PrepType.Scene,
-	flavorMap: {
-		geometry: geometryPrepFlavor.uuid,
+	flavorUuidMap: {
 		scene: scenePrepFlavor.uuid
 	}
 };
@@ -71,7 +60,7 @@ const mainIngredient: FullIngredient = {
 	uuid: mainIngredientUuid,
 	parentIngredientUuid: undefined,
 	name: 'sort',
-	flavors: [geometryPrepFlavor, scenePrepFlavor, radiusInputFlavor],
+	flavors: [scenePrepFlavor, radiusInputFlavor],
 	connections: [],
 	usages: [mainUsage],
 	preps: [scenePrep]
@@ -123,7 +112,7 @@ const spherePrep: Prep<PrepType.Sphere> = {
 	ingredientUuid: 'sphere-ingredient',
 	name: 'sphere',
 	type: PrepType.Sphere,
-	flavorMap: { sphere: spherePrepFlavor.uuid, radius: radiusPrepFlavor.uuid }
+	flavorUuidMap: { sphere: spherePrepFlavor.uuid, radius: radiusPrepFlavor.uuid }
 };
 const sphereIngredient: FullIngredient = {
 	uuid: sphereIngredientUuid,

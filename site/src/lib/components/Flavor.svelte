@@ -96,13 +96,21 @@
 
 {#if $monitor}
 	<Monitor {index} {folder} {paramsStore} {options} key={flavor.name} let:monitorElement>
-		{#each flavor.directions as direction (direction)}
+		{#if inTerminals.length > 0}
 			<TerminalRack
 				parentElement={monitorElement}
-				terminals={direction == Direction.In ? inTerminals : outTerminals}
-				{direction}
+				terminals={inTerminals}
+				direction={Direction.In}
 			/>
-		{/each}
+		{/if}
+
+		{#if outTerminals.length > 0}
+			<TerminalRack
+				parentElement={monitorElement}
+				terminals={outTerminals}
+				direction={Direction.Out}
+			/>
+		{/if}
 	</Monitor>
 {:else}
 	<Input
