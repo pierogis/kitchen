@@ -1,6 +1,7 @@
+import * as THREE from 'three';
+
 import type { PrepPrimitive } from '.';
 import { Direction, FlavorType, PrepType } from '@types';
-import { Mesh } from 'three';
 
 export const SceneOperands = {
 	scene: FlavorType.Geometry
@@ -17,9 +18,9 @@ export const ScenePrep: PrepPrimitive<PrepType.Scene> = {
 	cook: (scene, _camera, inPayloads) => {
 		const geometry = inPayloads['scene'].value;
 
-		const mesh = new Mesh(geometry);
+		const mesh = new THREE.Mesh(geometry);
 
 		scene.add(mesh);
-		return { scene: { type: FlavorType.Object, value: scene } };
+		return { scene: { type: FlavorType.Object, value: mesh } };
 	}
 };

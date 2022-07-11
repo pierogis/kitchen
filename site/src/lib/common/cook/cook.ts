@@ -127,7 +127,8 @@ export function cook(
 
 		for (const [prepFlavorName, payload] of Object.entries(outPayloads)) {
 			const flavorUuid = prep.flavorUuidMap[prepFlavorName as keyof FlavorUuidMap<P>];
-			if (typeof flavorUuid != 'string') throw `asdasd`;
+			if (typeof flavorUuid != 'string')
+				throw `${prepFlavorName} not found in prep ${prep.uuid} flavorUuidMap`;
 			knownPayloads.set(flavorUuid, usageUuid, Direction.Out, payload);
 			viewState.fillings.setPayload(flavorUuid, usageUuid, payload);
 		}
@@ -155,6 +156,5 @@ export function cook(
 	}
 
 	renderer.setRenderTarget(null);
-	renderer.clearColor();
 	renderer.render(scene, camera);
 }
