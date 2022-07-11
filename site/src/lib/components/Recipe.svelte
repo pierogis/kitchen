@@ -4,7 +4,6 @@
 	import { Direction, type Flavor, type FullPrep, type PrepType } from '@types';
 
 	import type { Terminal, Node, Cable } from '@view';
-	import type { TerminalsCoordinatesState } from '@view/terminals';
 
 	import IngredientComponent from '@components/Ingredient.svelte';
 	import Dock from '@components/Dock.svelte';

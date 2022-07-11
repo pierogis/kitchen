@@ -8,7 +8,7 @@ export const SphereOperands = {
 } as const;
 export const SphereOutputs = {
 	sphere: FlavorType.Geometry
-};
+} as const;
 
 export const SpherePrep: PrepPrimitive<PrepType.Sphere> = {
 	flavors: {

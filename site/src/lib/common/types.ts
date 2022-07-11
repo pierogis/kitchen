@@ -8,6 +8,7 @@ export enum FlavorType {
 	Image = 'Image',
 	Geometry = 'Geometry',
 	Texture = 'Texture',
+	Material = 'Texture',
 	Shader = 'Shader',
 	Object = 'Object'
 }
@@ -18,7 +19,8 @@ export enum PrepType {
 	Sphere = 'Sphere',
 	Image = 'Image',
 	Texture = 'Texture',
-	Scene = 'Scene'
+	AddToScene = 'AddToScene',
+	Mesh = 'Mesh'
 }
 
 export enum Direction {

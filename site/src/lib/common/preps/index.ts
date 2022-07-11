@@ -6,7 +6,8 @@ import { ImagePrep, ImageOperands, ImageOutputs } from './image';
 import { ShaderPrep, ShaderOperands, ShaderOutputs } from './shader';
 import { SpherePrep, SphereOperands, SphereOutputs } from './sphere';
 import { TexturePrep, TextureOperands, TextureOutputs } from './texture';
-import { ScenePrep, SceneOperands, SceneOutputs } from './scene';
+import { AddToScenePrep, AddToSceneOperands, AddToSceneOutputs } from './addToScene';
+import { MeshPrep, MeshOperands, MeshOutputs } from './mesh';
 
 export const PrepOperands = {
 	[PrepType.Add]: AddOperands,
@@ -14,7 +15,8 @@ export const PrepOperands = {
 	[PrepType.Shader]: ShaderOperands,
 	[PrepType.Sphere]: SphereOperands,
 	[PrepType.Texture]: TextureOperands,
-	[PrepType.Scene]: SceneOperands
+	[PrepType.AddToScene]: AddToSceneOperands,
+	[PrepType.Mesh]: MeshOperands
 };
 export type PrepOperands<P extends PrepType> = typeof PrepOperands[P];
 export type PrepOperand<P, O> = P extends PrepType
@@ -29,7 +31,8 @@ export const PrepOutputs = {
 	[PrepType.Shader]: ShaderOutputs,
 	[PrepType.Sphere]: SphereOutputs,
 	[PrepType.Texture]: TextureOutputs,
-	[PrepType.Scene]: SceneOutputs
+	[PrepType.AddToScene]: AddToSceneOutputs,
+	[PrepType.Mesh]: MeshOutputs
 };
 export type PrepOutputs<P> = P extends PrepType ? typeof PrepOutputs[P] : never;
 export type PrepOutput<P, O> = P extends PrepType
@@ -64,5 +67,6 @@ export const prepPrimitives: {
 	[PrepType.Shader]: ShaderPrep,
 	[PrepType.Sphere]: SpherePrep,
 	[PrepType.Texture]: TexturePrep,
-	[PrepType.Scene]: ScenePrep
+	[PrepType.AddToScene]: AddToScenePrep,
+	[PrepType.Mesh]: MeshPrep
 };

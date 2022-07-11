@@ -5,17 +5,20 @@
 	import { v4 as uuid } from 'uuid';
 
 	import type { FolderApi, InputParams, TpChangeEvent } from 'tweakpane';
+	import * as THREE from 'three';
 
 	import { type Flavor, FlavorType, Direction } from '@types';
 
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
-	import type { Terminal } from '@view';
+	import { viewStateContextKey, type Terminal, type ViewState } from '@view';
 	import { ActionType, type Action } from '@state/actions';
 
 	import Monitor from '@components/tweakpane/Monitor.svelte';
 	import Input from '@components/tweakpane/Input.svelte';
 	import TerminalRack from '@components/TerminalRack.svelte';
 	import type { Filling } from '@view/fillings';
+	import type { CanvasValue } from '$lib/common/plugins/canvas/view';
+	import { Plane } from 'three';
 
 	export let index: number;
 	export let flavor: Flavor;
@@ -29,6 +32,7 @@
 	export let folder: FolderApi;
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
+	const viewState: ViewState = getContext(viewStateContextKey);
 
 	let onChange: Readable<(ev: TpChangeEvent<any>) => void> = derived(
 		[filling.monitorStatus],
@@ -81,13 +85,65 @@
 
 	if (flavor.type == FlavorType.Color) {
 		options = { ...options, view: 'color', color: { alpha: true } };
-	} else if (flavor.type == FlavorType.Geometry) {
-		options = { ...options, view: 'geometry' };
 	}
 
-	const paramsStore = derived(filling.payload, ($payload) => {
-		return { [flavor.name]: $payload.value };
-	});
+	let paramsStore: Readable<{ [key: string]: string | number | CanvasValue }>;
+	if (flavor.type == FlavorType.Geometry) {
+		options = { ...options, view: 'canvas' };
+		const scene = new THREE.Scene();
+		const camera = get(viewState.defaultCamera);
+
+		paramsStore = derived(filling.payload, ($payload) => {
+			scene.clear();
+			const geometry = $payload.value as THREE.BufferGeometry;
+			if (geometry.isBufferGeometry) {
+				scene.add(new THREE.Mesh(geometry));
+			} else {
+				throw 'payload value is wrong type';
+			}
+			return { [flavor.name]: { scene, camera } };
+		});
+	} else if (flavor.type == FlavorType.Object) {
+		options = { ...options, view: 'canvas' };
+		const scene = new THREE.Scene();
+		const camera = get(viewState.defaultCamera);
+
+		paramsStore = derived(filling.payload, ($payload) => {
+			scene.clear();
+			const object = $payload.value as THREE.Object3D;
+			if (object.isObject3D) {
+				scene.add(object);
+			} else {
+				throw 'payload value is wrong type';
+			}
+			return { [flavor.name]: { scene, camera } };
+		});
+	} else if (flavor.type == FlavorType.Texture) {
+		options = { ...options, view: 'canvas' };
+		const scene = new THREE.Scene();
+		const camera = get(viewState.defaultCamera);
+
+		paramsStore = derived(filling.payload, ($payload) => {
+			scene.clear();
+			const texture = $payload.value as THREE.Texture;
+			if (texture.isTexture) {
+				const plane = new THREE.PlaneBufferGeometry();
+				const material = new THREE.MeshBasicMaterial({ map: texture });
+
+				scene.add(new THREE.Mesh(plane, material));
+			} else {
+				throw 'payload value is wrong type';
+			}
+			return { [flavor.name]: { scene, camera } };
+		});
+	} else {
+		paramsStore = derived(filling.payload, ($payload) => {
+			if (typeof $payload.value != 'string' && typeof $payload.value != 'number')
+				throw 'payload value is wrong type';
+
+			return { [flavor.name]: $payload.value };
+		});
+	}
 
 	const monitor = derived(filling.monitorStatus, ($monitorStatus) => {
 		return $monitorStatus.monitor;

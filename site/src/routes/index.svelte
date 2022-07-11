@@ -16,13 +16,17 @@
 </script>
 
 <script lang="ts">
-	import { setContext } from 'svelte';
+	import { onMount, setContext } from 'svelte';
+	import { get } from 'svelte/store';
+
+	import * as THREE from 'three';
 
 	import type { FullRecipe } from '@types';
 	import { readableViewState } from '@view';
 
 	import Pan from '@components/Pan.svelte';
 	import Recipe from '@components/Recipe.svelte';
+	import { ActionType } from '$lib/state/actions';
 
 	let innerWidth: number, innerHeight: number;
 
@@ -37,6 +41,22 @@
 	const handleMouseMove = (ev: MouseEvent) => {
 		viewState.cursor.coordinates.set({ x: ev.clientX, y: ev.clientY });
 	};
+
+	$: parentUsageUuid = get(viewState.parentUsageUuid);
+	function handleUnfocusClick(ev: MouseEvent) {
+		if (parentUsageUuid) {
+			recipeState.dispatch({
+				type: ActionType.FocusUsage,
+				params: { usageUuid: parentUsageUuid }
+			});
+		}
+	}
+
+	onMount(() => {
+		viewState.defaultCamera.set(
+			new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000)
+		);
+	});
 </script>
 
 <svelte:window
@@ -50,6 +70,10 @@
 	<title>kitchen</title>
 </svelte:head>
 
+{#if parentUsageUuid}
+	<button on:click={handleUnfocusClick} />
+{/if}
+
 <Recipe
 	focusedUsageUuid={recipeState.focusedUsageUuid}
 	dockedFlavors={viewState.dockedFlavors}
@@ -62,3 +86,9 @@
 />
 
 <Pan width={innerWidth} height={innerHeight} {recipeState} {viewState} />
+
+<style>
+	button {
+		position: absolute;
+	}
+</style>

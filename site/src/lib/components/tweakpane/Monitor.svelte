@@ -5,10 +5,10 @@
 	import type { FolderApi, MonitorParams } from 'tweakpane';
 	import type { MonitorBindingApi } from '@tweakpane/core';
 
-	import type { FlavorType, PayloadValue } from '@types';
+	import type { CanvasValue } from '$lib/common/plugins/canvas/view';
 
 	export let folder: FolderApi;
-	export let paramsStore: Readable<{ [key: string]: PayloadValue<FlavorType> }>;
+	export let paramsStore: Readable<{ [key: string]: string | number | CanvasValue }>;
 	export let key: string;
 	export let options: MonitorParams | undefined = undefined;
 	export let index: number | undefined = undefined;
@@ -16,7 +16,7 @@
 	let monitorElement: HTMLElement;
 
 	onMount(() => {
-		let monitorApi: MonitorBindingApi<PayloadValue<FlavorType>>;
+		let monitorApi: MonitorBindingApi<string | number | CanvasValue>;
 
 		let params = $paramsStore;
 		monitorApi = folder.addMonitor(params, key, { ...options, index });

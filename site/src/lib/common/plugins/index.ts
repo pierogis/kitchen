@@ -1,6 +1,6 @@
 import type { Pane } from 'tweakpane';
-import { GeometryInputPlugin, GeometryMonitorPlugin } from './geometry';
+import { CanvasInputPlugin, CanvasMonitorPlugin } from './canvas';
 
 export function registerPlugins(pane: Pane) {
-	pane.registerPlugin({ plugins: [GeometryInputPlugin, GeometryMonitorPlugin] });
+	pane.registerPlugin({ plugins: [CanvasInputPlugin, CanvasMonitorPlugin] });
 }

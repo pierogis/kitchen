@@ -2,29 +2,34 @@ import * as TP from '@tweakpane/core';
 
 import * as THREE from 'three';
 
+export interface CanvasValue {
+	scene: THREE.Scene;
+	camera: THREE.Camera;
+}
+
 interface Config {
-	value: TP.Value<THREE.BufferGeometry> | TP.BufferedValue<THREE.BufferGeometry>;
+	value: TP.Value<CanvasValue> | TP.BufferedValue<CanvasValue>;
 	viewProps: TP.ViewProps;
 }
 
-// Create a class name generator from the view name
-// ClassName('tmp') will generate a CSS class name like `tp-tmpv`
 const className = TP.ClassName('geo');
 
 export function createPluginView(doc: Document, config: Config): TP.View {
 	function update(): void {
-		const rawValue = value.rawValue;
+		const coerced = value.rawValue as CanvasValue;
 
-		let geometry: THREE.BufferGeometry | undefined;
-		if (rawValue instanceof THREE.BufferGeometry) {
-			geometry = rawValue;
+		let scene: THREE.Scene | undefined;
+		let camera: THREE.Camera | undefined;
+
+		if (coerced.scene && coerced.camera) {
+			({ scene, camera } = coerced);
 		} else {
-			geometry = rawValue[0];
+			const buffer = value.rawValue as TP.Buffer<CanvasValue>;
+			scene = buffer[0]?.scene;
+			camera = buffer[0]?.camera;
 		}
 
-		if (geometry) {
-			scene.clear();
-			scene.add(new THREE.Mesh(geometry));
+		if (scene && camera) {
 			renderer.render(scene, camera);
 		}
 	}
@@ -51,13 +56,10 @@ export function createPluginView(doc: Document, config: Config): TP.View {
 
 	element.appendChild(canvas);
 
-	const width = canvas.width;
-	const height = canvas.height;
+	const aspect = canvas.width / canvas.height;
 
 	const renderer = new THREE.WebGLRenderer({ canvas });
-	const scene = new THREE.Scene();
-	const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-	camera.position.z = 2;
+	// camera.position.z = 2;
 
 	// Apply the initial value
 	update();

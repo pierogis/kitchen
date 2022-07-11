@@ -1,4 +1,6 @@
-import { derived, type Readable, get } from 'svelte/store';
+import { derived, type Readable, get, writable, type Writable } from 'svelte/store';
+
+import type * as THREE from 'three';
 
 import {
 	type Flavor,
@@ -36,6 +38,8 @@ export interface ViewState {
 	terminalsCoordinates: TerminalsCoordinatesState;
 	fillings: FillingsState;
 	preps: Readable<FullPrep<PrepType>[]>;
+	defaultCamera: Writable<THREE.Camera>;
+	parentUsageUuid: Readable<string | undefined>;
 }
 
 // dont use the derived properties thing for recipe store
@@ -50,6 +54,19 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 			if (usage) {
 				// return the focused ingredient
 				return usage.ingredientUuid;
+			} else {
+				throw `usage ${$focusedUsageUuid} not found`;
+			}
+		}
+	);
+
+	const parentUsageUuid = derived(
+		[recipeState.usages, recipeState.focusedUsageUuid],
+		([$usages, $focusedUsageUuid]) => {
+			const usage = $usages.get($focusedUsageUuid);
+			if (usage) {
+				// return the focused ingredient
+				return usage.parentUsageUuid;
 			} else {
 				throw `usage ${$focusedUsageUuid} not found`;
 			}
@@ -169,6 +186,8 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	// centrally track values that go in inputs/monitors so they can be edited from anywhere
 	const fillings = createFillings(recipeState);
 
+	const defaultCamera: Writable<THREE.Camera> = writable();
+
 	return {
 		cables,
 		nodes,
@@ -180,6 +199,8 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		terminals,
 		terminalsCoordinates,
 		fillings,
-		preps
+		preps,
+		defaultCamera,
+		parentUsageUuid
 	};
 }
