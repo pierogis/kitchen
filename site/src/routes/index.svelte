@@ -17,7 +17,7 @@
 
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
-	import { get } from 'svelte/store';
+	import { derived, get } from 'svelte/store';
 
 	import * as THREE from 'three';
 
@@ -42,12 +42,15 @@
 		viewState.cursor.coordinates.set({ x: ev.clientX, y: ev.clientY });
 	};
 
-	$: parentUsageUuid = get(viewState.parentUsageUuid);
+	const parentUsageUuid = derived(
+		viewState.parentUsageUuid,
+		($parentUsageUuid) => $parentUsageUuid
+	);
 	function handleUnfocusClick(ev: MouseEvent) {
-		if (parentUsageUuid) {
+		if (ev.button == 0 && $parentUsageUuid) {
 			recipeState.dispatch({
 				type: ActionType.FocusUsage,
-				params: { usageUuid: parentUsageUuid }
+				params: { usageUuid: $parentUsageUuid }
 			});
 		}
 	}
@@ -70,7 +73,7 @@
 	<title>kitchen</title>
 </svelte:head>
 
-{#if parentUsageUuid}
+{#if $parentUsageUuid}
 	<button on:click={handleUnfocusClick} />
 {/if}
 
@@ -89,6 +92,6 @@
 
 <style>
 	button {
-		position: absolute;
+		position: fixed;
 	}
 </style>

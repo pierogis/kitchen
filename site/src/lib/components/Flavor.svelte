@@ -18,7 +18,6 @@
 	import TerminalRack from '@components/TerminalRack.svelte';
 	import type { Filling } from '@view/fillings';
 	import type { CanvasValue } from '$lib/common/plugins/canvas/view';
-	import { Plane } from 'three';
 
 	export let index: number;
 	export let flavor: Flavor;

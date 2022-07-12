@@ -50,9 +50,8 @@ const addToScenePrep: Prep<PrepType.AddToScene> = {
 	ingredientUuid: mainIngredientUuid,
 	type: PrepType.AddToScene,
 	direction: Direction.Out,
-	flavorUuidMap: {
-		object: addToScenePrepFlavor.uuid
-	}
+	inFlavorUuidMap: { object: addToScenePrepFlavor.uuid },
+	outFlavorUuidMap: {}
 };
 
 const spherePrepUuid = 'sphere-prep';
@@ -92,7 +91,8 @@ const spherePrep: Prep<PrepType.Sphere> = {
 	name: 'sphere',
 	type: PrepType.Sphere,
 	direction: Direction.Out,
-	flavorUuidMap: { sphere: spherePrepFlavor.uuid, radius: radiusPrepFlavor.uuid }
+	inFlavorUuidMap: { radius: radiusPrepFlavor.uuid },
+	outFlavorUuidMap: { sphere: spherePrepFlavor.uuid }
 };
 
 const meshPrepUuid = 'mesh-prep';
@@ -143,10 +143,12 @@ const meshPrep: Prep<PrepType.Mesh> = {
 	name: 'sphere',
 	type: PrepType.Mesh,
 	direction: Direction.Out,
-	flavorUuidMap: {
-		mesh: meshPrepFlavor.uuid,
+	inFlavorUuidMap: {
 		material: materialPrepFlavor.uuid,
 		geometry: geometryPrepFlavor.uuid
+	},
+	outFlavorUuidMap: {
+		mesh: meshPrepFlavor.uuid
 	}
 };
 

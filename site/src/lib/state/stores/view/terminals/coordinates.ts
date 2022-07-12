@@ -28,8 +28,12 @@ function coordinatesStoresMap(): {
 	const map: Map<string, Writable<Coordinates>> = new Map();
 	const keys: Writable<Set<string>> = writable(new Set());
 
+	function getKey(connectionUuid: string, direction: Direction) {
+		return [connectionUuid, direction].join();
+	}
+
 	function set(connectionUuid: string, direction: Direction, coordinates: Writable<Coordinates>) {
-		const key = connectionUuid + direction;
+		const key = getKey(connectionUuid, direction);
 		map.set(key, coordinates);
 		keys.update((keys) => keys.add(key));
 
@@ -37,12 +41,12 @@ function coordinatesStoresMap(): {
 	}
 
 	function get(connectionUuid: string, direction: Direction) {
-		const key = connectionUuid + direction;
+		const key = getKey(connectionUuid, direction);
 		return map.get(key);
 	}
 
 	function del(connectionUuid: string, direction: Direction) {
-		const key = connectionUuid + direction;
+		const key = getKey(connectionUuid, direction);
 		const exists = map.delete(key);
 		if (exists) {
 			keys.update((keys) => {
@@ -55,12 +59,12 @@ function coordinatesStoresMap(): {
 	}
 
 	function has(connectionUuid: string, direction: Direction) {
-		const key = connectionUuid + direction;
+		const key = getKey(connectionUuid, direction);
 		return derived(keys, ($keys) => $keys.has(key));
 	}
 	function hasConnection(connectionUuid: string) {
 		const hasIn = has(connectionUuid, Direction.In);
-		const hasOut = has(connectionUuid, Direction.In);
+		const hasOut = has(connectionUuid, Direction.Out);
 		return derived([hasIn, hasOut], ([$hasIn, $hasOut]) => $hasIn && $hasOut);
 	}
 
