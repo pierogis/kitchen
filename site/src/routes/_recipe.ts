@@ -302,7 +302,7 @@ const radiusInputParameter: Parameter<FlavorType.Number> = {
 // const asd: FlavorMap<PrepType.addToScene> = {};
 export const defaultRecipe: FullRecipe = {
 	uuid: recipeUuid,
-	mainCallForUuid: meshCallFor.uuid,
+	mainCallForUuid: mainCallFor.uuid,
 	ingredients: [mainIngredient, meshIngredient, sphereIngredient],
 	callsFor: [mainCallFor, meshCallFor, sphereCallFor],
 	parameters: [radiusInputParameter],

@@ -35,6 +35,7 @@ export function cook(
 	// it will set these new out fillings on the view state
 
 	knownPayloads.clear();
+	scene.clear();
 
 	function cookFlavor(
 		flavorUuid: string,
@@ -104,6 +105,9 @@ export function cook(
 
 		if (!payload) throw `could not cook flavor ${flavorUuid}`;
 
+		knownPayloads.set(flavorUuid, usageUuid, payload);
+		viewState.fillings.setPayload(flavorUuid, usageUuid, payload);
+
 		return payload;
 	}
 
@@ -153,9 +157,6 @@ export function cook(
 					} else {
 						payload = cookFlavor(flavor.uuid, usageUuid, Direction.In);
 					}
-
-					knownPayloads.set(flavor.uuid, usageUuid, payload);
-					viewState.fillings.setPayload(flavor.uuid, usageUuid, payload);
 				}
 			}
 		}
