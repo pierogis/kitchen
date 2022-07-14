@@ -55,20 +55,41 @@ export function cook(
 			payload = knownPayloads.get(flavorUuid, usageUuid);
 			if (!payload) throw `prep payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 		} else {
-			const flavorInConnection = Array.from(recipe.connections.values()).find((connection) => {
-				const sameFlavor = connection.inFlavorUuid == flavor.uuid;
-				const isInOwnIngredient = connection.parentIngredientUuid == flavor.ingredientUuid;
-				return sameFlavor && isInOwnIngredient;
-			});
+			const flavorInConnection = Array.from(recipe.connections.values()).find(
+				(connection) => connection.inFlavorUuid == flavor.uuid
+			);
 
 			if (flavorInConnection) {
+				const outFlavor = recipe.flavors.get(flavorInConnection.outFlavorUuid);
+				if (!outFlavor) throw `out flavor ${flavorUuid} not found`;
+				const usage = recipe.usages.get(usageUuid);
+				if (!usage) throw `out usage ${flavorUuid} not found`;
+
 				// if there is no out usage, this connection goes to a parentIngredient in(!) flavor
 				const outFlavorTrueDirection =
-					flavorInConnection.outUsageUuid && !flavor.prepUuid ? Direction.Out : Direction.In;
+					flavorInConnection.outUsageUuid || outFlavor.prepUuid ? Direction.Out : Direction.In;
+
+				// a connection may not include a usage uuid to indicate that the flavor's usage is the usage that owns this connection
+				// still need to determine what usage this should refer to
+				let outUsageUuid = flavorInConnection.outUsageUuid;
+				if (!outUsageUuid) {
+					if (flavor.ingredientUuid == flavorInConnection.parentIngredientUuid) {
+						outUsageUuid = usageUuid;
+					} else {
+						outUsageUuid = usage.parentUsageUuid;
+						if (!outUsageUuid) {
+							// fall back on main usage
+							const mainCallFor = recipe.callsFor.get(recipe.mainCallForUuid);
+							if (!mainCallFor) throw `main callFor ${recipe.mainCallForUuid} not found`;
+
+							outUsageUuid = mainCallFor.usageUuid;
+						}
+					}
+				}
 
 				payload = cookFlavor(
 					flavorInConnection.outFlavorUuid,
-					flavorInConnection.outUsageUuid || usageUuid,
+					outUsageUuid,
 					outFlavorTrueDirection
 				);
 			}
@@ -117,18 +138,25 @@ export function cook(
 		const usage = recipe.usages.get(usageUuid);
 		if (!usage) throw `usage ${usageUuid} not found`;
 
+		for (const prep of recipe.preps.values()) {
+			if (prep.ingredientUuid == usage.ingredientUuid) {
+				cookPrep(prep, usageUuid);
+			}
+		}
+
 		for (const flavor of recipe.flavors.values()) {
 			if (flavor.ingredientUuid == usage.ingredientUuid) {
-				let payload: Payload<FlavorType>;
+				let payload = knownPayloads.get(flavor.uuid, usageUuid);
+				if (!payload) {
+					if (flavor.directions.includes(Direction.Out)) {
+						payload = cookFlavor(flavor.uuid, usageUuid, Direction.Out);
+					} else {
+						payload = cookFlavor(flavor.uuid, usageUuid, Direction.In);
+					}
 
-				if (flavor.directions.includes(Direction.Out)) {
-					payload = cookFlavor(flavor.uuid, usageUuid, Direction.Out);
-				} else {
-					payload = cookFlavor(flavor.uuid, usageUuid, Direction.In);
+					knownPayloads.set(flavor.uuid, usageUuid, payload);
+					viewState.fillings.setPayload(flavor.uuid, usageUuid, payload);
 				}
-
-				knownPayloads.set(flavor.uuid, usageUuid, payload);
-				viewState.fillings.setPayload(flavor.uuid, usageUuid, payload);
 			}
 		}
 	}

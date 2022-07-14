@@ -12,8 +12,8 @@ export const SphereOutputs = {
 
 export const SpherePrep: PrepPrimitive<PrepType.Sphere> = {
 	flavors: {
-		radius: { directions: [Direction.In], type: FlavorType.Number },
-		sphere: { directions: [Direction.Out], type: FlavorType.Geometry }
+		sphere: { directions: [Direction.Out], type: FlavorType.Geometry },
+		radius: { directions: [Direction.In], type: FlavorType.Number }
 	},
 	cook: (_scene, _camera, _inPayloads: InPayloads<PrepType.Sphere>) => {
 		const radius = _inPayloads['radius'].value;

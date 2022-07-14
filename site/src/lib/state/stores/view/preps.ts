@@ -1,5 +1,7 @@
-import type { Flavor, FullPrep, PrepType } from '@types';
 import { derived, type Readable } from 'svelte/store';
+
+import { prepPrimitives } from '$lib/common/preps';
+import type { Flavor, FullPrep, PrepType } from '@types';
 import type { RecipeState } from '@recipe';
 
 export function createPreps(recipeState: RecipeState, focusedIngredientUuid: Readable<string>) {
@@ -12,9 +14,11 @@ export function createPreps(recipeState: RecipeState, focusedIngredientUuid: Rea
 			);
 
 			const prepFlavors = preps.map((prep) => {
-				const prepFlavors = Object.values(prep.inFlavorUuidMap)
-					.concat(Object.values(prep.outFlavorUuidMap))
-					.reduce<Flavor[]>((previous, flavorUuid) => {
+				const flavors = Object.keys(prepPrimitives[prep.type].flavors).reduce<Flavor[]>(
+					(previous, flavorName) => {
+						const flavorUuid: string =
+							prep.inFlavorUuidMap[flavorName as keyof typeof prep.inFlavorUuidMap] ||
+							prep.outFlavorUuidMap[flavorName as keyof typeof prep.outFlavorUuidMap];
 						if (!previous.some((flavor) => flavor.uuid == flavorUuid)) {
 							const prepFlavor = $flavors.get(flavorUuid);
 							if (!prepFlavor) throw `flavor ${flavorUuid} for prep ${prep.uuid} not found`;
@@ -23,8 +27,10 @@ export function createPreps(recipeState: RecipeState, focusedIngredientUuid: Rea
 						}
 
 						return previous;
-					}, []);
-				return { ...prep, flavors: prepFlavors };
+					},
+					[]
+				);
+				return { ...prep, flavors };
 			});
 
 			return prepFlavors;

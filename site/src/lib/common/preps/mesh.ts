@@ -13,9 +13,9 @@ export const MeshOutputs = {
 
 export const MeshPrep: PrepPrimitive<PrepType.Mesh> = {
 	flavors: {
+		mesh: { directions: [Direction.Out], type: FlavorType.Object },
 		geometry: { directions: [Direction.In], type: FlavorType.Geometry },
-		material: { directions: [Direction.In], type: FlavorType.Material },
-		mesh: { directions: [Direction.Out], type: FlavorType.Object }
+		material: { directions: [Direction.In], type: FlavorType.Material }
 	},
 	cook: (_scene, _camera, inPayloads) => {
 		const geometry = inPayloads['geometry'].value;

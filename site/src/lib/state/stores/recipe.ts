@@ -19,6 +19,7 @@ import { dispatcher } from '@state/dispatcher';
 
 export interface FlatRecipe {
 	recipeUuid: string;
+	mainCallForUuid: string;
 	focusedUsageUuid: string;
 	ingredients: Map<string, Ingredient>;
 	flavors: Map<string, Flavor>;
@@ -45,12 +46,8 @@ export type RecipeState = {
 export const recipeStateContextKey = 'recipe';
 
 export function createRecipeState(recipe: FlatRecipe): RecipeState {
-	// update all at once
-	// subscribe to all at once
-	// subscribe to just 1
-	// const store = writable(recipe);
-
 	const recipeUuid = writable(recipe.recipeUuid);
+	const mainCallForUuid = writable(recipe.mainCallForUuid);
 	const focusedUsageUuid = writable(recipe.focusedUsageUuid);
 	const ingredients = writable(recipe.ingredients);
 	const flavors = writable(recipe.flavors);
@@ -64,6 +61,7 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 
 	const stores = {
 		recipeUuid,
+		mainCallForUuid,
 		focusedUsageUuid,
 		ingredients,
 		flavors,
@@ -84,6 +82,7 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 		actionsDispatcher.dispatch(action);
 		store.set({
 			recipeUuid: get(recipeUuid),
+			mainCallForUuid: get(mainCallForUuid),
 			focusedUsageUuid: get(focusedUsageUuid),
 			ingredients: get(ingredients),
 			flavors: get(flavors),
@@ -101,6 +100,7 @@ export function createRecipeState(recipe: FlatRecipe): RecipeState {
 		actionsDispatcher.batchDispatch(actions);
 		store.set({
 			recipeUuid: get(recipeUuid),
+			mainCallForUuid: get(mainCallForUuid),
 			focusedUsageUuid: get(focusedUsageUuid),
 			ingredients: get(ingredients),
 			flavors: get(flavors),

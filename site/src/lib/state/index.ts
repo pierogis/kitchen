@@ -62,6 +62,7 @@ export function storeRecipe(recipe: FullRecipe) {
 	const recipeState = createRecipeState({
 		recipeUuid: recipe.uuid,
 		focusedUsageUuid: mainUsage.uuid,
+		mainCallForUuid: recipe.mainCallForUuid,
 		ingredients: initialIngredients,
 		flavors: initialFlavors,
 		callsFor: initialCallsFor,
