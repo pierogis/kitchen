@@ -4,7 +4,7 @@ export function init(canvas: HTMLCanvasElement) {
 	const width = canvas.width;
 	const height = canvas.height;
 
-	const renderer = new THREE.WebGLRenderer({ canvas });
+	const renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setSize(width, height);
 
 	// basic scene setup
@@ -13,5 +13,8 @@ export function init(canvas: HTMLCanvasElement) {
 	const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
 	camera.position.z = 2;
 
-	return { renderer, scene, camera };
+	const context = canvas.getContext('2d');
+	if (!context) throw `couldn't get 2d context`;
+
+	return { renderer, scene, camera, context };
 }

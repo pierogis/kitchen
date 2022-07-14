@@ -48,6 +48,7 @@
 	let renderer: THREE.WebGLRenderer;
 	let scene: THREE.Scene;
 	let camera: THREE.Camera;
+	let context: CanvasRenderingContext2D;
 
 	$: {
 		if (canvas) {
@@ -61,10 +62,10 @@
 	onMount(async () => {
 		await tick();
 
-		({ renderer, scene, camera } = init(canvas));
+		({ renderer, scene, camera, context } = init(canvas));
 
 		recipeState.subscribe((recipe) => {
-			cook(renderer, scene, camera, recipe, viewState);
+			cook(renderer, scene, camera, context, recipe, viewState);
 		});
 	});
 </script>

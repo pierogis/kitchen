@@ -27,6 +27,7 @@ export function cook(
 	renderer: THREE.WebGLRenderer,
 	scene: THREE.Scene,
 	camera: THREE.Camera,
+	context: CanvasRenderingContext2D,
 	recipe: FlatRecipe,
 	viewState: ViewState
 ) {
@@ -170,4 +171,6 @@ export function cook(
 	}
 
 	renderer.render(scene, camera);
+
+	context.drawImage(renderer.domElement, 0, 0);
 }

@@ -29,8 +29,10 @@ export function createPluginView(doc: Document, config: Config): TP.View {
 			camera = buffer[0]?.camera;
 		}
 
-		if (scene && camera) {
+		if (scene && camera && context) {
 			renderer.render(scene, camera);
+
+			context.drawImage(renderer.domElement, 0, 0);
 		}
 	}
 
@@ -38,33 +40,26 @@ export function createPluginView(doc: Document, config: Config): TP.View {
 		update();
 	}
 
-	// Create a root element for the plugin
 	const element = doc.createElement('div');
 	element.classList.add(className());
-	// Bind view props to the element
 	config.viewProps.bindClassModifiers(element);
 
-	// Receive the bound value from the controller
 	const value = config.value;
-	// Handle 'change' event of the value
 	value.emitter.on('change', onValueChange);
 
-	// Create child elements
 	const canvas = doc.createElement('canvas');
 	canvas.classList.add(className('canvas'));
 	canvas.style.width = '100%';
 
 	element.appendChild(canvas);
 
-	const renderer = new THREE.WebGLRenderer({ canvas });
-	// camera.position.z = 2;
+	const renderer = new THREE.WebGLRenderer({ antialias: true });
 
-	// Apply the initial value
+	const context = canvas.getContext('2d');
+
 	update();
 
-	config.viewProps.handleDispose(() => {
-		renderer.dispose();
-	});
+	config.viewProps.handleDispose(() => {});
 
 	return { element };
 }
