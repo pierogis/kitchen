@@ -49,6 +49,7 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 			fragmentShader: ''
 		},
 		[FlavorType.Object]: new THREE.Object3D(),
+		[FlavorType.Material]: new THREE.MeshBasicMaterial(),
 		[FlavorType.Texture]: new THREE.Texture()
 	};
 
@@ -140,12 +141,7 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 		return filling;
 	}
 
-	function setPayload(
-		flavorUuid: string,
-		usageUuid: string,
-
-		newPayload: Payload<FlavorType>
-	) {
+	function setPayload(flavorUuid: string, usageUuid: string, newPayload: Payload<FlavorType>) {
 		const filling = getFilling(flavorUuid, usageUuid);
 
 		const value = get(filling.payload).value;

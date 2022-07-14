@@ -8,6 +8,7 @@ import { SpherePrep, SphereOperands, SphereOutputs } from './sphere';
 import { TexturePrep, TextureOperands, TextureOutputs } from './texture';
 import { AddToScenePrep, AddToSceneOperands, AddToSceneOutputs } from './addToScene';
 import { MeshPrep, MeshOperands, MeshOutputs } from './mesh';
+import { MaterialPrep, MaterialOperands, MaterialOutputs } from './material';
 
 export const PrepOperands = {
 	[PrepType.Add]: AddOperands,
@@ -16,7 +17,8 @@ export const PrepOperands = {
 	[PrepType.Sphere]: SphereOperands,
 	[PrepType.Texture]: TextureOperands,
 	[PrepType.AddToScene]: AddToSceneOperands,
-	[PrepType.Mesh]: MeshOperands
+	[PrepType.Mesh]: MeshOperands,
+	[PrepType.Material]: MaterialOperands
 };
 export type PrepOperands<P extends PrepType> = typeof PrepOperands[P];
 export type PrepOperand<P, O> = P extends PrepType
@@ -32,7 +34,8 @@ export const PrepOutputs = {
 	[PrepType.Sphere]: SphereOutputs,
 	[PrepType.Texture]: TextureOutputs,
 	[PrepType.AddToScene]: AddToSceneOutputs,
-	[PrepType.Mesh]: MeshOutputs
+	[PrepType.Mesh]: MeshOutputs,
+	[PrepType.Material]: MaterialOutputs
 };
 export type PrepOutputs<P> = P extends PrepType ? typeof PrepOutputs[P] : never;
 export type PrepOutput<P, O> = P extends PrepType
@@ -68,5 +71,6 @@ export const prepPrimitives: {
 	[PrepType.Sphere]: SpherePrep,
 	[PrepType.Texture]: TexturePrep,
 	[PrepType.AddToScene]: AddToScenePrep,
-	[PrepType.Mesh]: MeshPrep
+	[PrepType.Mesh]: MeshPrep,
+	[PrepType.Material]: MaterialPrep
 };

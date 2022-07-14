@@ -98,7 +98,7 @@
 			if (geometry.isBufferGeometry) {
 				scene.add(new THREE.Mesh(geometry));
 			} else {
-				throw 'payload value is wrong type';
+				throw 'payload value is not Geometry';
 			}
 			return { [flavor.name]: { scene, camera: $camera } };
 		});
@@ -113,7 +113,7 @@
 			if (object.isObject3D) {
 				scene.add(object);
 			} else {
-				throw 'payload value is wrong type';
+				throw 'payload value is not Object';
 			}
 			return { [flavor.name]: { scene, camera: $camera } };
 		});
@@ -130,14 +130,31 @@
 
 				scene.add(new THREE.Mesh(plane, material));
 			} else {
-				throw 'payload value is wrong type';
+				throw 'payload value is not Texture';
+			}
+			return { [flavor.name]: { scene, camera: $camera } };
+		});
+	} else if (flavor.type == FlavorType.Material) {
+		options = { ...options, view: 'canvas', interval: 32 };
+		const scene = new THREE.Scene();
+
+		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
+			scene.clear();
+			const material = $payload.value as THREE.Material;
+			if (material.isMaterial) {
+				const plane = new THREE.PlaneBufferGeometry(2, 2);
+				const mesh = new THREE.Mesh(plane, material);
+
+				scene.add(mesh);
+			} else {
+				throw 'payload value is not Material';
 			}
 			return { [flavor.name]: { scene, camera: $camera } };
 		});
 	} else {
 		paramsStore = derived(filling.payload, ($payload) => {
 			if (typeof $payload.value != 'string' && typeof $payload.value != 'number')
-				throw 'payload value is wrong type';
+				throw 'payload value is not string or number';
 
 			return { [flavor.name]: $payload.value };
 		});
