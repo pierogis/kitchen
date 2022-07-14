@@ -178,7 +178,7 @@ const mainIngredient: FullIngredient = {
 	flavors: [addToScenePrepFlavor, radiusInputFlavor],
 	connections: [
 		{
-			uuid: 'main-sphere-addToScene-connection',
+			uuid: 'main-mesh-addToScene-connection',
 			flavorType: FlavorType.Object,
 			parentIngredientUuid: mainIngredientUuid,
 			inFlavorUuid: addToScenePrepFlavor.uuid,
@@ -188,7 +188,7 @@ const mainIngredient: FullIngredient = {
 		},
 		{
 			uuid: 'main-radius-connection',
-			flavorType: FlavorType.Object,
+			flavorType: FlavorType.Number,
 			parentIngredientUuid: mainIngredientUuid,
 			inFlavorUuid: meshRadiusInputFlavor.uuid,
 			outFlavorUuid: radiusInputFlavor.uuid,
@@ -217,7 +217,7 @@ const meshIngredient: FullIngredient = {
 		},
 		{
 			uuid: 'mesh-radius-connection',
-			flavorType: FlavorType.Object,
+			flavorType: FlavorType.Number,
 			parentIngredientUuid: meshIngredientUuid,
 			outFlavorUuid: meshRadiusInputFlavor.uuid,
 			inFlavorUuid: radiusSphereFlavor.uuid,

@@ -72,7 +72,7 @@ export function createLiveConnection(
 		if (liveConnection) {
 			throw 'there is already a live connection';
 		}
-		if (terminal.flavorUuid && terminal.usageUuid) {
+		if (terminal.flavorUuid) {
 			const anchorDirection = terminal.direction == Direction.In ? Direction.Out : Direction.In;
 
 			const connection = get(recipeState.connections).get(terminal.connectionUuid);
@@ -88,6 +88,8 @@ export function createLiveConnection(
 
 				const anchorFlavorUuid =
 					anchorDirection == Direction.In ? connection?.inFlavorUuid : connection?.outFlavorUuid;
+				const anchorUsageUuid =
+					anchorDirection == Direction.In ? connection?.inUsageUuid : connection?.outUsageUuid;
 
 				store.set({
 					connectionUuid: terminal.connectionUuid,
@@ -97,8 +99,8 @@ export function createLiveConnection(
 					anchorDirection: terminal.direction == Direction.In ? Direction.Out : Direction.In,
 
 					anchorFlavorUuid,
+					anchorUsageUuid,
 					disconnectedFlavorUuid: terminal.flavorUuid,
-					anchorUsageUuid: terminal.usageUuid,
 					disconnectedUsageUuid: terminal.usageUuid,
 
 					drop,

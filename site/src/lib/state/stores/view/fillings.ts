@@ -135,7 +135,7 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 
 	function getFilling(flavorUuid: string, usageUuid: string) {
 		const filling = flavorUsageFillings.get(flavorUuid, usageUuid);
-		if (!filling) throw `filling flavor ${flavorUuid} on usage ${usageUuid} not found`;
+		if (!filling) throw `filling for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 
 		return filling;
 	}
