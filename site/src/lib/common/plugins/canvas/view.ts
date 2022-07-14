@@ -14,6 +14,8 @@ interface Config {
 
 const className = TP.ClassName('geo');
 
+let renderer: THREE.WebGLRenderer;
+
 export function createPluginView(doc: Document, config: Config): TP.View {
 	function update(): void {
 		const coerced = value.rawValue as CanvasValue;
@@ -53,7 +55,9 @@ export function createPluginView(doc: Document, config: Config): TP.View {
 
 	element.appendChild(canvas);
 
-	const renderer = new THREE.WebGLRenderer({ antialias: true });
+	if (!renderer) {
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+	}
 
 	const context = canvas.getContext('2d');
 

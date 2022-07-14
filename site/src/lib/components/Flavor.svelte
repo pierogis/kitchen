@@ -88,7 +88,7 @@
 
 	let paramsStore: Readable<{ [key: string]: string | number | CanvasValue }>;
 	if (flavor.type == FlavorType.Geometry) {
-		options = { ...options, view: 'canvas' };
+		options = { ...options, view: 'canvas', interval: 32 };
 		const scene = new THREE.Scene();
 
 		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
@@ -103,7 +103,7 @@
 			return { [flavor.name]: { scene, camera: $camera } };
 		});
 	} else if (flavor.type == FlavorType.Object) {
-		options = { ...options, view: 'canvas' };
+		options = { ...options, view: 'canvas', interval: 32 };
 		const scene = new THREE.Scene();
 
 		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
@@ -118,7 +118,7 @@
 			return { [flavor.name]: { scene, camera: $camera } };
 		});
 	} else if (flavor.type == FlavorType.Texture) {
-		options = { ...options, view: 'canvas' };
+		options = { ...options, view: 'canvas', interval: 32 };
 		const scene = new THREE.Scene();
 
 		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
