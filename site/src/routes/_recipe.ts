@@ -432,12 +432,23 @@ const radiusInputParameter: Parameter<FlavorType.Number> = {
 	}
 };
 
+const colorInputParameter: Parameter<FlavorType.Color> = {
+	uuid: 'color-input-parameter',
+	recipeUuid,
+	flavorUuid: colorInputFlavor.uuid,
+	usageUuid: mainUsage.uuid,
+	payload: {
+		type: FlavorType.Color,
+		value: '#ffffff'
+	}
+};
+
 // const asd: FlavorMap<PrepType.addToScene> = {};
 export const defaultRecipe: FullRecipe = {
 	uuid: recipeUuid,
 	mainCallForUuid: mainCallFor.uuid,
 	ingredients: [mainIngredient, meshIngredient, sphereIngredient, materialIngredient],
 	callsFor: [mainCallFor, meshCallFor, sphereCallFor, materialCallFor],
-	parameters: [radiusInputParameter],
+	parameters: [radiusInputParameter, colorInputParameter],
 	shaders: []
 };

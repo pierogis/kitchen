@@ -189,7 +189,7 @@
 		{folder}
 		{paramsStore}
 		{options}
-		onChange={$onChange}
+		onChange={(ev) => $onChange(ev)}
 		key={flavor.name}
 		let:inputElement
 	>

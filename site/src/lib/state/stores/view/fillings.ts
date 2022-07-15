@@ -38,7 +38,7 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 	const valueDefaults: {
 		[flavorType in FlavorType]: PayloadValue<flavorType>;
 	} = {
-		[FlavorType.Color]: '#0088ff',
+		[FlavorType.Color]: '#ffffff',
 		[FlavorType.Image]: '',
 		[FlavorType.Number]: 0,
 		[FlavorType.Text]: '',
