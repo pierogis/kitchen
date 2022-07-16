@@ -1,20 +1,25 @@
 import type { PrepPrimitive } from '.';
 import { Direction, FlavorType, PrepType } from '@types';
 
-export const AddToSceneOperands = {
+export const PlateOperands = {
 	object: FlavorType.Object
 } as const;
 
-export const AddToSceneOutputs = {} as const;
+export const PlateOutputs = {
+	plate: FlavorType.Object
+} as const;
 
-export const AddToScenePrep: PrepPrimitive<PrepType.AddToScene> = {
+export const PlatePrep: PrepPrimitive<PrepType.Plate> = {
 	flavors: {
+		plate: { directions: [Direction.Out], type: FlavorType.Object },
 		object: { directions: [Direction.In], type: FlavorType.Object }
 	},
 	cook: (scene, _camera, inPayloads) => {
 		const object = inPayloads['object'].value;
 
 		scene.add(object);
-		return {};
+		return {
+			plate: { type: FlavorType.Object, value: scene }
+		};
 	}
 };

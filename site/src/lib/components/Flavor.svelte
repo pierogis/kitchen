@@ -167,20 +167,22 @@
 
 {#if $monitor}
 	<Monitor {index} {folder} {paramsStore} {options} key={flavor.name} let:monitorElement>
-		{#if inTerminals.length > 0}
-			<TerminalRack
-				parentElement={monitorElement}
-				terminals={inTerminals}
-				direction={Direction.In}
-			/>
-		{/if}
+		{#if monitorElement}
+			{#if inTerminals.length > 0}
+				<TerminalRack
+					parentElement={monitorElement}
+					terminals={inTerminals}
+					direction={Direction.In}
+				/>
+			{/if}
 
-		{#if outTerminals.length > 0}
-			<TerminalRack
-				parentElement={monitorElement}
-				terminals={outTerminals}
-				direction={Direction.Out}
-			/>
+			{#if outTerminals.length > 0}
+				<TerminalRack
+					parentElement={monitorElement}
+					terminals={outTerminals}
+					direction={Direction.Out}
+				/>
+			{/if}
 		{/if}
 	</Monitor>
 {:else}
@@ -193,12 +195,14 @@
 		key={flavor.name}
 		let:inputElement
 	>
-		{#each flavor.directions as direction (direction)}
-			<TerminalRack
-				parentElement={inputElement}
-				terminals={direction == Direction.In ? inTerminals : outTerminals}
-				{direction}
-			/>
-		{/each}
+		{#if inputElement}
+			{#each flavor.directions as direction (direction)}
+				<TerminalRack
+					parentElement={inputElement}
+					terminals={direction == Direction.In ? inTerminals : outTerminals}
+					{direction}
+				/>
+			{/each}
+		{/if}
 	</Input>
 {/if}

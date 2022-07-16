@@ -6,7 +6,7 @@ import { ImagePrep, ImageOperands, ImageOutputs } from './image';
 import { ShaderPrep, ShaderOperands, ShaderOutputs } from './shader';
 import { SpherePrep, SphereOperands, SphereOutputs } from './sphere';
 import { TexturePrep, TextureOperands, TextureOutputs } from './texture';
-import { AddToScenePrep, AddToSceneOperands, AddToSceneOutputs } from './addToScene';
+import { PlatePrep, PlateOperands, PlateOutputs } from './plate';
 import { MeshPrep, MeshOperands, MeshOutputs } from './mesh';
 import { MaterialPrep, MaterialOperands, MaterialOutputs } from './material';
 
@@ -16,7 +16,7 @@ export const PrepOperands = {
 	[PrepType.Shader]: ShaderOperands,
 	[PrepType.Sphere]: SphereOperands,
 	[PrepType.Texture]: TextureOperands,
-	[PrepType.AddToScene]: AddToSceneOperands,
+	[PrepType.Plate]: PlateOperands,
 	[PrepType.Mesh]: MeshOperands,
 	[PrepType.Material]: MaterialOperands
 };
@@ -33,7 +33,7 @@ export const PrepOutputs = {
 	[PrepType.Shader]: ShaderOutputs,
 	[PrepType.Sphere]: SphereOutputs,
 	[PrepType.Texture]: TextureOutputs,
-	[PrepType.AddToScene]: AddToSceneOutputs,
+	[PrepType.Plate]: PlateOutputs,
 	[PrepType.Mesh]: MeshOutputs,
 	[PrepType.Material]: MaterialOutputs
 };
@@ -70,7 +70,7 @@ export const prepPrimitives: {
 	[PrepType.Shader]: ShaderPrep,
 	[PrepType.Sphere]: SpherePrep,
 	[PrepType.Texture]: TexturePrep,
-	[PrepType.AddToScene]: AddToScenePrep,
+	[PrepType.Plate]: PlatePrep,
 	[PrepType.Mesh]: MeshPrep,
 	[PrepType.Material]: MaterialPrep
 };

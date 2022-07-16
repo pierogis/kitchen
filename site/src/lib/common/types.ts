@@ -20,7 +20,7 @@ export enum PrepType {
 	Image = 'Image',
 	Texture = 'Texture',
 	Material = 'Material',
-	AddToScene = 'AddToScene',
+	Plate = 'Plate',
 	Mesh = 'Mesh'
 }
 

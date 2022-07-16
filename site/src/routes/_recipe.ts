@@ -21,15 +21,15 @@ const materialIngredientUuid = 'material-ingredient';
 
 // preps
 
-const addToScenePrepUuid = 'addToScene-prep';
+const platePrepUuid = 'plate-prep';
 
-const addToScenePrepFlavor: Flavor = {
-	uuid: 'addToScene-prep-flavor',
+const platePrepFlavor: Flavor = {
+	uuid: 'plate-prep-flavor',
 	ingredientUuid: mainIngredientUuid,
-	name: 'addToScene',
+	name: 'plate',
 	type: FlavorType.Object,
-	prepUuid: addToScenePrepUuid,
-	directions: [Direction.In],
+	prepUuid: platePrepUuid,
+	directions: [Direction.In, Direction.Out],
 	options: null
 };
 
@@ -54,14 +54,14 @@ const colorInputFlavor: Flavor = {
 	options: null
 };
 
-const addToScenePrep: Prep<PrepType.AddToScene> = {
-	uuid: addToScenePrepUuid,
-	name: 'add to Scene',
+const platePrep: Prep<PrepType.Plate> = {
+	uuid: platePrepUuid,
+	name: 'plate',
 	ingredientUuid: mainIngredientUuid,
-	type: PrepType.AddToScene,
+	type: PrepType.Plate,
 	direction: Direction.Out,
-	inFlavorUuidMap: { object: addToScenePrepFlavor.uuid },
-	outFlavorUuidMap: {}
+	inFlavorUuidMap: { object: platePrepFlavor.uuid },
+	outFlavorUuidMap: { plate: platePrepFlavor.uuid }
 };
 
 const meshPrepUuid = 'mesh-prep';
@@ -242,13 +242,13 @@ const mainIngredient: FullIngredient = {
 	uuid: mainIngredientUuid,
 	parentIngredientUuid: undefined,
 	name: 'sort',
-	flavors: [addToScenePrepFlavor, radiusInputFlavor, colorInputFlavor],
+	flavors: [platePrepFlavor, radiusInputFlavor, colorInputFlavor],
 	connections: [
 		{
-			uuid: 'main-mesh-addToScene-connection',
+			uuid: 'main-mesh-plate-connection',
 			flavorType: FlavorType.Object,
 			parentIngredientUuid: mainIngredientUuid,
-			inFlavorUuid: addToScenePrepFlavor.uuid,
+			inFlavorUuid: platePrepFlavor.uuid,
 			outFlavorUuid: meshPrepFlavor.uuid,
 			inUsageUuid: undefined,
 			outUsageUuid: meshUsage.uuid
@@ -273,7 +273,7 @@ const mainIngredient: FullIngredient = {
 		}
 	],
 	usages: [mainUsage],
-	preps: [addToScenePrep]
+	preps: [platePrep]
 };
 
 const meshIngredient: FullIngredient = {
