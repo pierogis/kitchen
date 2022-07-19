@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, tick } from 'svelte';
 
 	import { Direction } from '@types';
 	import { calculateCenter } from '$lib/common/utils';
@@ -20,9 +20,9 @@
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 
-	// export let actionDescriptions: ActionDescription<any>[];
 	function updateCoordsAction(element: HTMLElement) {
-		const getPosition = () => {
+		const getPosition = async () => {
+			await tick();
 			// calculate the rect and dispatch to the callback
 			let rect: DOMRect = element.getBoundingClientRect();
 			// accounts for scroll
@@ -33,8 +33,8 @@
 			return center;
 		};
 
-		const updateRect = () => {
-			const center = getPosition();
+		const updateRect = async () => {
+			const center = await getPosition();
 			// update central store
 			viewState.terminalsCoordinates.updateCoordinates(
 				terminal.connectionUuid,
@@ -46,8 +46,10 @@
 			);
 		};
 
-		// register this terminal
-		viewState.terminalsCoordinates.addTerminal(terminal, getPosition());
+		getPosition().then((position) => {
+			// register this terminal
+			viewState.terminalsCoordinates.addTerminal(terminal, position);
+		});
 
 		// callback every n ms to update the coordinates
 		const rectUpdateInterval = 5;
@@ -136,8 +138,8 @@
 		border: 0px inset var(--cable-color-number);
 		background-color: hsla(0, 0%, 40%, 1);
 
-		transition: border-radius 300ms, border 300ms, margin 300ms, width 300ms, left 300ms,
-			right 300ms;
+		transition: border-radius 100ms, border 100ms, margin 100ms, width 100ms, left 100ms,
+			right 100ms;
 		z-index: 1;
 	}
 

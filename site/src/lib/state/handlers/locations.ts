@@ -1,39 +1,58 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
+import type { Location } from '@types';
+import { createEntities, deleteEntities } from './common';
+import { get } from 'svelte/store';
 
-const createLocation: ActionHandler<ActionType.CreateLocation, ActionType.DeleteLocation> = (
-	state,
+const createLocations: ActionHandler<ActionType.CreateLocations, ActionType.DeleteLocations> = (
+	stores,
 	params
 ) => {
-	state.locations.set(params.location.uuid, params.location);
+	const locations = createEntities(stores.locations, params.locations);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.DeleteLocation,
-			params: {
-				uuid: params.location.uuid
-			}
+		type: ActionType.DeleteLocations,
+		params: {
+			locations
 		}
 	};
 };
 
-const deleteLocation: ActionHandler<ActionType.DeleteLocation, ActionType.CreateLocation> = (
-	state,
+const deleteLocations: ActionHandler<ActionType.DeleteLocations, ActionType.CreateLocations> = (
+	stores,
 	params
 ) => {
-	// delete location
-	const location = state.locations.get(params.uuid);
-	if (!location) throw `Location ${params.uuid} does not exist`;
-	state.locations.delete(params.uuid);
+	deleteEntities(stores.locations, params.locations);
 
 	return {
-		state,
-		undoAction: { type: ActionType.CreateLocation, params: { location } }
+		type: ActionType.CreateLocations,
+		params: {
+			locations: params.locations
+		}
+	};
+};
+
+const deleteCallsFor: ActionHandler<ActionType.DeleteCallsFor, ActionType.CreateLocations> = (
+	stores,
+	params
+) => {
+	const currentLocations = get(stores.locations);
+
+	const oldLocations = params.callsFor.flatMap((callFor) => {
+		const location: Location | undefined = Array.from(currentLocations.values()).find(
+			(location) => location.callForUuid == callFor.uuid
+		);
+		return location ? [location] : [];
+	});
+
+	return {
+		type: ActionType.CreateLocations,
+		params: { locations: oldLocations }
 	};
 };
 
 export function registerLocationHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateLocation, createLocation);
-	recipeState.register(ActionType.DeleteLocation, deleteLocation);
+	recipeState.register(ActionType.CreateLocations, createLocations);
+	recipeState.register(ActionType.DeleteLocations, deleteLocations);
+	recipeState.register(ActionType.DeleteCallsFor, deleteCallsFor);
 }

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
-
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 	import { Direction } from '@types';
 
@@ -9,7 +7,6 @@
 	import TerminalComponent from '@components/Terminal.svelte';
 
 	export let direction: Direction;
-	export let container: HTMLElement | null = null;
 
 	let near = false;
 
@@ -31,25 +28,19 @@
 		: ((rackHeight - terminalHeight) / 2) * (terminals.length + 1) +
 		  terminalHeight * terminals.length;
 
-	export let parentElement: HTMLElement | null;
+	export let parentElement: HTMLElement;
 
-	onMount(async () => {
-		await tick();
-
-		if (container && parentElement) {
-			if (direction == Direction.In) {
-				parentElement.prepend(container);
-			}
-
-			if (direction == Direction.Out) {
-				parentElement.append(container);
-			}
+	function action(element: HTMLElement) {
+		if (direction == Direction.In) {
+			parentElement.prepend(element);
+		} else if (direction == Direction.Out) {
+			parentElement.append(element);
 		}
-	});
+	}
 </script>
 
 <div
-	bind:this={container}
+	use:action
 	class="terminal-rack"
 	class:out={direction == Direction.Out}
 	class:in={direction == Direction.In}
@@ -86,7 +77,7 @@
 		position: relative;
 		width: var(--rack-width);
 		height: var(--rack-height);
-		transition: width 300ms, margin 300ms, left 300ms, right 300ms;
+		transition: width 100ms, margin 100ms, left 100ms, right 100ms;
 	}
 
 	.terminal-rack:hover {
@@ -99,7 +90,7 @@
 		justify-content: space-evenly;
 
 		width: 10px;
-		transition: width 300ms;
+		transition: width 100ms;
 	}
 
 	.terminals-container.expanded {

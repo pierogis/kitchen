@@ -16,19 +16,20 @@ import {
 import type { RecipeState } from '@recipe';
 import { type Action, ActionType } from '@state/actions';
 
-export function dispatchCreateIngredientActions(
+export function dispatchIngredientCreationActions(
 	recipeState: RecipeState,
-	coordinates: Coordinates
+	coordinates: Coordinates,
+	focusedIngredientUuid: string
 ) {
 	const ingredient: Ingredient = {
 		uuid: uuid(),
 		name: 'default',
-		parentIngredientUuid: get(recipeState.focusedIngredientUuid)
+		parentIngredientUuid: focusedIngredientUuid
 	};
-	const ingredientAction: Action<ActionType.CreateIngredient> = {
-		type: ActionType.CreateIngredient,
+	const ingredientAction: Action<ActionType.CreateIngredients> = {
+		type: ActionType.CreateIngredients,
 		params: {
-			ingredient
+			ingredients: [ingredient]
 		}
 	};
 
@@ -37,10 +38,10 @@ export function dispatchCreateIngredientActions(
 		ingredientUuid: ingredient.uuid,
 		parentUsageUuid: get(recipeState.focusedUsageUuid)
 	};
-	const usageAction: Action<ActionType.CreateUsage> = {
-		type: ActionType.CreateUsage,
+	const usageAction: Action<ActionType.CreateUsages> = {
+		type: ActionType.CreateUsages,
 		params: {
-			usage
+			usages: [usage]
 		}
 	};
 
@@ -49,41 +50,43 @@ export function dispatchCreateIngredientActions(
 		recipeUuid: get(recipeState.recipeUuid),
 		usageUuid: usage.uuid
 	};
-	const callForAction: Action<ActionType.CreateCallFor> = {
-		type: ActionType.CreateCallFor,
+	const callForAction: Action<ActionType.CreateCallsFor> = {
+		type: ActionType.CreateCallsFor,
 		params: {
-			callFor
+			callsFor: [callFor]
 		}
 	};
 
 	const location: Location = { uuid: uuid(), callForUuid: callFor.uuid, ...coordinates };
-	const locationAction: Action<ActionType.CreateLocation> = {
-		type: ActionType.CreateLocation,
+	const locationAction: Action<ActionType.CreateLocations> = {
+		type: ActionType.CreateLocations,
 		params: {
-			location
+			locations: [location]
 		}
 	};
 
-	const flavor: Flavor = {
-		uuid: uuid(),
-		ingredientUuid: ingredient.uuid,
-		type: FlavorType.Text,
-		name: 'text',
-		options: null,
-		directions: [Direction.Out]
-	};
-	const flavorAction: Action<ActionType.CreateFlavor> = {
-		type: ActionType.CreateFlavor,
+	const flavors: Flavor[] = [
+		{
+			uuid: uuid(),
+			ingredientUuid: ingredient.uuid,
+			type: FlavorType.Text,
+			name: 'text',
+			options: null,
+			directions: [Direction.Out]
+		}
+	];
+	const flavorAction: Action<ActionType.CreateFlavors> = {
+		type: ActionType.CreateFlavors,
 		params: {
-			flavor
+			flavors
 		}
 	};
 
 	recipeState.batchDispatch([
-		ingredientAction,
+		locationAction,
+		flavorAction,
 		usageAction,
 		callForAction,
-		flavorAction,
-		locationAction
+		ingredientAction
 	]);
 }

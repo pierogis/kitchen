@@ -1,59 +1,49 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
+import { createEntities, deleteEntities, updateEntities } from './common';
 
-const createParameter: ActionHandler<ActionType.CreateParameter, ActionType.DeleteParameter> = (
-	state,
+const createParameters: ActionHandler<ActionType.CreateParameters, ActionType.DeleteParameters> = (
+	stores,
 	params
 ) => {
-	state.parameters.set(params.parameter.uuid, params.parameter);
+	const parameters = createEntities(stores.parameters, params.parameters);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.DeleteParameter,
-			params: {
-				uuid: params.parameter.uuid
-			}
+		type: ActionType.DeleteParameters,
+		params: {
+			parameters
 		}
 	};
 };
 
-const updateParameter: ActionHandler<ActionType.UpdateParameter, ActionType.UpdateParameter> = (
-	state,
+const updateParameters: ActionHandler<ActionType.UpdateParameters, ActionType.UpdateParameters> = (
+	stores,
 	params
 ) => {
-	const oldParameter = state.parameters.get(params.parameter.uuid);
-
-	if (!oldParameter) throw `parameter ${params.parameter.uuid} not found`;
-
-	state.parameters.set(params.parameter.uuid, params.parameter);
+	const oldParameters = updateEntities(stores.parameters, params.parameters);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.UpdateParameter,
-			params: { parameter: oldParameter }
-		}
+		type: ActionType.UpdateParameters,
+		params: { parameters: oldParameters }
 	};
 };
 
-const deleteParameter: ActionHandler<ActionType.DeleteParameter, ActionType.CreateParameter> = (
-	state,
+const deleteParameters: ActionHandler<ActionType.DeleteParameters, ActionType.CreateParameters> = (
+	stores,
 	params
 ) => {
-	// delete parameter
-	const parameter = state.parameters.get(params.uuid);
-	if (!parameter) throw `Parameter ${params.uuid} does not exist`;
-	state.parameters.delete(params.uuid);
+	deleteEntities(stores.parameters, params.parameters);
 
 	return {
-		state,
-		undoAction: { type: ActionType.CreateParameter, params: { parameter } }
+		type: ActionType.CreateParameters,
+		params: {
+			parameters: params.parameters
+		}
 	};
 };
 
 export function registerParameterHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateParameter, createParameter);
-	recipeState.register(ActionType.UpdateParameter, updateParameter);
-	recipeState.register(ActionType.DeleteParameter, deleteParameter);
+	recipeState.register(ActionType.CreateParameters, createParameters);
+	recipeState.register(ActionType.UpdateParameters, updateParameters);
+	recipeState.register(ActionType.DeleteParameters, deleteParameters);
 }

@@ -1,4 +1,4 @@
-import { writable, type Readable, derived } from 'svelte/store';
+import { writable, type Readable, get } from 'svelte/store';
 
 import type {
 	CallFor,
@@ -8,7 +8,10 @@ import type {
 	Parameter,
 	Shader,
 	Location,
-	Usage
+	Usage,
+	Prep,
+	PrepType,
+	FlavorType
 } from '@types';
 
 import type { Action, ActionHandler, ActionType } from '@state/actions';
@@ -16,16 +19,17 @@ import { dispatcher } from '@state/dispatcher';
 
 export interface FlatRecipe {
 	recipeUuid: string;
-	focusedIngredientUuid: string;
+	mainCallForUuid: string;
 	focusedUsageUuid: string;
 	ingredients: Map<string, Ingredient>;
 	flavors: Map<string, Flavor>;
 	callsFor: Map<string, CallFor>;
 	connections: Map<string, Connection>;
 	shaders: Map<string, Shader>;
-	parameters: Map<string, Parameter>;
+	parameters: Map<string, Parameter<FlavorType>>;
 	locations: Map<string, Location>;
 	usages: Map<string, Usage>;
+	preps: Map<string, Prep<PrepType>>;
 }
 
 export type RecipeState = {
@@ -42,53 +46,80 @@ export type RecipeState = {
 export const recipeStateContextKey = 'recipe';
 
 export function createRecipeState(recipe: FlatRecipe): RecipeState {
-	// update all at once
-	// subscribe to all at once
-	// subscribe to just 1
+	const recipeUuid = writable(recipe.recipeUuid);
+	const mainCallForUuid = writable(recipe.mainCallForUuid);
+	const focusedUsageUuid = writable(recipe.focusedUsageUuid);
+	const ingredients = writable(recipe.ingredients);
+	const flavors = writable(recipe.flavors);
+	const callsFor = writable(recipe.callsFor);
+	const connections = writable(recipe.connections);
+	const shaders = writable(recipe.shaders);
+	const parameters = writable(recipe.parameters);
+	const locations = writable(recipe.locations);
+	const usages = writable(recipe.usages);
+	const preps = writable(recipe.preps);
+
+	const stores = {
+		recipeUuid,
+		mainCallForUuid,
+		focusedUsageUuid,
+		ingredients,
+		flavors,
+		callsFor,
+		connections,
+		shaders,
+		parameters,
+		locations,
+		usages,
+		preps
+	};
+
+	const actionsDispatcher = dispatcher(stores);
+
 	const store = writable(recipe);
 
-	const actionsDispatcher = dispatcher(store);
+	function dispatch(action: Action<ActionType>) {
+		actionsDispatcher.dispatch(action);
+		store.set({
+			recipeUuid: get(recipeUuid),
+			mainCallForUuid: get(mainCallForUuid),
+			focusedUsageUuid: get(focusedUsageUuid),
+			ingredients: get(ingredients),
+			flavors: get(flavors),
+			callsFor: get(callsFor),
+			connections: get(connections),
+			shaders: get(shaders),
+			parameters: get(parameters),
+			locations: get(locations),
+			usages: get(usages),
+			preps: get(preps)
+		});
+	}
+
+	function batchDispatch(actions: Action<ActionType>[]) {
+		actionsDispatcher.batchDispatch(actions);
+		store.set({
+			recipeUuid: get(recipeUuid),
+			mainCallForUuid: get(mainCallForUuid),
+			focusedUsageUuid: get(focusedUsageUuid),
+			ingredients: get(ingredients),
+			flavors: get(flavors),
+			callsFor: get(callsFor),
+			connections: get(connections),
+			shaders: get(shaders),
+			parameters: get(parameters),
+			locations: get(locations),
+			usages: get(usages),
+			preps: get(preps)
+		});
+	}
 
 	return {
 		subscribe: store.subscribe,
-
 		register: actionsDispatcher.register,
-		dispatch: actionsDispatcher.dispatch,
-		batchDispatch: actionsDispatcher.batchDispatch,
+		dispatch: dispatch,
+		batchDispatch: batchDispatch,
 
-		// ...stores
-		recipeUuid: derived(store, (currentState) => {
-			return currentState.recipeUuid;
-		}),
-		focusedIngredientUuid: derived(store, (currentState) => {
-			return currentState.focusedIngredientUuid;
-		}),
-		focusedUsageUuid: derived(store, (currentState) => {
-			return currentState.focusedUsageUuid;
-		}),
-		ingredients: derived(store, (currentState) => {
-			return currentState.ingredients;
-		}),
-		flavors: derived(store, (currentState) => {
-			return currentState.flavors;
-		}),
-		callsFor: derived(store, (currentState) => {
-			return currentState.callsFor;
-		}),
-		connections: derived(store, (currentState) => {
-			return currentState.connections;
-		}),
-		shaders: derived(store, (currentState) => {
-			return currentState.shaders;
-		}),
-		parameters: derived(store, (currentState) => {
-			return currentState.parameters;
-		}),
-		locations: derived(store, (currentState) => {
-			return currentState.locations;
-		}),
-		usages: derived(store, (currentState) => {
-			return currentState.usages;
-		})
+		...stores
 	};
 }

@@ -1,4 +1,4 @@
-import type { Connection, Flavor, FullRecipe, Usage } from '@types';
+import type { Connection, Flavor, FullRecipe, Prep, PrepType, Usage } from '@types';
 
 import { registerCallForHandlers } from './handlers/callsFor';
 import { registerConnectionHandlers } from './handlers/connections';
@@ -45,6 +45,13 @@ export function storeRecipe(recipe: FullRecipe) {
 	const initialLocations = new Map(
 		recipe.callsFor.map((callFor) => [callFor.location.uuid, callFor.location])
 	);
+	const initialPreps = new Map(
+		recipe.ingredients.reduce<[string, Prep<PrepType>][]>((previous, ingredient) => {
+			previous = previous.concat(ingredient.preps.map((prep) => [prep.uuid, prep]));
+
+			return previous;
+		}, [])
+	);
 
 	const mainCallFor = initialCallsFor.get(recipe.mainCallForUuid);
 	if (!mainCallFor) throw `main callFor ${recipe.mainCallForUuid} not found`;
@@ -54,8 +61,8 @@ export function storeRecipe(recipe: FullRecipe) {
 
 	const recipeState = createRecipeState({
 		recipeUuid: recipe.uuid,
-		focusedIngredientUuid: mainUsage.ingredientUuid,
 		focusedUsageUuid: mainUsage.uuid,
+		mainCallForUuid: recipe.mainCallForUuid,
 		ingredients: initialIngredients,
 		flavors: initialFlavors,
 		callsFor: initialCallsFor,
@@ -63,7 +70,8 @@ export function storeRecipe(recipe: FullRecipe) {
 		shaders: initialShaders,
 		parameters: initialParameters,
 		locations: initialLocations,
-		usages: initialUsages
+		usages: initialUsages,
+		preps: initialPreps
 	});
 
 	registerIngredientHandlers(recipeState);
