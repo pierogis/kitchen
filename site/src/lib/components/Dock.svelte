@@ -1,23 +1,54 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { derived } from 'svelte/store';
+	import { derived, get } from 'svelte/store';
 
-	import { Direction, type Flavor } from '@types';
+	import { Direction, PrepType, type Flavor, type FullPrep } from '@types';
 	import { checkNearAction } from '$lib/common/actions/checkNear';
 
 	import { viewStateContextKey, type ViewState } from '@view';
 
-	import FlavorComponent from '@components/Flavor.svelte';
 	import Pane from '@components/tweakpane/Pane.svelte';
+	import PaneContainer from './PaneContainer.svelte';
 
 	export let focusedUsageUuid: string;
 	export let direction: Direction;
+	export let preps: FullPrep<PrepType>[];
 	export let flavors: Flavor[];
+
 	let expanded = false;
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 
-	let paneContainer: HTMLElement;
+	let folded = false;
+	const prepFolded = new Map(preps.map((prep) => [prep.uuid, false]));
+	function handleFold(prepUuid?: string) {
+		console.log('fold');
+		if (prepUuid) {
+			prepFolded.set(direction, !prepFolded.get(prepUuid));
+		} else {
+			folded = !folded;
+		}
+	}
+
+	const flavorTerminals = derived(viewState.terminals, ($terminals) => {
+		const flavorUuids = flavors.map((flavor) => flavor.uuid);
+		return $terminals.filter(
+			(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
+		);
+	});
+	const prepTerminals = derived(viewState.terminals, ($terminals) => {
+		return new Map(
+			preps.map((prep) => {
+				const flavorUuids = prep.flavors.map((flavor) => flavor.uuid);
+				return [
+					prep.uuid,
+					$terminals.filter(
+						(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
+					)
+				];
+			})
+		);
+	});
 </script>
 
 <div
@@ -29,38 +60,24 @@
 		expanded = event.detail;
 	}}
 >
-	<div
-		bind:this={paneContainer}
-		class:expanded
-		class:in={direction == Direction.In}
-		class:out={direction == Direction.Out}
-		class="pane-container no-select"
-	>
-		{#if paneContainer}
-			<Pane container={paneContainer} let:pane>
-				{#each flavors as flavor, index (flavor.uuid)}
-					<FlavorComponent
-						{index}
-						{flavor}
-						filling={viewState.fillings.getFilling(
-							flavor.uuid,
-							focusedUsageUuid,
-							flavor.prepUuid && flavor.directions.includes(Direction.Out)
-								? Direction.Out
-								: Direction.In
-						)}
-						terminals={derived(viewState.terminals, (currentTerminals) =>
-							currentTerminals.filter(
-								(terminal) => terminal.flavorUuid == flavor.uuid && terminal.direction != direction
-							)
-						)}
-						usageUuid={focusedUsageUuid}
-						folder={pane}
-					/>
-				{/each}
-			</Pane>
-		{/if}
-	</div>
+	{#each preps as prep, index (prep.uuid)}
+		<PaneContainer
+			{direction}
+			fillings={viewState.fillings}
+			usageUuid={focusedUsageUuid}
+			name={prep.name}
+			flavors={prep.flavors}
+			terminals={$prepTerminals.get(prep.uuid) || []}
+		/>
+	{/each}
+	<PaneContainer
+		{direction}
+		fillings={viewState.fillings}
+		usageUuid={focusedUsageUuid}
+		name={'flavors'}
+		{flavors}
+		terminals={$flavorTerminals}
+	/>
 </div>
 
 <style>
@@ -74,6 +91,9 @@
 		border-radius: 4px;
 
 		display: flex;
+		flex-direction: column;
+		gap: 10px;
+
 		align-items: center;
 	}
 	.in {
@@ -87,14 +107,6 @@
 
 	:global(.pane-container > div) {
 		transition: margin-left 0.5s, margin-right 0.5s;
-	}
-
-	:global(.pane-container.in > div) {
-		margin-left: 8px;
-	}
-
-	:global(.pane-container.out > div) {
-		margin-right: 8px;
 	}
 
 	:global(.pane-container.expanded.in > div) {

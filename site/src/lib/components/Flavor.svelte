@@ -21,11 +21,11 @@
 
 	export let index: number;
 	export let flavor: Flavor;
-	export let terminals: Readable<Terminal[]>;
+	export let terminals: Terminal[];
 	export let usageUuid: string;
 
-	$: inTerminals = $terminals.filter((terminal) => terminal.direction == Direction.In);
-	$: outTerminals = $terminals.filter((terminal) => terminal.direction == Direction.Out);
+	$: inTerminals = terminals.filter((terminal) => terminal.direction == Direction.In);
+	$: outTerminals = terminals.filter((terminal) => terminal.direction == Direction.Out);
 
 	export let filling: Filling;
 	export let folder: FolderApi;
