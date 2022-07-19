@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, createEventDispatcher } from 'svelte';
 	import { Pane } from 'tweakpane';
 
 	import { registerPlugins } from '$lib/common/plugins';
@@ -9,6 +9,11 @@
 
 	let pane: Pane = new Pane({ container: container, title });
 	registerPlugins(pane);
+
+	const dispatch = createEventDispatcher();
+	pane.on('fold', (event) => {
+		dispatch('fold');
+	});
 
 	onDestroy(() => {
 		pane.dispose();

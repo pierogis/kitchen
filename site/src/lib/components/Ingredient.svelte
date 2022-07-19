@@ -13,6 +13,7 @@
 
 	import Pane from '@components/tweakpane/Pane.svelte';
 	import FlavorComponent from '@components/Flavor.svelte';
+	import TerminalRack from './TerminalRack.svelte';
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 	const viewState: ViewState = getContext(viewStateContextKey);
@@ -47,7 +48,19 @@
 	const nodeHeaderSize = 12;
 	const nodeWidth = 240;
 
-	$: terminals = viewState.terminals;
+	let folded = false;
+	function handleFold() {
+		folded = !folded;
+	}
+
+	const terminals = derived(viewState.terminals, ($terminals) => {
+		const flavorUuids = flavors.map((flavor) => flavor.uuid);
+		return $terminals.filter(
+			(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
+		);
+	});
+	$: inTerminals = $terminals.filter((terminal) => terminal.direction == Direction.In);
+	$: outTerminals = $terminals.filter((terminal) => terminal.direction == Direction.Out);
 	let paneContainer: HTMLElement;
 </script>
 
@@ -71,28 +84,47 @@
 			<div class="remove no-select" on:mousedown|stopPropagation={handleRemove} />
 		</div>
 	{/if}
-	<div bind:this={paneContainer} class="no-select">
+	<div bind:this={paneContainer} class="no-select pane-container">
 		{#if paneContainer}
-			<Pane let:pane container={paneContainer} title={ingredient.name}>
+			<Pane let:pane container={paneContainer} title={ingredient.name} on:fold={handleFold}>
 				{#if pane}
-					{#each flavors as flavor, index (flavor.uuid)}
-						<FlavorComponent
-							filling={viewState.fillings.getFilling(
-								flavor.uuid,
-								callFor.usageUuid,
-								flavor.directions.includes(Direction.Out) ? Direction.Out : Direction.In
-							)}
-							terminals={derived(terminals, (currentTerminals) =>
-								currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
-							)}
-							{index}
-							{flavor}
-							usageUuid={callFor.usageUuid}
-							folder={pane}
-						/>
-					{/each}
+					{#if !folded}
+						{#each flavors as flavor, index (flavor.uuid)}
+							<FlavorComponent
+								filling={viewState.fillings.getFilling(
+									flavor.uuid,
+									callFor.usageUuid,
+									flavor.directions.includes(Direction.Out) ? Direction.Out : Direction.In
+								)}
+								terminals={derived(terminals, (currentTerminals) =>
+									currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
+								)}
+								{index}
+								{flavor}
+								usageUuid={callFor.usageUuid}
+								folder={pane}
+							/>
+						{/each}
+					{/if}
 				{/if}
 			</Pane>
+
+			{#if folded}
+				{#if inTerminals.length > 0}
+					<TerminalRack
+						parentElement={paneContainer}
+						terminals={inTerminals}
+						direction={Direction.In}
+					/>
+				{/if}
+				{#if outTerminals.length > 0}
+					<TerminalRack
+						parentElement={paneContainer}
+						terminals={outTerminals}
+						direction={Direction.Out}
+					/>
+				{/if}
+			{/if}
 		{/if}
 	</div>
 </div>
@@ -157,5 +189,10 @@
 		border-radius: 0px 6px 6px 0px;
 
 		margin-left: 5px;
+	}
+
+	.pane-container {
+		display: flex;
+		align-items: center;
 	}
 </style>
