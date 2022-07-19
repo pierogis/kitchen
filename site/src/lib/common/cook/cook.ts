@@ -13,14 +13,29 @@ import {
 	type FlavorUuidMap
 } from '@types';
 import { prepPrimitives, type InPayloads } from '../preps';
+import { valueDefaults } from '$lib/state/stores/view/fillings';
 
 const knownPayloadsMap: Map<string, Payload<FlavorType>> = new Map();
+const visiting: Set<string> = new Set();
 const knownPayloads = {
-	clear: () => knownPayloadsMap.clear(),
-	get: (flavorUuid: string, usageUuid: string) =>
-		knownPayloadsMap.get([flavorUuid, usageUuid].join(',')),
-	set: (flavorUuid: string, usageUuid: string, payload: Payload<FlavorType>) =>
-		knownPayloadsMap.set([flavorUuid, usageUuid].join(','), payload)
+	clear: () => {
+		knownPayloadsMap.clear();
+		visiting.clear();
+	},
+	getVisited: (flavorUuid: string, usageUuid: string, direction: Direction) =>
+		knownPayloadsMap.get([flavorUuid, usageUuid, direction].join(',')),
+	setVisited: (
+		flavorUuid: string,
+		usageUuid: string,
+		direction: Direction,
+		payload: Payload<FlavorType>
+	) => knownPayloadsMap.set([flavorUuid, usageUuid, direction].join(','), payload),
+	setVisiting: (flavorUuid: string, usageUuid: string, direction: Direction) =>
+		visiting.add([flavorUuid, usageUuid, direction].join(',')),
+	isVisiting: (flavorUuid: string, usageUuid: string, direction: Direction) =>
+		visiting.has([flavorUuid, usageUuid, direction].join(',')),
+	removeVisiting: (flavorUuid: string, usageUuid: string, direction: Direction) =>
+		visiting.delete([flavorUuid, usageUuid, direction].join(','))
 };
 
 export function cook(
@@ -38,14 +53,21 @@ export function cook(
 	knownPayloads.clear();
 	scene.clear();
 
+	const currentParameters = Array.from(recipe.parameters.values());
+
 	function cookFlavor(
 		flavorUuid: string,
 		usageUuid: string,
 		direction: Direction
 	): Payload<FlavorType> {
 		// memoize
-		let payload = knownPayloads.get(flavorUuid, usageUuid);
+		let payload = knownPayloads.getVisited(flavorUuid, usageUuid, direction);
 		if (payload) return payload;
+
+		if (knownPayloads.isVisiting(flavorUuid, usageUuid, direction)) {
+			throw 'cycle detected';
+		}
+		knownPayloads.setVisiting(flavorUuid, usageUuid, direction);
 
 		const flavor = recipe.flavors.get(flavorUuid);
 		if (!flavor) throw `flavor ${flavorUuid} not found`;
@@ -54,7 +76,7 @@ export function cook(
 		if (direction == Direction.Out && prep) {
 			// cook prep if part of a prep
 			cookPrep(prep, usageUuid);
-			payload = knownPayloads.get(flavorUuid, usageUuid);
+			payload = knownPayloads.getVisited(flavorUuid, usageUuid, direction);
 			if (!payload) throw `prep payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
 		} else {
 			const flavorInConnection = Array.from(recipe.connections.values()).find(
@@ -63,9 +85,9 @@ export function cook(
 
 			if (flavorInConnection) {
 				const outFlavor = recipe.flavors.get(flavorInConnection.outFlavorUuid);
-				if (!outFlavor) throw `out flavor ${flavorUuid} not found`;
+				if (!outFlavor) throw `out flavor ${flavorInConnection.outFlavorUuid} not found`;
 				const usage = recipe.usages.get(usageUuid);
-				if (!usage) throw `out usage ${flavorUuid} not found`;
+				if (!usage) throw `usage ${usageUuid} not found`;
 
 				// if there is no out usage, this connection goes to a parentIngredient in(!) flavor
 				const outFlavorTrueDirection =
@@ -98,16 +120,22 @@ export function cook(
 
 			if (!payload) {
 				// fall back on param/default stored in fillings
-				payload = get(viewState.fillings.getFilling(flavorUuid, usageUuid).payload);
-				if (!payload)
-					throw `default/parameter payload for flavor ${flavorUuid} on usage ${usageUuid} not found`;
+				const parameter = currentParameters.find(
+					(parameter) => parameter.flavorUuid == flavor.uuid && parameter.usageUuid == usageUuid
+				);
+
+				payload = parameter?.payload || {
+					type: flavor.type,
+					value: valueDefaults[flavor.type]
+				};
 			}
 		}
 
 		if (!payload) throw `could not cook flavor ${flavorUuid}`;
 
-		knownPayloads.set(flavorUuid, usageUuid, payload);
-		viewState.fillings.setPayload(flavorUuid, usageUuid, payload);
+		knownPayloads.removeVisiting(flavorUuid, usageUuid, direction);
+		knownPayloads.setVisited(flavorUuid, usageUuid, direction, payload);
+		viewState.fillings.setPayload(flavorUuid, usageUuid, direction, payload);
 
 		return payload;
 	}
@@ -116,13 +144,8 @@ export function cook(
 		const inPayloads: { [prepFlavorName: string]: Payload<FlavorType> } = {};
 		// cook in side of preps (copy from parameters/input)
 		for (const [prepFlavorName, flavorUuid] of Object.entries(prep.inFlavorUuidMap)) {
-			const flavor = recipe.flavors.get(flavorUuid);
-
-			if (flavor?.directions.includes(Direction.In)) {
-				// why does this keep looping on connect
-				const payload = cookFlavor(flavorUuid, usageUuid, Direction.In);
-				inPayloads[prepFlavorName] = payload;
-			}
+			const payload = cookFlavor(flavorUuid, usageUuid, Direction.In);
+			inPayloads[prepFlavorName] = payload;
 		}
 
 		const outPayloads = prepPrimitives[prep.type].cook(scene, camera, inPayloads as InPayloads<P>);
@@ -133,8 +156,9 @@ export function cook(
 			if (typeof flavorUuid != 'string')
 				throw `${prepFlavorName} not found in prep ${prep.uuid} flavorUuidMap`;
 
-			knownPayloads.set(flavorUuid, usageUuid, payload);
-			viewState.fillings.setPayload(flavorUuid, usageUuid, payload);
+			knownPayloads.removeVisiting(flavorUuid, usageUuid, Direction.Out);
+			knownPayloads.setVisited(flavorUuid, usageUuid, Direction.Out, payload);
+			viewState.fillings.setPayload(flavorUuid, usageUuid, Direction.Out, payload);
 		}
 	}
 
@@ -151,19 +175,24 @@ export function cook(
 
 		for (const flavor of recipe.flavors.values()) {
 			if (flavor.ingredientUuid == usage.ingredientUuid) {
-				let payload = knownPayloads.get(flavor.uuid, usageUuid);
-				if (!payload) {
-					if (flavor.directions.includes(Direction.Out)) {
-						payload = cookFlavor(flavor.uuid, usageUuid, Direction.Out);
-					} else {
+				if (flavor.directions.includes(Direction.In)) {
+					let payload = knownPayloads.getVisited(flavor.uuid, usageUuid, Direction.In);
+
+					if (!payload) {
 						payload = cookFlavor(flavor.uuid, usageUuid, Direction.In);
+					}
+				}
+				if (flavor.directions.includes(Direction.Out)) {
+					let payload = knownPayloads.getVisited(flavor.uuid, usageUuid, Direction.Out);
+					if (!payload) {
+						payload = cookFlavor(flavor.uuid, usageUuid, Direction.Out);
 					}
 				}
 			}
 		}
 	}
 
-	// function works from perspective of main ingredient/usage
+	// // function works from perspective of main ingredient/usage
 	cookUsage(recipe.focusedUsageUuid);
 
 	for (const node of get(viewState.nodes)) {

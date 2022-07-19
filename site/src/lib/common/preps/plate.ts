@@ -1,5 +1,6 @@
 import type { PrepPrimitive } from '.';
 import { Direction, FlavorType, PrepType } from '@types';
+import * as THREE from 'three';
 
 export const PlateOperands = {
 	object: FlavorType.Object
@@ -18,8 +19,12 @@ export const PlatePrep: PrepPrimitive<PrepType.Plate> = {
 		const object = inPayloads['object'].value;
 
 		scene.add(object);
+
+		const value = new THREE.Scene();
+		value.add(object.clone());
+
 		return {
-			plate: { type: FlavorType.Object, value: scene }
+			plate: { type: FlavorType.Object, value }
 		};
 	}
 };

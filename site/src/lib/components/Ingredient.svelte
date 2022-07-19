@@ -4,7 +4,7 @@
 
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 
-	import type { CallFor, Flavor, Ingredient, Location } from '@types';
+	import { type CallFor, type Flavor, type Ingredient, type Location, Direction } from '@types';
 	import { viewStateContextKey } from '@view';
 	import { recipeStateContextKey } from '@recipe';
 	import type { RecipeState } from '@recipe';
@@ -77,7 +77,11 @@
 				{#if pane}
 					{#each flavors as flavor, index (flavor.uuid)}
 						<FlavorComponent
-							filling={viewState.fillings.getFilling(flavor.uuid, callFor.usageUuid)}
+							filling={viewState.fillings.getFilling(
+								flavor.uuid,
+								callFor.usageUuid,
+								flavor.directions.includes(Direction.Out) ? Direction.Out : Direction.In
+							)}
 							terminals={derived(terminals, (currentTerminals) =>
 								currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
 							)}

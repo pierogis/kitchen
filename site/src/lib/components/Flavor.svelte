@@ -87,69 +87,58 @@
 	}
 
 	let paramsStore: Readable<{ [key: string]: string | number | CanvasValue }>;
-	if (flavor.type == FlavorType.Geometry) {
+	if (
+		flavor.type == FlavorType.Geometry ||
+		flavor.type == FlavorType.Object ||
+		flavor.type == FlavorType.Texture ||
+		flavor.type == FlavorType.Material
+	) {
 		options = { ...options, view: 'canvas', interval: 32 };
 		const scene = new THREE.Scene();
-
 		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
 			scene.clear();
-			const geometry = $payload.value as THREE.BufferGeometry;
+			if (flavor.type == FlavorType.Geometry) {
+				const geometry = $payload.value as THREE.BufferGeometry;
 
-			if (geometry.isBufferGeometry) {
-				scene.add(new THREE.Mesh(geometry));
+				if (geometry.isBufferGeometry) {
+					scene.add(new THREE.Mesh(geometry));
+				} else {
+					throw 'payload value is not Geometry';
+				}
+				return { [flavor.name]: { scene, camera: $camera } };
+			} else if (flavor.type == FlavorType.Object) {
+				const object = $payload.value as THREE.Object3D;
+				if (object.isObject3D) {
+					scene.add(object);
+				} else {
+					throw 'payload value is not Object';
+				}
+				return { [flavor.name]: { scene, camera: $camera } };
+			} else if (flavor.type == FlavorType.Texture) {
+				const texture = $payload.value as THREE.Texture;
+				if (texture.isTexture) {
+					const plane = new THREE.PlaneBufferGeometry();
+					const material = new THREE.MeshBasicMaterial({ map: texture });
+
+					scene.add(new THREE.Mesh(plane, material));
+				} else {
+					throw 'payload value is not Texture';
+				}
+				return { [flavor.name]: { scene, camera: $camera } };
+			} else if (flavor.type == FlavorType.Material) {
+				const material = $payload.value as THREE.Material;
+				if (material.isMaterial) {
+					const plane = new THREE.PlaneBufferGeometry(2, 2);
+					const mesh = new THREE.Mesh(plane, material);
+
+					scene.add(mesh);
+				} else {
+					throw 'payload value is not Material';
+				}
+				return { [flavor.name]: { scene, camera: $camera } };
 			} else {
-				throw 'payload value is not Geometry';
+				throw 'not canvas type flavor';
 			}
-			return { [flavor.name]: { scene, camera: $camera } };
-		});
-	} else if (flavor.type == FlavorType.Object) {
-		options = { ...options, view: 'canvas', interval: 32 };
-		const scene = new THREE.Scene();
-
-		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
-			scene.clear();
-
-			const object = $payload.value as THREE.Object3D;
-			if (object.isObject3D) {
-				scene.add(object);
-			} else {
-				throw 'payload value is not Object';
-			}
-			return { [flavor.name]: { scene, camera: $camera } };
-		});
-	} else if (flavor.type == FlavorType.Texture) {
-		options = { ...options, view: 'canvas', interval: 32 };
-		const scene = new THREE.Scene();
-
-		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
-			scene.clear();
-			const texture = $payload.value as THREE.Texture;
-			if (texture.isTexture) {
-				const plane = new THREE.PlaneBufferGeometry();
-				const material = new THREE.MeshBasicMaterial({ map: texture });
-
-				scene.add(new THREE.Mesh(plane, material));
-			} else {
-				throw 'payload value is not Texture';
-			}
-			return { [flavor.name]: { scene, camera: $camera } };
-		});
-	} else if (flavor.type == FlavorType.Material) {
-		options = { ...options, view: 'canvas', interval: 32 };
-		const scene = new THREE.Scene();
-
-		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
-			scene.clear();
-			const material = $payload.value as THREE.Material;
-			if (material.isMaterial) {
-				const plane = new THREE.PlaneBufferGeometry(2, 2);
-				const mesh = new THREE.Mesh(plane, material);
-
-				scene.add(mesh);
-			} else {
-				throw 'payload value is not Material';
-			}
-			return { [flavor.name]: { scene, camera: $camera } };
 		});
 	} else {
 		paramsStore = derived(filling.payload, ($payload) => {

@@ -42,7 +42,13 @@
 					<FlavorComponent
 						{index}
 						{flavor}
-						filling={viewState.fillings.getFilling(flavor.uuid, focusedUsageUuid)}
+						filling={viewState.fillings.getFilling(
+							flavor.uuid,
+							focusedUsageUuid,
+							flavor.prepUuid && flavor.directions.includes(Direction.Out)
+								? Direction.Out
+								: Direction.In
+						)}
 						terminals={derived(viewState.terminals, (currentTerminals) =>
 							currentTerminals.filter(
 								(terminal) => terminal.flavorUuid == flavor.uuid && terminal.direction != direction
