@@ -44,13 +44,20 @@
 
 <Dock
 	direction={Direction.In}
-	preps={[]}
+	preps={$preps.filter((prep) => prep.direction == Direction.In)}
 	flavors={$dockedFlavors.filter(
 		(flavor) => flavor.directions.includes(Direction.Out) && !flavor.prepUuid
 	)}
 	focusedUsageUuid={$focusedUsageUuid}
 />
-<Dock direction={Direction.Out} flavors={[]} preps={$preps} focusedUsageUuid={$focusedUsageUuid} />
+<Dock
+	direction={Direction.Out}
+	flavors={$dockedFlavors.filter(
+		(flavor) => flavor.directions.includes(Direction.In) && !flavor.prepUuid
+	)}
+	preps={$preps.filter((prep) => prep.direction == Direction.Out)}
+	focusedUsageUuid={$focusedUsageUuid}
+/>
 
 <style>
 	svg {

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { derived } from 'svelte/store';
 
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 
@@ -46,19 +45,18 @@
 	const nodeHeaderSize = 12;
 	const nodeWidth = 240;
 
-	const terminals = derived(viewState.terminals, ($terminals) => {
-		const flavorUuids = flavors.map((flavor) => flavor.uuid);
-		return $terminals.filter(
-			(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
-		);
-	});
+	$: flavorUuids = flavors.map((flavor) => flavor.uuid);
+
+	$: allTerminals = viewState.terminals;
+
+	$: terminals = $allTerminals.filter(
+		(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
+	);
 
 	let paneContainer: HTMLElement;
 	function handlePaneContainer(ev: CustomEvent<HTMLElement>) {
 		paneContainer = ev.detail;
 	}
-
-	$: flavorUuids = flavors.map((flavor) => flavor.uuid);
 </script>
 
 <div
@@ -82,11 +80,10 @@
 		</div>
 	{/if}
 	<PaneContainer
-		fillings={viewState.fillings}
 		usageUuid={callFor.usageUuid}
 		name={ingredient.name}
 		{flavors}
-		terminals={$terminals.filter(
+		terminals={terminals.filter(
 			(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
 		)}
 		on:paneContainer={handlePaneContainer}
