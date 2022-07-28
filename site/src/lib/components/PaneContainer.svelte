@@ -50,7 +50,9 @@
 						filling={fillings.getFilling(
 							flavor.uuid,
 							usageUuid,
-							flavor.prepUuid && flavor.directions.includes(Direction.Out)
+							direction && !flavor.prepUuid
+								? direction
+								: flavor.directions.includes(Direction.Out)
 								? Direction.Out
 								: Direction.In
 						)}
@@ -65,14 +67,14 @@
 		</Pane>
 		{#if folded}
 			<!-- need terminals if hidden -->
-			{#if inTerminals.length > 0}
+			{#if inTerminals.length > 0 && direction != Direction.In}
 				<TerminalRack
 					parentElement={paneContainer}
 					terminals={inTerminals}
 					direction={Direction.In}
 				/>
 			{/if}
-			{#if outTerminals.length > 0}
+			{#if outTerminals.length > 0 && direction != Direction.Out}
 				<TerminalRack
 					parentElement={paneContainer}
 					terminals={outTerminals}
@@ -87,5 +89,17 @@
 	.pane-container {
 		display: flex;
 		align-items: center;
+	}
+
+	:global(.pane-container > div) {
+		transition: margin-left 0.5s, margin-right 0.5s;
+	}
+
+	:global(.pane-container.expanded.in > div) {
+		margin-left: 8px;
+	}
+
+	:global(.pane-container.expanded.out > div) {
+		margin-right: 8px;
 	}
 </style>

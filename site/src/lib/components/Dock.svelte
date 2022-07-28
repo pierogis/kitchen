@@ -67,27 +67,17 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-
-		align-items: center;
 	}
 	.in {
 		left: 0%;
 		justify-content: left;
+
+		align-items: start;
 	}
 	.out {
 		right: 0%;
 		justify-content: right;
-	}
 
-	:global(.pane-container > div) {
-		transition: margin-left 0.5s, margin-right 0.5s;
-	}
-
-	:global(.pane-container.expanded.in > div) {
-		margin-left: 8px;
-	}
-
-	:global(.pane-container.expanded.out > div) {
-		margin-right: 8px;
+		align-items: end;
 	}
 </style>
