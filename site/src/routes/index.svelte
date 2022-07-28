@@ -16,16 +16,17 @@
 </script>
 
 <script lang="ts">
-	import { setContext } from 'svelte';
+	import { onMount, setContext } from 'svelte';
+	import { derived } from 'svelte/store';
 
 	import type { FullRecipe } from '@types';
 	import { readableViewState } from '@view';
 
 	import Pan from '@components/Pan.svelte';
 	import Recipe from '@components/Recipe.svelte';
+	import { ActionType } from '$lib/state/actions';
 
-	let innerWidth = 0,
-		innerHeight = 0;
+	let innerWidth: number, innerHeight: number;
 
 	export let recipe: FullRecipe;
 
@@ -36,8 +37,34 @@
 	setContext(viewStateContextKey, viewState);
 
 	const handleMouseMove = (ev: MouseEvent) => {
-		viewState.cursorCoordinates.set({ x: ev.clientX, y: ev.clientY });
+		viewState.cursor.coordinates.set({ x: ev.clientX, y: ev.clientY });
 	};
+
+	const parentUsageUuid = derived(
+		viewState.parentUsageUuid,
+		($parentUsageUuid) => $parentUsageUuid
+	);
+	function handleUnfocusClick(ev: MouseEvent) {
+		if (ev.button == 0 && $parentUsageUuid) {
+			recipeState.dispatch({
+				type: ActionType.FocusUsage,
+				params: { usageUuid: $parentUsageUuid }
+			});
+		}
+	}
+
+	function handleResize() {
+		viewState.windowSize.set({ width: innerWidth, height: innerHeight });
+	}
+
+	onMount(() => {
+		window.addEventListener('resize', handleResize);
+		handleResize();
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	});
 </script>
 
 <svelte:window
@@ -51,19 +78,25 @@
 	<title>kitchen</title>
 </svelte:head>
 
+{#if $parentUsageUuid}
+	<button on:click={handleUnfocusClick} />
+{/if}
+
 <Recipe
 	focusedUsageUuid={recipeState.focusedUsageUuid}
 	dockedFlavors={viewState.dockedFlavors}
+	preps={viewState.preps}
 	nodes={viewState.nodes}
 	cables={viewState.cables}
-	terminalsCoordinates={viewState.terminalsCoordinates}
 	liveTerminal={viewState.liveTerminal}
-/>
-
-<Pan
 	width={innerWidth}
 	height={innerHeight}
-	{recipeState}
-	{viewState}
-	cursorCoordinates={viewState.cursorCoordinates}
 />
+
+<Pan width={innerWidth} height={innerHeight} {recipeState} {viewState} />
+
+<style>
+	button {
+		position: fixed;
+	}
+</style>

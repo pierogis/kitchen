@@ -1,4 +1,4 @@
-<div style:overflow-y="hidden">
+<div>
 	<slot />
 </div>
 
@@ -21,7 +21,8 @@
 
 		--tp-monitor-foreground-color: hsla(80, 10%, 80%, 1);
 
-		--remove-color: hsla(0, 80%, 70%, 0.8);
+		--focus-color: hsla(220, 70%, 70%, 0.8);
+		--remove-color: hsla(0, 70%, 70%, 0.8);
 		--cable-color-number: rgba(120, 150, 190, 1);
 	}
 	body {

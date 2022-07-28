@@ -1,23 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { Readable } from 'svelte/store';
 
 	import type { FolderApi, MonitorParams } from 'tweakpane';
 	import type { MonitorBindingApi } from '@tweakpane/core';
-	import type { Readable } from 'svelte/store';
+
+	import type { CanvasValue } from '$lib/common/plugins/canvas/view';
 
 	export let folder: FolderApi;
-	export let paramsStore: Readable<{ [key: string]: string | number }>;
+	export let paramsStore: Readable<{ [key: string]: string | number | CanvasValue }>;
 	export let key: string;
-	export let options: MonitorParams | undefined = undefined;
+	export let monitorParams: MonitorParams | undefined = undefined;
 	export let index: number | undefined = undefined;
+	export let interval: number | undefined = undefined;
 
 	let monitorElement: HTMLElement;
 
 	onMount(() => {
-		let monitorApi: MonitorBindingApi<string | number>;
+		let monitorApi: MonitorBindingApi<string | number | CanvasValue>;
 
 		let params = $paramsStore;
-		monitorApi = folder.addMonitor(params, key, { ...options, index });
+		monitorApi = folder.addMonitor(params, key, { ...monitorParams, index, interval });
 
 		// const element = monitorApi.controller_.valueController.view.element.parentElement;
 		const element = monitorApi.element;

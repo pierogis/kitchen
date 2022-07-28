@@ -1,62 +1,57 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { derived } from 'svelte/store';
 
-	import { Direction, type Flavor } from '@types';
-	import { checkNearAction } from '$lib/common/actions/checkNear';
+	import { Direction, PrepType, type Flavor, type FullPrep } from '@types';
 
 	import { viewStateContextKey, type ViewState } from '@view';
 
-	import FlavorComponent from '@components/Flavor.svelte';
-	import Pane from '@components/tweakpane/Pane.svelte';
+	import PaneContainer from './PaneContainer.svelte';
 
 	export let focusedUsageUuid: string;
 	export let direction: Direction;
+	export let preps: FullPrep<PrepType>[];
 	export let flavors: Flavor[];
-	let expanded = false;
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 
-	let paneContainer: HTMLElement;
+	const terminals = viewState.terminals;
+
+	$: flavorUuids = flavors.map((flavor) => flavor.uuid);
+
+	$: flavorTerminals = $terminals.filter(
+		(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
+	);
+
+	$: prepTerminals = new Map(
+		preps.map((prep) => {
+			const flavorUuids = prep.flavors.map((flavor) => flavor.uuid);
+			return [
+				prep.uuid,
+				$terminals.filter(
+					(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
+				)
+			];
+		})
+	);
 </script>
 
-<div
-	class="dock"
-	class:in={direction == Direction.In}
-	class:out={direction == Direction.Out}
-	use:checkNearAction={64}
-	on:near={(event) => {
-		expanded = event.detail;
-	}}
->
-	<div
-		bind:this={paneContainer}
-		class:expanded
-		class:in={direction == Direction.In}
-		class:out={direction == Direction.Out}
-		class="pane-container no-select"
-	>
-		{#if paneContainer}
-			<Pane container={paneContainer} let:pane>
-				{#each flavors as flavor, index (flavor.uuid)}
-					<FlavorComponent
-						{index}
-						{flavor}
-						payload={viewState.payloads.getPayload(flavor.uuid, focusedUsageUuid, direction)}
-						terminals={derived(viewState.terminals, (currentTerminals) =>
-							currentTerminals.filter(
-								(terminal) =>
-									terminal.flavorUuid == flavor.uuid &&
-									terminal.direction == (direction == Direction.In ? Direction.Out : Direction.In)
-							)
-						)}
-						usageUuid={focusedUsageUuid}
-						folder={pane}
-					/>
-				{/each}
-			</Pane>
-		{/if}
-	</div>
+<div class="dock" class:in={direction == Direction.In} class:out={direction == Direction.Out}>
+	{#each preps as prep (prep.uuid)}
+		<PaneContainer
+			{direction}
+			usageUuid={focusedUsageUuid}
+			name={prep.name}
+			flavors={prep.flavors}
+			terminals={prepTerminals.get(prep.uuid) || []}
+		/>
+	{/each}
+	<PaneContainer
+		{direction}
+		usageUuid={focusedUsageUuid}
+		name={'flavors'}
+		{flavors}
+		terminals={flavorTerminals}
+	/>
 </div>
 
 <style>
@@ -70,34 +65,19 @@
 		border-radius: 4px;
 
 		display: flex;
-		align-items: center;
+		flex-direction: column;
+		gap: 10px;
 	}
 	.in {
 		left: 0%;
 		justify-content: left;
+
+		align-items: start;
 	}
 	.out {
 		right: 0%;
 		justify-content: right;
-	}
 
-	:global(.pane-container > div) {
-		transition: margin-left 0.5s, margin-right 0.5s;
-	}
-
-	:global(.pane-container.in > div) {
-		margin-left: 8px;
-	}
-
-	:global(.pane-container.out > div) {
-		margin-right: 8px;
-	}
-
-	:global(.pane-container.expanded.in > div) {
-		margin-left: 8px;
-	}
-
-	:global(.pane-container.expanded.out > div) {
-		margin-right: 8px;
+		align-items: end;
 	}
 </style>

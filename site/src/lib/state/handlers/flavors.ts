@@ -1,39 +1,36 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
+import { createEntities, deleteEntities } from './common';
 
-const createFlavor: ActionHandler<ActionType.CreateFlavor, ActionType.DeleteFlavor> = (
-	state,
+const createFlavors: ActionHandler<ActionType.CreateFlavors, ActionType.DeleteFlavors> = (
+	stores,
 	params
 ) => {
-	state.flavors.set(params.flavor.uuid, params.flavor);
+	const flavors = createEntities(stores.flavors, params.flavors);
 
 	return {
-		state,
-		undoAction: {
-			type: ActionType.DeleteFlavor,
-			params: {
-				uuid: params.flavor.uuid
-			}
+		type: ActionType.DeleteFlavors,
+		params: {
+			flavors
 		}
 	};
 };
 
-const deleteFlavor: ActionHandler<ActionType.DeleteFlavor, ActionType.CreateFlavor> = (
-	state,
+const deleteFlavors: ActionHandler<ActionType.DeleteFlavors, ActionType.CreateFlavors> = (
+	stores,
 	params
 ) => {
-	// delete flavors
-	const flavor = state.flavors.get(params.uuid);
-	if (!flavor) throw `Flavor ${params.uuid} does not exist`;
-	state.flavors.delete(params.uuid);
+	deleteEntities(stores.flavors, params.flavors);
 
 	return {
-		state,
-		undoAction: { type: ActionType.CreateFlavor, params: { flavor } }
+		type: ActionType.CreateFlavors,
+		params: {
+			flavors: params.flavors
+		}
 	};
 };
 
 export function registerFlavorHandlers(recipeState: RecipeState) {
-	recipeState.register(ActionType.CreateFlavor, createFlavor);
-	recipeState.register(ActionType.DeleteFlavor, deleteFlavor);
+	recipeState.register(ActionType.CreateFlavors, createFlavors);
+	recipeState.register(ActionType.DeleteFlavors, deleteFlavors);
 }

@@ -3,8 +3,10 @@ import type { Writable } from 'svelte/store';
 import type { ActionType, Action, ActionHandler } from '@state/actions';
 import type { FlatRecipe } from '@recipe';
 
-export function dispatcher(recipeState: Writable<FlatRecipe>) {
-	let undoActions: Action<ActionType>[][] = [];
+export function dispatcher(stores: {
+	[key in keyof FlatRecipe]: Writable<FlatRecipe[key]>;
+}) {
+	const undoActions: Action<ActionType>[][] = [];
 	let redoActions: Action<ActionType>[][] = [];
 
 	let lastId = 1;
@@ -18,23 +20,15 @@ export function dispatcher(recipeState: Writable<FlatRecipe>) {
 	function handleActions<T extends ActionType>(actions: Action<T>[]): Action<ActionType>[] {
 		const newUndoActions: Action<ActionType>[] = [];
 
-		recipeState.update((currentState) => {
-			for (const action of actions) {
-				for (const id in handlers) {
-					if (handlers[id].type == action.type) {
-						const { state: updatedState, undoAction } = handlers[id].handler(
-							currentState,
-							action.params
-						);
+		for (const action of actions) {
+			for (const id in handlers) {
+				if (handlers[id].type == action.type) {
+					const undoAction = handlers[id].handler(stores, action.params);
 
-						currentState = updatedState;
-						newUndoActions.push(undoAction);
-					}
+					newUndoActions.push(undoAction);
 				}
 			}
-
-			return currentState;
-		});
+		}
 
 		return newUndoActions;
 	}

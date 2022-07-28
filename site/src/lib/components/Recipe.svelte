@@ -1,12 +1,9 @@
 <script lang="ts">
 	import type { Readable } from 'svelte/store';
 
-	import { Direction, type Flavor } from '@types';
+	import { Direction, type Flavor, type FullPrep, type PrepType } from '@types';
 
 	import type { Terminal, Node, Cable } from '@view';
-	import type { TerminalsCoordinatesState } from '@view/terminals';
-
-	import {} from '$lib/flavors/plugins';
 
 	import IngredientComponent from '@components/Ingredient.svelte';
 	import Dock from '@components/Dock.svelte';
@@ -15,10 +12,15 @@
 
 	export let focusedUsageUuid: Readable<string>;
 	export let dockedFlavors: Readable<Flavor[]>;
+	export let preps: Readable<FullPrep<PrepType>[]>;
 	export let nodes: Readable<Node[]>;
 	export let cables: Readable<Cable[]>;
-	export let terminalsCoordinates: TerminalsCoordinatesState;
 	export let liveTerminal: Readable<Terminal | undefined>;
+
+	export let width: number;
+	export let height: number;
+
+	const pathStrokeWidth = 2;
 </script>
 
 {#each $nodes as node (node.callFor.uuid)}
@@ -34,20 +36,31 @@
 	<LiveTerminal terminal={$liveTerminal} />
 {/if}
 
-{#each $cables as cable (cable.connectionUuid)}
-	<CableComponent
-		outCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.Out)}
-		inCoordinates={terminalsCoordinates.getCoordinates(cable.connectionUuid, Direction.In)}
-	/>
-{/each}
+<svg style:--path-stroke-width="{pathStrokeWidth}px" {width} {height}>
+	{#each $cables as cable (cable.connectionUuid)}
+		<CableComponent {cable} />
+	{/each}
+</svg>
 
 <Dock
 	direction={Direction.In}
-	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.Out))}
+	preps={$preps.filter((prep) => prep.direction == Direction.In)}
+	flavors={$dockedFlavors.filter(
+		(flavor) => flavor.directions.includes(Direction.Out) && !flavor.prepUuid
+	)}
 	focusedUsageUuid={$focusedUsageUuid}
 />
 <Dock
 	direction={Direction.Out}
-	flavors={$dockedFlavors.filter((flavor) => flavor.directions.includes(Direction.In))}
+	preps={$preps.filter((prep) => prep.direction == Direction.Out)}
+	flavors={$dockedFlavors.filter(
+		(flavor) => flavor.directions.includes(Direction.In) && !flavor.prepUuid
+	)}
 	focusedUsageUuid={$focusedUsageUuid}
 />
+
+<style>
+	svg {
+		display: block;
+	}
+</style>

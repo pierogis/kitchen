@@ -1,18 +1,16 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { derived } from 'svelte/store';
 
-	import { Direction, type CallFor, type Flavor, type Ingredient, type Location } from '@types';
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 
+	import type { CallFor, Flavor, Ingredient, Location } from '@types';
 	import { viewStateContextKey } from '@view';
 	import { recipeStateContextKey } from '@recipe';
 	import type { RecipeState } from '@recipe';
 	import type { ViewState } from '@view';
-	import { dispatchDeleteCallForActions } from '@state/batch/callFor';
+	import { ActionType, type Action } from '@state/actions';
 
-	import Pane from '@components/tweakpane/Pane.svelte';
-	import FlavorComponent from '@components/Flavor.svelte';
+	import PaneContainer from './PaneContainer.svelte';
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 	const viewState: ViewState = getContext(viewStateContextKey);
@@ -25,16 +23,40 @@
 	let grabTarget: HTMLElement;
 	let dragging = false;
 
+	// focus node on focus button
+	function handleFocus(_event: MouseEvent) {
+		const focusUsageAction: Action<ActionType.FocusUsage> = {
+			type: ActionType.FocusUsage,
+			params: { usageUuid: callFor.usageUuid }
+		};
+
+		recipeState.dispatch(focusUsageAction);
+	}
+
 	// delete node on close button
 	function handleRemove(_event: MouseEvent) {
-		dispatchDeleteCallForActions(recipeState, callFor);
+		const callForAction: Action<ActionType.DeleteCallsFor> = {
+			type: ActionType.DeleteCallsFor,
+			params: { callsFor: [callFor] }
+		};
+		recipeState.dispatch(callForAction);
 	}
 
 	const nodeHeaderSize = 12;
 	const nodeWidth = 240;
 
-	$: terminals = viewState.terminals;
+	$: flavorUuids = flavors.map((flavor) => flavor.uuid);
+
+	$: allTerminals = viewState.terminals;
+
+	$: terminals = $allTerminals.filter(
+		(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
+	);
+
 	let paneContainer: HTMLElement;
+	function handlePaneContainer(ev: CustomEvent<HTMLElement>) {
+		paneContainer = ev.detail;
+	}
 </script>
 
 <div
@@ -47,38 +69,25 @@
 >
 	{#if paneContainer}
 		<div class="header">
-			<div class="grab" bind:this={grabTarget} class:dragging>
+			<div class="focus no-select" on:mousedown|stopPropagation={handleFocus} />
+
+			<div class="grab no-select" bind:this={grabTarget} class:dragging>
 				<div class="grab-dot" />
 				<div class="grab-dot" />
 			</div>
 
-			<div class="remove" on:click={handleRemove} />
+			<div class="remove no-select" on:mousedown|stopPropagation={handleRemove} />
 		</div>
 	{/if}
-	<div bind:this={paneContainer} class="no-select">
-		{#if paneContainer}
-			<Pane let:pane container={paneContainer} title={ingredient.name}>
-				{#if pane}
-					{#each flavors as flavor, index (flavor.uuid)}
-						<FlavorComponent
-							payload={viewState.payloads.getPayload(
-								flavor.uuid,
-								callFor.usageUuid,
-								flavor.directions.includes(Direction.Out) ? Direction.Out : Direction.In
-							)}
-							terminals={derived(terminals, (currentTerminals) =>
-								currentTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)
-							)}
-							{index}
-							{flavor}
-							usageUuid={callFor.usageUuid}
-							folder={pane}
-						/>
-					{/each}
-				{/if}
-			</Pane>
-		{/if}
-	</div>
+	<PaneContainer
+		usageUuid={callFor.usageUuid}
+		name={ingredient.name}
+		{flavors}
+		terminals={terminals.filter(
+			(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
+		)}
+		on:paneContainer={handlePaneContainer}
+	/>
 </div>
 
 <style>
@@ -86,6 +95,8 @@
 		position: absolute;
 		z-index: 1;
 		display: block;
+
+		transform: translate(-50%, 0);
 	}
 	.header {
 		display: flex;
@@ -98,17 +109,12 @@
 
 		box-shadow: 0 2px 4px var(--shadow-color);
 
-		border-radius: 6px 0px 0px 6px;
-
 		flex: 1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 
 		cursor: grab;
-	}
-	.grab:hover {
-		filter: brightness(90%) saturate(150%);
 	}
 
 	.grab-dot {
@@ -119,18 +125,32 @@
 		margin: 2px;
 	}
 
+	.focus,
+	.remove {
+		box-shadow: 0 2px 4px var(--primary-color-shadow);
+		width: var(--node-header-size);
+		cursor: pointer;
+	}
+
+	.remove:hover,
+	.focus:hover,
+	.grab:hover {
+		filter: brightness(90%) saturate(150%);
+	}
+
+	.focus {
+		background-color: var(--focus-color);
+
+		border-radius: 6px 0px 0px 6px;
+
+		margin-right: 5px;
+	}
+
 	.remove {
 		background-color: var(--remove-color);
-		box-shadow: 0 2px 4px var(--primary-color-shadow);
 
 		border-radius: 0px 6px 6px 0px;
 
-		width: var(--node-header-size);
 		margin-left: 5px;
-	}
-
-	.remove:hover {
-		filter: brightness(90%) saturate(150%);
-		cursor: pointer;
 	}
 </style>

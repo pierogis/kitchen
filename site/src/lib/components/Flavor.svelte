@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
-	import { derived, get, type Readable, type Writable } from 'svelte/store';
+	import { getContext, SvelteComponent } from 'svelte';
+	import { derived, get, type Readable } from 'svelte/store';
 
 	import { v4 as uuid } from 'uuid';
 
-	import type { FolderApi, InputParams, TpChangeEvent } from 'tweakpane';
+	import type { FolderApi, InputParams, MonitorParams, TpChangeEvent } from 'tweakpane';
 
-	import { type Payload, type Flavor, FlavorType, Direction } from '@types';
+	import { type Flavor, FlavorType, Direction } from '@types';
 
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
 	import type { Terminal } from '@view';
@@ -15,89 +15,154 @@
 	import Monitor from '@components/tweakpane/Monitor.svelte';
 	import Input from '@components/tweakpane/Input.svelte';
 	import TerminalRack from '@components/TerminalRack.svelte';
+	import type { Filling } from '@view/fillings';
+
+	import Color from './flavors/Color.svelte';
+	import Geometry from './flavors/Geometry.svelte';
+	import Image from './flavors/Image.svelte';
+	import Material from './flavors/Material.svelte';
+	import Number from './flavors/Number.svelte';
+	import Object from './flavors/Object.svelte';
+	import Shader from './flavors/Shader.svelte';
+	import Text from './flavors/Text.svelte';
+	import Texture from './flavors/Texture.svelte';
 
 	export let index: number;
 	export let flavor: Flavor;
-	export let terminals: Readable<Terminal[]>;
+	export let terminals: Terminal[];
 	export let usageUuid: string;
 
-	$: inTerminals = $terminals.filter((terminal) => terminal.direction == Direction.In);
-	$: outTerminals = $terminals.filter((terminal) => terminal.direction == Direction.Out);
+	$: inTerminals = terminals.filter((terminal) => terminal.direction == Direction.In);
+	$: outTerminals = terminals.filter((terminal) => terminal.direction == Direction.Out);
 
-	export let payload: Writable<Payload<FlavorType>> & { monitor: boolean; parameterUuid?: string };
+	export let filling: Filling;
 	export let folder: FolderApi;
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 
-	let onChange: (ev: TpChangeEvent<any>) => void;
-	if (!payload.monitor) {
-		onChange = (ev: TpChangeEvent<any>) => {
-			if (!payload.parameterUuid) {
-				const createParameterAction: Action<ActionType.CreateParameter> = {
-					type: ActionType.CreateParameter,
-					params: {
-						parameter: {
-							uuid: uuid(),
-							payload: {
-								type: flavor.type,
-								params: ev.value
-							},
-							recipeUuid: get(recipeState.recipeUuid),
-							flavorUuid: flavor.uuid,
-							usageUuid: usageUuid
+	let onChange: Readable<(ev: TpChangeEvent<any>) => void> = derived(
+		[filling.monitorStatus],
+		([$monitorStatus]) => {
+			return (ev: TpChangeEvent<any>) => {
+				if (!$monitorStatus.parameterUuid) {
+					const createParameterAction: Action<ActionType.CreateParameters> = {
+						type: ActionType.CreateParameters,
+						params: {
+							parameters: [
+								{
+									uuid: uuid(),
+									payload: {
+										type: flavor.type,
+										value: ev.value
+									},
+									recipeUuid: get(recipeState.recipeUuid),
+									flavorUuid: flavor.uuid,
+									usageUuid: usageUuid
+								}
+							]
 						}
-					}
-				};
-				recipeState.dispatch(createParameterAction);
-			} else {
-				const parameter = get(recipeState.parameters).get(payload.parameterUuid);
+					};
+					recipeState.dispatch(createParameterAction);
+				} else {
+					const parameter = get(recipeState.parameters).get($monitorStatus.parameterUuid);
 
-				if (!parameter) throw `parameter ${payload.parameterUuid} not found`;
-				const updateParameterAction: Action<ActionType.UpdateParameter> = {
-					type: ActionType.UpdateParameter,
-					params: {
-						parameter: {
-							...parameter,
-							payload: {
-								type: get(payload).type,
-								params: ev.value
-							}
+					if (!parameter) throw `parameter ${$monitorStatus.parameterUuid} not found`;
+					const updateParameterAction: Action<ActionType.UpdateParameters> = {
+						type: ActionType.UpdateParameters,
+						params: {
+							parameters: [
+								{
+									...parameter,
+									payload: {
+										type: get(filling.payload).type,
+										value: ev.value
+									}
+								}
+							]
 						}
-					}
-				};
-				recipeState.dispatch(updateParameterAction);
-			}
-		};
-	}
+					};
+					recipeState.dispatch(updateParameterAction);
+				}
+			};
+		}
+	);
 
-	let options: InputParams = {};
+	let options: InputParams | MonitorParams = flavor.options || {};
 
-	if (flavor.type == FlavorType.Color) {
-		options = { ...options, view: 'color', color: { alpha: true } };
-	}
-	const paramsStore = derived(payload, ($payload) => {
-		return { [flavor.name]: $payload.params };
+	const monitor = derived(filling.monitorStatus, ($monitorStatus) => {
+		return $monitorStatus.monitor;
 	});
+
+	const map: {
+		[type in FlavorType]: typeof SvelteComponent;
+	} = {
+		[FlavorType.Color]: Color,
+		[FlavorType.Geometry]: Geometry,
+		[FlavorType.Image]: Image,
+		[FlavorType.Material]: Material,
+		[FlavorType.Number]: Number,
+		[FlavorType.Object]: Object,
+		[FlavorType.Shader]: Shader,
+		[FlavorType.Text]: Text,
+		[FlavorType.Texture]: Texture
+	};
 </script>
 
-{#if payload.monitor}
-	<Monitor {index} {folder} {paramsStore} key={flavor.name} let:monitorElement>
-		{#each flavor.directions as direction (direction)}
-			<TerminalRack
-				parentElement={monitorElement}
-				terminals={direction == Direction.In ? inTerminals : outTerminals}
-				{direction}
-			/>
-		{/each}
-	</Monitor>
-{:else}
-	<Input {index} {folder} {paramsStore} {options} {onChange} key={flavor.name} let:inputElement>
-		{#each flavor.directions as direction (direction)}
-			<TerminalRack
-				parentElement={inputElement}
-				terminals={direction == Direction.In ? inTerminals : outTerminals}
-				{direction}
-			/>
-		{/each}
-	</Input>
-{/if}
+<svelte:component
+	this={map[flavor.type]}
+	{filling}
+	{options}
+	name={flavor.name}
+	let:paramsStore
+	let:optParams
+>
+	{#if $monitor}
+		<Monitor
+			{index}
+			{folder}
+			{paramsStore}
+			monitorParams={optParams}
+			key={flavor.name}
+			interval={32}
+			let:monitorElement
+		>
+			{#if monitorElement}
+				{#if inTerminals.length > 0}
+					<TerminalRack
+						parentElement={monitorElement}
+						terminals={inTerminals}
+						direction={Direction.In}
+					/>
+				{/if}
+
+				{#if outTerminals.length > 0}
+					<TerminalRack
+						parentElement={monitorElement}
+						terminals={outTerminals}
+						direction={Direction.Out}
+					/>
+				{/if}
+			{/if}
+		</Monitor>
+	{:else}
+		<Input
+			{index}
+			{folder}
+			{paramsStore}
+			inputParams={optParams}
+			onChange={(ev) => $onChange(ev)}
+			key={flavor.name}
+			let:inputElement
+		>
+			{#if inputElement}
+				{#each flavor.directions as direction (direction)}
+					<TerminalRack
+						parentElement={inputElement}
+						terminals={direction == Direction.In ? inTerminals : outTerminals}
+						{direction}
+					/>
+				{/each}
+			{/if}
+		</Input>
+	{/if}
+</svelte:component>

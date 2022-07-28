@@ -1,42 +1,54 @@
-import type { CallFor, Connection, Flavor, Ingredient, Location, Parameter, Usage } from '@types';
+import type {
+	CallFor,
+	Connection,
+	Flavor,
+	FlavorType,
+	Ingredient,
+	Location,
+	Parameter,
+	Usage
+} from '@types';
 import type { FlatRecipe } from '@recipe';
+import type { Writable } from 'svelte/store';
 
 export enum ActionType {
-	CreateIngredient,
-	DeleteIngredient,
-	CreateFlavor,
-	DeleteFlavor,
-	CreateUsage,
-	DeleteUsage,
-	CreateCallFor,
-	DeleteCallFor,
-	CreateLocation,
-	DeleteLocation,
-	CreateConnection,
-	UpdateConnection,
-	DeleteConnection,
-	CreateParameter,
-	UpdateParameter,
-	DeleteParameter
+	CreateIngredients,
+	DeleteIngredients,
+	CreateFlavors,
+	DeleteFlavors,
+	CreateUsages,
+	DeleteUsages,
+	CreateCallsFor,
+	DeleteCallsFor,
+	CreateLocations,
+	DeleteLocations,
+	CreateConnections,
+	UpdateConnections,
+	DeleteConnections,
+	CreateParameters,
+	UpdateParameters,
+	DeleteParameters,
+	FocusUsage
 }
 
 type ActionParamsMapper = {
-	[ActionType.CreateIngredient]: { ingredient: Ingredient };
-	[ActionType.DeleteIngredient]: { uuid: string };
-	[ActionType.CreateFlavor]: { flavor: Flavor };
-	[ActionType.DeleteFlavor]: { uuid: string };
-	[ActionType.CreateUsage]: { usage: Usage };
-	[ActionType.DeleteUsage]: { uuid: string };
-	[ActionType.CreateCallFor]: { callFor: CallFor };
-	[ActionType.DeleteCallFor]: { uuid: string };
-	[ActionType.CreateLocation]: { location: Location };
-	[ActionType.DeleteLocation]: { uuid: string };
-	[ActionType.CreateConnection]: { connection: Connection };
-	[ActionType.UpdateConnection]: { connection: Connection };
-	[ActionType.DeleteConnection]: { uuid: string };
-	[ActionType.CreateParameter]: { parameter: Parameter };
-	[ActionType.UpdateParameter]: { parameter: Parameter };
-	[ActionType.DeleteParameter]: { uuid: string };
+	[ActionType.CreateIngredients]: { ingredients: Ingredient[] };
+	[ActionType.DeleteIngredients]: { ingredients: Ingredient[] };
+	[ActionType.CreateFlavors]: { flavors: Flavor[] };
+	[ActionType.DeleteFlavors]: { flavors: Flavor[] };
+	[ActionType.CreateUsages]: { usages: Usage[] };
+	[ActionType.DeleteUsages]: { usages: Usage[] };
+	[ActionType.CreateCallsFor]: { callsFor: CallFor[] };
+	[ActionType.DeleteCallsFor]: { callsFor: CallFor[] };
+	[ActionType.CreateLocations]: { locations: Location[] };
+	[ActionType.DeleteLocations]: { locations: Location[] };
+	[ActionType.CreateConnections]: { connections: Connection[] };
+	[ActionType.UpdateConnections]: { connections: Connection[] };
+	[ActionType.DeleteConnections]: { connections: Connection[] };
+	[ActionType.CreateParameters]: { parameters: Parameter<FlavorType>[] };
+	[ActionType.UpdateParameters]: { parameters: Parameter<FlavorType>[] };
+	[ActionType.DeleteParameters]: { parameters: Parameter<FlavorType>[] };
+	[ActionType.FocusUsage]: { usageUuid: string };
 };
 
 export type ActionParams<T> = T extends ActionType ? ActionParamsMapper[T] : never;
@@ -47,6 +59,8 @@ export interface Action<T extends ActionType> {
 }
 
 export type ActionHandler<E extends ActionType, U extends ActionType> = (
-	state: FlatRecipe,
+	stores: {
+		[key in keyof FlatRecipe]: Writable<FlatRecipe[key]>;
+	},
 	params: ActionParams<E>
-) => { state: FlatRecipe; undoAction: Action<U> };
+) => Action<U>;

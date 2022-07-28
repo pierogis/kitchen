@@ -22,11 +22,14 @@ enum Direction {
 model Flavor {
   id             Int          @id @default(autoincrement())
   uuid           String       @unique @db.Uuid
-  ingredientUuid String       @db.Uuid
   type           FlavorType
   name           String       @db.VarChar(255)
   options        Json?
-  ingredient     Ingredient   @relation(fields: [ingredientUuid], references: [uuid])
+  // check that one of ingredientUuid or prepUuid is null
+  ingredientUuid String?      @db.Uuid
+  ingredient     Ingredient?  @relation(fields: [ingredientUuid], references: [uuid])
+  prepUuid       String?      @db.Uuid
+  prep           Prep?        @relation(fields: [prepUuid], references: [uuid])
   directions     Direction[]
   inConnection   Connection?  @relation("Connection_inFlavor")
   outConnections Connection[] @relation("Connection_outFlavor")
@@ -40,11 +43,22 @@ model Ingredient {
   name                 String       @db.VarChar(255)
   flavors              Flavor[]
   connections          Connection[]
+  preps                Prep[]       @relation("Prep_ingredient")
   shader               Shader?      @relation("Shader_ingredient")
   parentIngredientUuid String?      @db.Uuid
   parentIngredient     Ingredient?  @relation("Ingredient_parentIngredient", fields: [parentIngredientUuid], references: [uuid])
   subIngredients       Ingredient[] @relation("Ingredient_parentIngredient")
   usages               Usage[]      @relation("Usage_ingredient")
+}
+
+model Prep {
+  id             Int        @id @default(autoincrement())
+  uuid           String     @unique @db.Uuid
+  name           String     @db.VarChar(255)
+  // how will prep know which flavor to use for what
+  flavors        Flavor[]
+  ingredientUuid String     @unique @db.Uuid
+  ingredient     Ingredient @relation("Prep_ingredient", fields: [ingredientUuid], references: [uuid])
 }
 
 model Usage {
@@ -57,8 +71,8 @@ model Usage {
   parentUsageUuid String?      @db.Uuid
   parentUsage     Usage?       @relation("Usage_parentUsage", fields: [parentUsageUuid], references: [uuid])
   subUsages       Usage[]      @relation("Usage_parentUsage")
-  callFor             CallFor?    @relation("CallFor_usage")
-  parameters     Parameter[] @relation("Parameter_usage")
+  callsFor        CallFor[]    @relation("CallFor_usage")
+  parameters      Parameter[]  @relation("Parameter_usage")
 }
 
 model Connection {
@@ -90,18 +104,18 @@ model Recipe {
 }
 
 model Parameter {
-  id          Int     @id @default(autoincrement())
-  uuid        String  @unique @db.Uuid
-  number      Float?
-  text        String? @db.VarChar(511)
-  color       String? @db.VarChar(6)
-  image       String? @db.VarChar(511)
-  recipeUuid  String
-  recipe      Recipe  @relation("Parameter_recipe", fields: [recipeUuid], references: [uuid])
-  flavorUuid  String  @unique
-  flavor      Flavor  @relation("Parameter_flavor", fields: [flavorUuid], references: [uuid])
-  usageUuid String
-  usage     Usage @relation("Parameter_usage", fields: [usageUuid], references: [uuid])
+  id         Int     @id @default(autoincrement())
+  uuid       String  @unique @db.Uuid
+  number     Float?
+  text       String? @db.VarChar(511)
+  color      String? @db.VarChar(6)
+  image      String? @db.VarChar(511)
+  recipeUuid String
+  recipe     Recipe  @relation("Parameter_recipe", fields: [recipeUuid], references: [uuid])
+  flavorUuid String  @unique
+  flavor     Flavor  @relation("Parameter_flavor", fields: [flavorUuid], references: [uuid])
+  usageUuid  String
+  usage      Usage   @relation("Parameter_usage", fields: [usageUuid], references: [uuid])
 
   @@unique([recipeUuid, flavorUuid])
 }
@@ -120,14 +134,16 @@ model Shader {
 }
 
 model CallFor {
-  id             Int         @id @default(autoincrement())
-  uuid           String      @unique @db.Uuid
-  mainRecipe     Recipe?     @relation("Recipe_mainCallFor")
-  recipeUuid     String      @db.Uuid
-  recipe         Recipe      @relation("CallFor_recipe", fields: [recipeUuid], references: [uuid], onDelete: Cascade)
-  usageUuid String      @db.Uuid
-  usage     Usage  @relation("CallFor_usage", fields: [usageUuid], references: [uuid])
-  location       Location?   @relation("Location_callFor")
+  id         Int       @id @default(autoincrement())
+  uuid       String    @unique @db.Uuid
+  mainRecipe Recipe?   @relation("Recipe_mainCallFor")
+  recipeUuid String    @db.Uuid
+  recipe     Recipe    @relation("CallFor_recipe", fields: [recipeUuid], references: [uuid], onDelete: Cascade)
+  usageUuid  String    @db.Uuid
+  usage      Usage     @relation("CallFor_usage", fields: [usageUuid], references: [uuid])
+  location   Location? @relation("Location_callFor")
+
+  @@unique([recipeUuid, usageUuid])
 }
 
 model Location {
