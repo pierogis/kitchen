@@ -32,6 +32,14 @@ export function createPluginView(doc: Document, config: Config): TP.View {
 		}
 
 		if (scene && camera && context) {
+			const perspectiveCamera = camera as THREE.PerspectiveCamera;
+			if (perspectiveCamera.aspect) {
+				perspectiveCamera.aspect = canvas.width / canvas.height;
+				perspectiveCamera.updateProjectionMatrix();
+
+				camera = perspectiveCamera;
+			}
+
 			renderer.render(scene, camera);
 
 			context.drawImage(renderer.domElement, 0, 0);

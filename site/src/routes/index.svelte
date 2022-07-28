@@ -17,9 +17,7 @@
 
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
-	import { derived, get } from 'svelte/store';
-
-	import * as THREE from 'three';
+	import { derived } from 'svelte/store';
 
 	import type { FullRecipe } from '@types';
 	import { readableViewState } from '@view';
@@ -55,10 +53,17 @@
 		}
 	}
 
+	function handleResize() {
+		viewState.windowSize.set({ width: innerWidth, height: innerHeight });
+	}
+
 	onMount(() => {
-		const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
-		camera.position.z = 2;
-		viewState.defaultCamera.set(camera);
+		window.addEventListener('resize', handleResize);
+		handleResize();
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 </script>
 

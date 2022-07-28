@@ -11,7 +11,7 @@
 	registerPlugins(pane);
 
 	const dispatch = createEventDispatcher();
-	pane.on('fold', (event) => {
+	pane.on('fold', () => {
 		dispatch('fold');
 	});
 

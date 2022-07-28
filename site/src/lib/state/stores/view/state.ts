@@ -1,6 +1,6 @@
 import { derived, type Readable, get, writable, type Writable } from 'svelte/store';
 
-import type * as THREE from 'three';
+import * as THREE from 'three';
 
 import {
 	type Flavor,
@@ -27,19 +27,20 @@ import { createCursor, type CursorState } from './cursor';
 import { createPreps } from './preps';
 
 export interface ViewState {
-	cables: Readable<Cable[]>;
+	parentUsageUuid: Readable<string | undefined>;
 	focusedIngredient: Readable<Ingredient>;
 	nodes: Readable<Node[]>;
+	preps: Readable<FullPrep<PrepType>[]>;
 	dockedFlavors: Readable<Flavor[]>;
-	cursor: CursorState;
-	liveConnection: LiveConnectionState;
-	liveTerminal: Readable<Terminal | undefined>;
+	fillings: FillingsState;
 	terminals: Readable<Terminal[]>;
 	terminalsCoordinates: TerminalsCoordinatesState;
-	fillings: FillingsState;
-	preps: Readable<FullPrep<PrepType>[]>;
-	defaultCamera: Writable<THREE.Camera>;
-	parentUsageUuid: Readable<string | undefined>;
+	liveTerminal: Readable<Terminal | undefined>;
+	liveConnection: LiveConnectionState;
+	cables: Readable<Cable[]>;
+	cursor: CursorState;
+	windowSize: Writable<{ width: number; height: number }>;
+	mainCamera: Readable<THREE.Camera>;
 }
 
 // dont use the derived properties thing for recipe store
@@ -186,21 +187,36 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	// centrally track values that go in inputs/monitors so they can be edited from anywhere
 	const fillings = createFillings(recipeState);
 
-	const defaultCamera: Writable<THREE.Camera> = writable();
+	const windowSize: Writable<{ width: number; height: number }> = writable({ width: 0, height: 0 });
+
+	const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+	camera.position.z = 2;
+
+	const mainCamera = writable(camera);
+
+	windowSize.subscribe(($windowSize) => {
+		mainCamera.update(($camera) => {
+			$camera.aspect = $windowSize.width / $windowSize.height;
+			$camera.updateProjectionMatrix();
+
+			return $camera;
+		});
+	});
 
 	return {
-		cables,
-		nodes,
-		dockedFlavors,
+		parentUsageUuid,
 		focusedIngredient,
-		cursor,
-		liveConnection,
-		liveTerminal,
+		nodes,
+		preps,
+		dockedFlavors,
+		fillings,
 		terminals,
 		terminalsCoordinates,
-		fillings,
-		preps,
-		defaultCamera,
-		parentUsageUuid
+		liveTerminal,
+		liveConnection,
+		cables,
+		cursor,
+		windowSize,
+		mainCamera
 	};
 }

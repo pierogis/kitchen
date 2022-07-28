@@ -18,6 +18,11 @@
     - [ ] branching versions (cool to have)
   - [ ] duplicate/reuse ingredient
 
+- [ ] view
+  - [ ] track cameras of flavors like fillings
+    - [ ] tie the pan view to the output flavor it is tracking
+    - [ ] each inner (flavor) view has a camera stored in viewState
+
 - [ ] backend
   - [ ] retrieve full recipe from db on request
   - [ ] accept new recipe state
