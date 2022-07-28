@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher, getContext, onMount } from 'svelte';
 
 	import { type Flavor, Direction } from '@types';
-	import type { Terminal } from '$lib/state/stores/view';
-	import type { FillingsState } from '$lib/state/stores/view/fillings';
+	import { viewStateContextKey, type Terminal, type ViewState } from '@view';
 
 	import TerminalRack from './TerminalRack.svelte';
 	import FlavorComponent from './Flavor.svelte';
@@ -14,10 +13,12 @@
 	export let flavors: Flavor[];
 	export let terminals: Terminal[];
 	export let usageUuid: string;
-	export let fillings: FillingsState;
 	export let direction: Direction | undefined = undefined;
 
 	let paneContainer: HTMLElement;
+
+	let viewState: ViewState = getContext(viewStateContextKey);
+	const fillings = viewState.fillings;
 
 	let folded = false;
 	function handleFold() {

@@ -1,23 +1,31 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, SvelteComponent } from 'svelte';
 	import { derived, get, type Readable } from 'svelte/store';
 
 	import { v4 as uuid } from 'uuid';
 
-	import type { FolderApi, InputParams, TpChangeEvent } from 'tweakpane';
-	import * as THREE from 'three';
+	import type { FolderApi, InputParams, MonitorParams, TpChangeEvent } from 'tweakpane';
 
 	import { type Flavor, FlavorType, Direction } from '@types';
 
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
-	import { viewStateContextKey, type Terminal, type ViewState } from '@view';
+	import type { Terminal } from '@view';
 	import { ActionType, type Action } from '@state/actions';
 
 	import Monitor from '@components/tweakpane/Monitor.svelte';
 	import Input from '@components/tweakpane/Input.svelte';
 	import TerminalRack from '@components/TerminalRack.svelte';
 	import type { Filling } from '@view/fillings';
-	import type { CanvasValue } from '$lib/common/plugins/canvas/view';
+
+	import Color from './flavors/Color.svelte';
+	import Geometry from './flavors/Geometry.svelte';
+	import Image from './flavors/Image.svelte';
+	import Material from './flavors/Material.svelte';
+	import Number from './flavors/Number.svelte';
+	import Object from './flavors/Object.svelte';
+	import Shader from './flavors/Shader.svelte';
+	import Text from './flavors/Text.svelte';
+	import Texture from './flavors/Texture.svelte';
 
 	export let index: number;
 	export let flavor: Flavor;
@@ -31,7 +39,6 @@
 	export let folder: FolderApi;
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
-	const viewState: ViewState = getContext(viewStateContextKey);
 
 	let onChange: Readable<(ev: TpChangeEvent<any>) => void> = derived(
 		[filling.monitorStatus],
@@ -80,118 +87,82 @@
 		}
 	);
 
-	let options: InputParams = flavor.options || {};
-
-	if (flavor.type == FlavorType.Color) {
-		options = { ...options, view: 'color', color: { alpha: true } };
-	}
-
-	let paramsStore: Readable<{ [key: string]: string | number | CanvasValue }>;
-	if (
-		flavor.type == FlavorType.Geometry ||
-		flavor.type == FlavorType.Object ||
-		flavor.type == FlavorType.Texture ||
-		flavor.type == FlavorType.Material
-	) {
-		options = { ...options, view: 'canvas', interval: 32 };
-		const scene = new THREE.Scene();
-		paramsStore = derived([filling.payload, viewState.defaultCamera], ([$payload, $camera]) => {
-			scene.clear();
-			if (flavor.type == FlavorType.Geometry) {
-				const geometry = $payload.value as THREE.BufferGeometry;
-
-				if (geometry.isBufferGeometry) {
-					scene.add(new THREE.Mesh(geometry));
-				} else {
-					throw 'payload value is not Geometry';
-				}
-				return { [flavor.name]: { scene, camera: $camera } };
-			} else if (flavor.type == FlavorType.Object) {
-				const object = $payload.value as THREE.Object3D;
-				if (object.isObject3D) {
-					scene.add(object);
-				} else {
-					throw 'payload value is not Object';
-				}
-				return { [flavor.name]: { scene, camera: $camera } };
-			} else if (flavor.type == FlavorType.Texture) {
-				const texture = $payload.value as THREE.Texture;
-				if (texture.isTexture) {
-					const plane = new THREE.PlaneBufferGeometry();
-					const material = new THREE.MeshBasicMaterial({ map: texture });
-
-					scene.add(new THREE.Mesh(plane, material));
-				} else {
-					throw 'payload value is not Texture';
-				}
-				return { [flavor.name]: { scene, camera: $camera } };
-			} else if (flavor.type == FlavorType.Material) {
-				const material = $payload.value as THREE.Material;
-				if (material.isMaterial) {
-					const plane = new THREE.PlaneBufferGeometry(2, 2);
-					const mesh = new THREE.Mesh(plane, material);
-
-					scene.add(mesh);
-				} else {
-					throw 'payload value is not Material';
-				}
-				return { [flavor.name]: { scene, camera: $camera } };
-			} else {
-				throw 'not canvas type flavor';
-			}
-		});
-	} else {
-		paramsStore = derived(filling.payload, ($payload) => {
-			if (typeof $payload.value != 'string' && typeof $payload.value != 'number')
-				throw 'payload value is not string or number';
-
-			return { [flavor.name]: $payload.value };
-		});
-	}
+	let options: InputParams | MonitorParams = flavor.options || {};
 
 	const monitor = derived(filling.monitorStatus, ($monitorStatus) => {
 		return $monitorStatus.monitor;
 	});
+
+	const map: {
+		[type in FlavorType]: typeof SvelteComponent;
+	} = {
+		[FlavorType.Color]: Color,
+		[FlavorType.Geometry]: Geometry,
+		[FlavorType.Image]: Image,
+		[FlavorType.Material]: Material,
+		[FlavorType.Number]: Number,
+		[FlavorType.Object]: Object,
+		[FlavorType.Shader]: Shader,
+		[FlavorType.Text]: Text,
+		[FlavorType.Texture]: Texture
+	};
 </script>
 
-{#if $monitor}
-	<Monitor {index} {folder} {paramsStore} {options} key={flavor.name} let:monitorElement>
-		{#if monitorElement}
-			{#if inTerminals.length > 0}
-				<TerminalRack
-					parentElement={monitorElement}
-					terminals={inTerminals}
-					direction={Direction.In}
-				/>
-			{/if}
+<svelte:component
+	this={map[flavor.type]}
+	{filling}
+	{options}
+	name={flavor.name}
+	let:paramsStore
+	let:optParams
+>
+	{#if $monitor}
+		<Monitor
+			{index}
+			{folder}
+			{paramsStore}
+			monitorParams={optParams}
+			key={flavor.name}
+			interval={32}
+			let:monitorElement
+		>
+			{#if monitorElement}
+				{#if inTerminals.length > 0}
+					<TerminalRack
+						parentElement={monitorElement}
+						terminals={inTerminals}
+						direction={Direction.In}
+					/>
+				{/if}
 
-			{#if outTerminals.length > 0}
-				<TerminalRack
-					parentElement={monitorElement}
-					terminals={outTerminals}
-					direction={Direction.Out}
-				/>
+				{#if outTerminals.length > 0}
+					<TerminalRack
+						parentElement={monitorElement}
+						terminals={outTerminals}
+						direction={Direction.Out}
+					/>
+				{/if}
 			{/if}
-		{/if}
-	</Monitor>
-{:else}
-	<Input
-		{index}
-		{folder}
-		{paramsStore}
-		{options}
-		onChange={(ev) => $onChange(ev)}
-		key={flavor.name}
-		let:inputElement
-	>
-		{#if inputElement}
-			{#each flavor.directions as direction (direction)}
-				<TerminalRack
-					parentElement={inputElement}
-					terminals={direction == Direction.In ? inTerminals : outTerminals}
-					{direction}
-				/>
-			{/each}
-		{/if}
-	</Input>
-{/if}
+		</Monitor>
+	{:else}
+		<Input
+			{index}
+			{folder}
+			{paramsStore}
+			inputParams={optParams}
+			onChange={(ev) => $onChange(ev)}
+			key={flavor.name}
+			let:inputElement
+		>
+			{#if inputElement}
+				{#each flavor.directions as direction (direction)}
+					<TerminalRack
+						parentElement={inputElement}
+						terminals={direction == Direction.In ? inTerminals : outTerminals}
+						{direction}
+					/>
+				{/each}
+			{/if}
+		</Input>
+	{/if}
+</svelte:component>

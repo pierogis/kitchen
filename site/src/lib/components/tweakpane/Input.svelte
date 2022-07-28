@@ -11,7 +11,7 @@
 	export let paramsStore: Readable<{ [key: string]: string | number | CanvasValue }>;
 	export let onChange: (ev: TpChangeEvent<string | number | CanvasValue>) => void;
 	export let key: string;
-	export let options: InputParams | undefined = undefined;
+	export let inputParams: InputParams | undefined = undefined;
 	export let index: number | undefined = undefined;
 
 	let inputElement: HTMLElement;
@@ -20,7 +20,7 @@
 		let inputApi: InputBindingApi<unknown, string | number | CanvasValue>;
 
 		let params = $paramsStore;
-		inputApi = folder.addInput(params, key, { ...options, index }).on('change', onChange);
+		inputApi = folder.addInput(params, key, { ...inputParams, index }).on('change', onChange);
 
 		// const element = inputApi.controller_.valueController.view.element.parentElement;
 		const element = inputApi.element;
