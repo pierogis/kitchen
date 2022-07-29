@@ -33,7 +33,7 @@ export const SpherePrep: PrepPrimitive<PrepType.Sphere> = {
 		};
 		const radiusFlavor: Flavor = {
 			uuid: uuid(),
-			type: FlavorType.Shader,
+			type: FlavorType.Number,
 			name: 'radius',
 			options: null,
 			ingredientUuid: ingredientUuid,

@@ -70,13 +70,6 @@ export function dispatchIngredientCreationActions(
 		};
 	});
 
-	const flavorsAction: Action<ActionType.CreateFlavors> = {
-		type: ActionType.CreateFlavors,
-		params: {
-			flavors
-		}
-	};
-
 	const preps = prepPrimitives.map((primitive) => {
 		const { prep, prepFlavors } = primitive.create(ingredient.uuid);
 
@@ -84,6 +77,13 @@ export function dispatchIngredientCreationActions(
 
 		return prep;
 	});
+
+	const flavorsAction: Action<ActionType.CreateFlavors> = {
+		type: ActionType.CreateFlavors,
+		params: {
+			flavors
+		}
+	};
 
 	const prepsAction: Action<ActionType.CreatePreps> = {
 		type: ActionType.CreatePreps,
