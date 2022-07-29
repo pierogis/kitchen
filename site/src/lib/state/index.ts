@@ -7,6 +7,7 @@ import { registerIngredientHandlers } from './handlers/ingredients';
 import { registerLocationHandlers } from './handlers/locations';
 import { registerParameterHandlers } from './handlers/parameters';
 import { registerUsageHandlers } from './handlers/usages';
+import { registerPrepHandlers } from './handlers/preps';
 
 import { createRecipeState } from './stores/recipe';
 
@@ -81,6 +82,7 @@ export function storeRecipe(recipe: FullRecipe) {
 	registerCallForHandlers(recipeState);
 	registerLocationHandlers(recipeState);
 	registerParameterHandlers(recipeState);
+	registerPrepHandlers(recipeState);
 
 	return recipeState;
 }

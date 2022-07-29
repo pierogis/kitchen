@@ -30,7 +30,7 @@ const deletePreps: ActionHandler<ActionType.DeletePreps, ActionType.CreatePreps>
 	};
 };
 
-export function registerFlavorHandlers(recipeState: RecipeState) {
+export function registerPrepHandlers(recipeState: RecipeState) {
 	recipeState.register(ActionType.CreatePreps, createPreps);
 	recipeState.register(ActionType.DeletePreps, deletePreps);
 }
