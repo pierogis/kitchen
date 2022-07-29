@@ -1,6 +1,6 @@
 import type * as THREE from 'three';
 
-import { PrepType, type Flavor, type Payload } from '@types';
+import { PrepType, type Flavor, type Payload, type Prep } from '@types';
 import { AddPrep, AddOperands, AddOutputs } from './add';
 import { ImagePrep, ImageOperands, ImageOutputs } from './image';
 import { ShaderPrep, ShaderOperands, ShaderOutputs } from './shader';
@@ -56,9 +56,11 @@ export interface PrepPrimitive<P extends PrepType> {
 	flavors: {
 		[prepFlavorName in keyof (PrepOperands<P> & PrepOutputs<P>)]: Pick<
 			Flavor,
-			'directions' | 'type'
+			'directions' | 'type' | 'options'
 		>;
 	};
+	name: string;
+	create: (ingredientUuid: string) => { prep: Prep<P>; prepFlavors: Flavor[] };
 	cook: (scene: THREE.Scene, camera: THREE.Camera, inPayloads: InPayloads<P>) => OutPayloads<P>;
 }
 

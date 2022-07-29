@@ -14,17 +14,14 @@
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 
-	let followCoordinates: Readable<Coordinates | undefined> = viewState.cursor.coordinates;
+	let followCoordinates: Readable<Coordinates> = viewState.cursor.coordinates;
 	let tweenDuration = 50;
 
 	const tweenedFollowCoordinates = tweened(get(followCoordinates), {
 		duration: tweenDuration
 	});
 
-	function followCoordinatesAction(
-		element: HTMLElement,
-		followCoordinates: Readable<Coordinates | undefined>
-	) {
+	function followCoordinatesAction(element: HTMLElement, followCoordinates: Readable<Coordinates>) {
 		let inputCoordinatesUnsub: (() => void) | null = null;
 		let tweenedUnsub: (() => void) | null = null;
 

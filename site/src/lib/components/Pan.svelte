@@ -6,7 +6,6 @@
 
 	import type { ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
-	import { dispatchIngredientCreationActions } from '@state/batch/ingredient';
 
 	import { init, cook } from '$lib/common/cook';
 
@@ -17,33 +16,6 @@
 	export let viewState: ViewState;
 
 	let canvas: HTMLCanvasElement;
-
-	function doubleClickAction(element: HTMLElement) {
-		function handleDoubleClick(event: MouseEvent) {
-			// right click
-			event.preventDefault();
-
-			const elements = document.elementsFromPoint(event.clientX, event.clientY);
-			// the top most element clicked on should be an svg
-			if (elements[0].tagName == 'svg') {
-				dispatchIngredientCreationActions(
-					recipeState,
-					{ x: event.clientX, y: event.clientY },
-					get(viewState.focusedIngredient).uuid
-				);
-			}
-
-			return false;
-		}
-
-		element.addEventListener('dblclick', handleDoubleClick);
-
-		return {
-			destroy: () => {
-				element.removeEventListener('dblclick', handleDoubleClick);
-			}
-		};
-	}
 
 	let renderer: THREE.WebGLRenderer;
 	let scene: THREE.Scene;
@@ -72,7 +44,6 @@
 	});
 </script>
 
-<svelte:window use:doubleClickAction />
 <canvas bind:this={canvas} {width} {height} class="no-select" />
 
 <style>

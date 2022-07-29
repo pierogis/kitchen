@@ -1,27 +1,61 @@
 <script lang="ts">
-	import type { Readable } from 'svelte/store';
+	import { get } from 'svelte/store';
 
-	import { Direction, type Flavor, type FullPrep, type PrepType } from '@types';
+	import { Direction } from '@types';
 
-	import type { Terminal, Node, Cable } from '@view';
+	import type { ViewState } from '@view';
+	import type { RecipeState } from '@recipe';
 
 	import IngredientComponent from '@components/Ingredient.svelte';
 	import Dock from '@components/Dock.svelte';
 	import CableComponent from '@components/Cable.svelte';
 	import LiveTerminal from '@components/LiveTerminal.svelte';
+	import PrimitiveSelector from '@components/PrimitiveSelector.svelte';
 
-	export let focusedUsageUuid: Readable<string>;
-	export let dockedFlavors: Readable<Flavor[]>;
-	export let preps: Readable<FullPrep<PrepType>[]>;
-	export let nodes: Readable<Node[]>;
-	export let cables: Readable<Cable[]>;
-	export let liveTerminal: Readable<Terminal | undefined>;
+	export let recipeState: RecipeState;
+	export let viewState: ViewState;
 
 	export let width: number;
 	export let height: number;
 
+	const focusedIngredient = viewState.focusedIngredient;
+	const dockedFlavors = viewState.dockedFlavors;
+	const preps = viewState.preps;
+	const nodes = viewState.nodes;
+	const cables = viewState.cables;
+	const liveTerminal = viewState.liveTerminal;
+
+	const focusedUsageUuid = recipeState.focusedUsageUuid;
+
 	const pathStrokeWidth = 2;
+
+	let selectingPrimitive = false;
+
+	function doubleClickAction(element: HTMLElement) {
+		function handleDoubleClick(event: MouseEvent) {
+			// right click
+			event.preventDefault();
+
+			const elements = document.elementsFromPoint(event.clientX, event.clientY);
+			// the top most element clicked on should be an svg
+			if (elements[0].tagName == 'svg') {
+				selectingPrimitive = true;
+			}
+
+			return false;
+		}
+
+		element.addEventListener('dblclick', handleDoubleClick);
+
+		return {
+			destroy: () => {
+				element.removeEventListener('dblclick', handleDoubleClick);
+			}
+		};
+	}
 </script>
+
+<svelte:window use:doubleClickAction />
 
 {#each $nodes as node (node.callFor.uuid)}
 	<IngredientComponent
@@ -58,6 +92,17 @@
 	)}
 	focusedUsageUuid={$focusedUsageUuid}
 />
+
+{#if selectingPrimitive}
+	<PrimitiveSelector
+		coordinates={get(viewState.cursor.coordinates)}
+		{recipeState}
+		focusedIngredientUuid={get(focusedIngredient).uuid}
+		on:destroy={() => {
+			selectingPrimitive = false;
+		}}
+	/>
+{/if}
 
 <style>
 	svg {

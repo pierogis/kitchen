@@ -82,16 +82,7 @@
 	<button on:click={handleUnfocusClick} />
 {/if}
 
-<Recipe
-	focusedUsageUuid={recipeState.focusedUsageUuid}
-	dockedFlavors={viewState.dockedFlavors}
-	preps={viewState.preps}
-	nodes={viewState.nodes}
-	cables={viewState.cables}
-	liveTerminal={viewState.liveTerminal}
-	width={innerWidth}
-	height={innerHeight}
-/>
+<Recipe width={innerWidth} height={innerHeight} {recipeState} {viewState} />
 
 <Pan width={innerWidth} height={innerHeight} {recipeState} {viewState} />
 

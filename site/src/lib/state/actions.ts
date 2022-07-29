@@ -6,6 +6,8 @@ import type {
 	Ingredient,
 	Location,
 	Parameter,
+	Prep,
+	PrepType,
 	Usage
 } from '@types';
 import type { FlatRecipe } from '@recipe';
@@ -28,6 +30,8 @@ export enum ActionType {
 	CreateParameters,
 	UpdateParameters,
 	DeleteParameters,
+	CreatePreps,
+	DeletePreps,
 	FocusUsage
 }
 
@@ -48,6 +52,8 @@ type ActionParamsMapper = {
 	[ActionType.CreateParameters]: { parameters: Parameter<FlavorType>[] };
 	[ActionType.UpdateParameters]: { parameters: Parameter<FlavorType>[] };
 	[ActionType.DeleteParameters]: { parameters: Parameter<FlavorType>[] };
+	[ActionType.CreatePreps]: { preps: Prep<PrepType>[] };
+	[ActionType.DeletePreps]: { preps: Prep<PrepType>[] };
 	[ActionType.FocusUsage]: { usageUuid: string };
 };
 
