@@ -6,6 +6,7 @@
 	import { viewStateContextKey, type ViewState } from '@view';
 
 	import PaneContainer from './PaneContainer.svelte';
+	import AddTab from './AddTab.svelte';
 
 	export let focusedUsageUuid: string;
 	export let direction: Direction;
@@ -37,21 +38,27 @@
 
 <div class="dock" class:in={direction == Direction.In} class:out={direction == Direction.Out}>
 	{#each preps as prep (prep.uuid)}
+		<div class="super-pane">
+			<PaneContainer
+				{direction}
+				usageUuid={focusedUsageUuid}
+				name={prep.name}
+				flavors={prep.flavors}
+				terminals={prepTerminals.get(prep.uuid) || []}
+			/>
+		</div>
+	{/each}
+	<AddTab attached={false} />
+	<div class="super-pane">
 		<PaneContainer
 			{direction}
 			usageUuid={focusedUsageUuid}
-			name={prep.name}
-			flavors={prep.flavors}
-			terminals={prepTerminals.get(prep.uuid) || []}
+			name={'flavors'}
+			{flavors}
+			terminals={flavorTerminals}
 		/>
-	{/each}
-	<PaneContainer
-		{direction}
-		usageUuid={focusedUsageUuid}
-		name={'flavors'}
-		{flavors}
-		terminals={flavorTerminals}
-	/>
+		<AddTab attached={true} />
+	</div>
 </div>
 
 <style>
@@ -72,12 +79,18 @@
 		left: 0%;
 		justify-content: left;
 
-		align-items: start;
+		align-items: flex-start;
 	}
 	.out {
 		right: 0%;
 		justify-content: right;
 
 		align-items: flex-end;
+	}
+
+	.super-pane {
+		display: flex;
+		flex-direction: column;
+		place-items: center;
 	}
 </style>
