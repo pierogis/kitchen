@@ -78,6 +78,6 @@
 		right: 0%;
 		justify-content: right;
 
-		align-items: end;
+		align-items: flex-end;
 	}
 </style>

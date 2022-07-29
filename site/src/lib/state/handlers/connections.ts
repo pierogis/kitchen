@@ -44,15 +44,18 @@ const deleteConnections: ActionHandler<
 	};
 };
 
-const deleteUsages: ActionHandler<ActionType.DeleteUsages, ActionType.CreateConnections> = (
+const deleteCallsFor: ActionHandler<ActionType.DeleteCallsFor, ActionType.CreateConnections> = (
 	stores,
 	params
 ) => {
 	const connections: Connection[] = [];
 	const currentConnections = get(stores.connections);
-	for (const usage of params.usages) {
+	for (const callFor of params.callsFor) {
 		for (const connection of currentConnections.values()) {
-			if (connection.inUsageUuid == usage.uuid || connection.outUsageUuid == usage.uuid) {
+			if (
+				connection.inUsageUuid == callFor.usageUuid ||
+				connection.outUsageUuid == callFor.usageUuid
+			) {
 				// this connection uses this usage
 				connections.push(connection);
 			}
@@ -68,5 +71,5 @@ export function registerConnectionHandlers(recipeState: RecipeState) {
 	recipeState.register(ActionType.CreateConnections, createConnections);
 	recipeState.register(ActionType.UpdateConnections, updateConnections);
 	recipeState.register(ActionType.DeleteConnections, deleteConnections);
-	recipeState.register(ActionType.DeleteUsages, deleteUsages);
+	recipeState.register(ActionType.DeleteCallsFor, deleteCallsFor);
 }
