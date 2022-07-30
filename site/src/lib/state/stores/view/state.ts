@@ -41,6 +41,7 @@ export interface ViewState {
 	cursor: CursorState;
 	windowSize: Writable<{ width: number; height: number }>;
 	mainCamera: Readable<THREE.Camera>;
+	editMode: Writable<boolean>;
 }
 
 // dont use the derived properties thing for recipe store
@@ -203,6 +204,8 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		});
 	});
 
+	const editMode = writable(false);
+
 	return {
 		parentUsageUuid,
 		focusedIngredient,
@@ -217,6 +220,7 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		cables,
 		cursor,
 		windowSize,
-		mainCamera
+		mainCamera,
+		editMode
 	};
 }

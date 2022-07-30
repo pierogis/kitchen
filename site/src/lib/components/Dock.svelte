@@ -34,6 +34,8 @@
 			];
 		})
 	);
+
+	const editMode = viewState.editMode;
 </script>
 
 <div class="dock" class:in={direction == Direction.In} class:out={direction == Direction.Out}>
@@ -48,7 +50,9 @@
 			/>
 		</div>
 	{/each}
-	<AddTab attached={false} />
+	{#if $editMode}
+		<AddTab attached={false} />
+	{/if}
 	<div class="super-pane">
 		<PaneContainer
 			{direction}
@@ -57,7 +61,9 @@
 			{flavors}
 			terminals={flavorTerminals}
 		/>
-		<AddTab attached={true} />
+		{#if $editMode}
+			<AddTab attached={true} />
+		{/if}
 	</div>
 </div>
 

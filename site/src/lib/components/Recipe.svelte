@@ -31,31 +31,27 @@
 
 	let selectingPrimitive = false;
 
-	function doubleClickAction(element: HTMLElement) {
-		function handleDoubleClick(event: MouseEvent) {
-			// right click
-			event.preventDefault();
+	function handleDoubleClick(event: MouseEvent) {
+		event.preventDefault();
 
-			const elements = document.elementsFromPoint(event.clientX, event.clientY);
-			// the top most element clicked on should be an svg
-			if (elements[0].tagName == 'svg') {
-				selectingPrimitive = true;
-			}
-
-			return false;
+		const elements = document.elementsFromPoint(event.clientX, event.clientY);
+		// the top most element clicked on should be an svg
+		if (elements[0].tagName == 'svg') {
+			selectingPrimitive = true;
 		}
+	}
 
-		element.addEventListener('dblclick', handleDoubleClick);
+	function handleKeyPress(event: KeyboardEvent & { currentTarget: EventTarget & Window }) {
+		if (event.repeat) return;
 
-		return {
-			destroy: () => {
-				element.removeEventListener('dblclick', handleDoubleClick);
-			}
-		};
+		if ((event.ctrlKey || event.metaKey) && event.key == 'e') {
+			event.preventDefault();
+			viewState.editMode.update(($editMode) => !$editMode);
+		}
 	}
 </script>
 
-<svelte:window use:doubleClickAction />
+<svelte:window on:dblclick={handleDoubleClick} on:keydown={handleKeyPress} />
 
 {#each $nodes as node (node.callFor.uuid)}
 	<IngredientComponent
