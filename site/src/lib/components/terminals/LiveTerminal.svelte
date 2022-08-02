@@ -7,7 +7,7 @@
 
 	import { checkPointWithinBox } from '$lib/common/utils';
 
-	import TerminalComponent from '@components/Terminal.svelte';
+	import TerminalComponent from './Terminal.svelte';
 	import { tweened } from 'svelte/motion';
 
 	export let terminal: Terminal;

@@ -25,3 +25,6 @@ export const flavorComponents: {
 	[FlavorType.Text]: Text,
 	[FlavorType.Texture]: Texture
 };
+
+import Flavor from './Flavor.svelte';
+export { Flavor };

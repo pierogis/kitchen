@@ -7,9 +7,12 @@
 
 	import type { CanvasValue } from '$lib/common/plugins/canvas/view';
 
+	// generic for the bound value type of this input
+	type T = $$Generic<string | number | CanvasValue>;
+
 	export let folder: FolderApi;
-	export let paramsStore: Readable<{ [key: string]: string | number | CanvasValue }>;
-	export let onChange: (ev: TpChangeEvent<string | number | CanvasValue>) => void;
+	export let paramsStore: Readable<{ [key: string]: T }>;
+	export let onChange: (ev: TpChangeEvent<T>) => void;
 	export let key: string;
 	export let inputParams: InputParams | undefined = undefined;
 	export let index: number | undefined = undefined;
@@ -17,7 +20,7 @@
 	let inputElement: HTMLElement;
 
 	onMount(() => {
-		let inputApi: InputBindingApi<unknown, string | number | CanvasValue>;
+		let inputApi: InputBindingApi<unknown, T>;
 
 		let params = $paramsStore;
 		inputApi = folder.addInput(params, key, { ...inputParams, index }).on('change', onChange);

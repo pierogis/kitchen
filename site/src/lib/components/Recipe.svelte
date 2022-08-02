@@ -6,11 +6,9 @@
 	import type { ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
 
-	import IngredientComponent from '@components/Ingredient.svelte';
-	import Dock from '@components/Dock.svelte';
-	import CableComponent from '@components/Cable.svelte';
-	import LiveTerminal from '@components/LiveTerminal.svelte';
-	import PrimitiveSelector from '@components/PrimitiveSelector.svelte';
+	import { PrimitiveSelector, Dock, Ingredient as IngredientComponent } from '@components';
+	import { Cable as CableComponent } from '@components/cables';
+	import { LiveTerminal } from '@components/terminals';
 
 	export let recipeState: RecipeState;
 	export let viewState: ViewState;

@@ -1,24 +1,18 @@
 <script lang="ts">
-	import { createEventDispatcher, getContext, onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 
-	import { type Flavor, Direction } from '@types';
-	import { viewStateContextKey, type Terminal, type ViewState } from '@view';
+	import { Direction } from '@types';
+	import type { Terminal } from '@view';
 
-	import TerminalRack from './TerminalRack.svelte';
-	import FlavorComponent from './Flavor.svelte';
+	import { TerminalRack } from '@components/terminals';
 
-	import { Pane } from './tweakpane';
+	import { Pane } from '../tweakpane';
 
-	export let name: string;
-	export let flavors: Flavor[];
+	export let title: string | undefined = undefined;
 	export let terminals: Terminal[];
-	export let usageUuid: string;
 	export let direction: Direction | undefined = undefined;
 
 	let paneContainer: HTMLElement;
-
-	let viewState: ViewState = getContext(viewStateContextKey);
-	const fillings = viewState.fillings;
 
 	let folded = false;
 	function handleFold() {
@@ -41,28 +35,9 @@
 	class="pane-container no-select"
 >
 	{#if paneContainer}
-		<Pane title={name} container={paneContainer} let:pane on:fold={handleFold}>
+		<Pane {title} container={paneContainer} let:pane on:fold={handleFold}>
 			{#if !folded}
-				{#each flavors as flavor, index (flavor.uuid)}
-					<FlavorComponent
-						{index}
-						{flavor}
-						filling={fillings.getFilling(
-							flavor.uuid,
-							usageUuid,
-							direction && !flavor.prepUuid
-								? direction
-								: flavor.directions.includes(Direction.Out)
-								? Direction.Out
-								: Direction.In
-						)}
-						terminals={terminals.filter(
-							(terminal) => terminal.flavorUuid == flavor.uuid && terminal.direction != direction
-						)}
-						{usageUuid}
-						{pane}
-					/>
-				{/each}
+				<slot {pane} />
 			{/if}
 		</Pane>
 		{#if folded}

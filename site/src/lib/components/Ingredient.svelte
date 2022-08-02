@@ -3,14 +3,15 @@
 
 	import { draggableAction } from '$lib/common/actions/draggableAction';
 
-	import type { CallFor, Flavor, Ingredient, Location } from '@types';
+	import { Direction, type CallFor, type Flavor, type Ingredient, type Location } from '@types';
 	import { viewStateContextKey } from '@view';
 	import { recipeStateContextKey } from '@recipe';
 	import type { RecipeState } from '@recipe';
 	import type { ViewState } from '@view';
 	import { ActionType, type Action } from '@state/actions';
 
-	import PaneContainer from './PaneContainer.svelte';
+	import { PaneContainer } from '@components/paneContainers';
+	import { Flavor as FlavorComponent } from '@components/flavors';
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 	const viewState: ViewState = getContext(viewStateContextKey);
@@ -57,6 +58,8 @@
 	function handlePaneContainer(ev: CustomEvent<HTMLElement>) {
 		paneContainer = ev.detail;
 	}
+
+	const fillings = viewState.fillings;
 </script>
 
 <div
@@ -80,14 +83,28 @@
 		</div>
 	{/if}
 	<PaneContainer
-		usageUuid={callFor.usageUuid}
-		name={ingredient.name}
-		{flavors}
+		title={ingredient.name}
 		terminals={terminals.filter(
 			(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
 		)}
 		on:paneContainer={handlePaneContainer}
-	/>
+		let:pane
+	>
+		{#each flavors as flavor, index (flavor.uuid)}
+			<FlavorComponent
+				{index}
+				{flavor}
+				filling={fillings.getFilling(
+					flavor.uuid,
+					callFor.usageUuid,
+					flavor.directions.includes(Direction.Out) ? Direction.Out : Direction.In
+				)}
+				terminals={terminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)}
+				usageUuid={callFor.usageUuid}
+				{pane}
+			/>
+		{/each}
+	</PaneContainer>
 </div>
 
 <style>

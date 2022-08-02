@@ -13,10 +13,10 @@
 	import type { Filling } from '@view/fillings';
 	import { ActionType, type Action } from '@state/actions';
 
-	import { Monitor, Input } from './tweakpane';
-	import TerminalRack from '@components/TerminalRack.svelte';
+	import { Monitor, Input } from '@components/tweakpane';
+	import { TerminalRack } from '@components/terminals';
 
-	import { flavorComponents } from './flavors';
+	import { flavorComponents } from '.';
 
 	export let index: number;
 	export let flavor: Flavor;

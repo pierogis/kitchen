@@ -7,8 +7,11 @@
 
 	import type { CanvasValue } from '$lib/common/plugins/canvas/view';
 
+	// generic for the bound value type of this monitor
+	type T = $$Generic<string | number | CanvasValue>;
+
 	export let folder: FolderApi;
-	export let paramsStore: Readable<{ [key: string]: string | number | CanvasValue }>;
+	export let paramsStore: Readable<{ [key: string]: T }>;
 	export let key: string;
 	export let monitorParams: MonitorParams | undefined = undefined;
 	export let index: number | undefined = undefined;
@@ -17,7 +20,7 @@
 	let monitorElement: HTMLElement;
 
 	onMount(() => {
-		let monitorApi: MonitorBindingApi<string | number | CanvasValue>;
+		let monitorApi: MonitorBindingApi<T>;
 
 		let params = $paramsStore;
 		monitorApi = folder.addMonitor(params, key, { ...monitorParams, index, interval });
