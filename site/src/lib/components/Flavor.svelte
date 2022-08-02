@@ -1,31 +1,22 @@
 <script lang="ts">
-	import { getContext, SvelteComponent } from 'svelte';
+	import { getContext } from 'svelte';
 	import { derived, get, type Readable } from 'svelte/store';
 
 	import { v4 as uuid } from 'uuid';
 
-	import type { FolderApi, InputParams, MonitorParams, TpChangeEvent } from 'tweakpane';
+	import type { InputParams, MonitorParams, Pane, TpChangeEvent } from 'tweakpane';
 
-	import { type Flavor, FlavorType, Direction } from '@types';
+	import { type Flavor, Direction } from '@types';
 
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
 	import type { Terminal } from '@view';
+	import type { Filling } from '@view/fillings';
 	import { ActionType, type Action } from '@state/actions';
 
-	import Monitor from '@components/tweakpane/Monitor.svelte';
-	import Input from '@components/tweakpane/Input.svelte';
+	import { Monitor, Input } from './tweakpane';
 	import TerminalRack from '@components/TerminalRack.svelte';
-	import type { Filling } from '@view/fillings';
 
-	import Color from './flavors/Color.svelte';
-	import Geometry from './flavors/Geometry.svelte';
-	import Image from './flavors/Image.svelte';
-	import Material from './flavors/Material.svelte';
-	import Number from './flavors/Number.svelte';
-	import Object from './flavors/Object.svelte';
-	import Shader from './flavors/Shader.svelte';
-	import Text from './flavors/Text.svelte';
-	import Texture from './flavors/Texture.svelte';
+	import { flavorComponents } from './flavors';
 
 	export let index: number;
 	export let flavor: Flavor;
@@ -36,7 +27,7 @@
 	$: outTerminals = terminals.filter((terminal) => terminal.direction == Direction.Out);
 
 	export let filling: Filling;
-	export let folder: FolderApi;
+	export let pane: Pane;
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 
@@ -92,24 +83,10 @@
 	const monitor = derived(filling.monitorStatus, ($monitorStatus) => {
 		return $monitorStatus.monitor;
 	});
-
-	const map: {
-		[type in FlavorType]: typeof SvelteComponent;
-	} = {
-		[FlavorType.Color]: Color,
-		[FlavorType.Geometry]: Geometry,
-		[FlavorType.Image]: Image,
-		[FlavorType.Material]: Material,
-		[FlavorType.Number]: Number,
-		[FlavorType.Object]: Object,
-		[FlavorType.Shader]: Shader,
-		[FlavorType.Text]: Text,
-		[FlavorType.Texture]: Texture
-	};
 </script>
 
 <svelte:component
-	this={map[flavor.type]}
+	this={flavorComponents[flavor.type]}
 	{filling}
 	{options}
 	name={flavor.name}
@@ -119,7 +96,7 @@
 	{#if $monitor}
 		<Monitor
 			{index}
-			{folder}
+			folder={pane}
 			{paramsStore}
 			monitorParams={optParams}
 			key={flavor.name}
@@ -147,7 +124,7 @@
 	{:else}
 		<Input
 			{index}
-			{folder}
+			folder={pane}
 			{paramsStore}
 			inputParams={optParams}
 			onChange={(ev) => $onChange(ev)}

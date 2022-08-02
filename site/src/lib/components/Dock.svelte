@@ -7,6 +7,7 @@
 
 	import PaneContainer from './PaneContainer.svelte';
 	import AddTab from './AddTab.svelte';
+	import EditPaneContainer from './EditPaneContainer.svelte';
 
 	export let focusedUsageUuid: string;
 	export let direction: Direction;
@@ -40,7 +41,7 @@
 
 <div class="dock" class:in={direction == Direction.In} class:out={direction == Direction.Out}>
 	{#each preps as prep (prep.uuid)}
-		<div class="super-pane">
+		{#if !$editMode}
 			<PaneContainer
 				{direction}
 				usageUuid={focusedUsageUuid}
@@ -48,12 +49,20 @@
 				flavors={prep.flavors}
 				terminals={prepTerminals.get(prep.uuid) || []}
 			/>
-		</div>
+		{:else}
+			<EditPaneContainer
+				{prep}
+				flavors={undefined}
+				terminals={prepTerminals.get(prep.uuid) || []}
+				{direction}
+			/>
+		{/if}
 	{/each}
 	{#if $editMode}
 		<AddTab attached={false} />
 	{/if}
-	<div class="super-pane">
+
+	{#if !$editMode}
 		<PaneContainer
 			{direction}
 			usageUuid={focusedUsageUuid}
@@ -61,10 +70,12 @@
 			{flavors}
 			terminals={flavorTerminals}
 		/>
-		{#if $editMode}
+	{:else}
+		<div class="super-pane">
+			<EditPaneContainer prep={undefined} {flavors} terminals={flavorTerminals} {direction} />
 			<AddTab attached={true} />
-		{/if}
-	</div>
+		</div>
+	{/if}
 </div>
 
 <style>

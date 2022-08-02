@@ -17,8 +17,8 @@ const name = 'material';
 
 export const MaterialPrep: PrepPrimitive<PrepType.Material> = {
 	flavors: {
-		color: { directions: [Direction.In], type: FlavorType.Color, options: null },
-		material: { directions: [Direction.Out], type: FlavorType.Material, options: null }
+		material: { directions: [Direction.Out], type: FlavorType.Material, options: null },
+		color: { directions: [Direction.In], type: FlavorType.Color, options: null }
 	},
 	name,
 	create: (ingredientUuid: string) => {

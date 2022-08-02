@@ -7,7 +7,7 @@
 	import TerminalRack from './TerminalRack.svelte';
 	import FlavorComponent from './Flavor.svelte';
 
-	import Pane from './tweakpane/Pane.svelte';
+	import { Pane } from './tweakpane';
 
 	export let name: string;
 	export let flavors: Flavor[];
@@ -60,7 +60,7 @@
 							(terminal) => terminal.flavorUuid == flavor.uuid && terminal.direction != direction
 						)}
 						{usageUuid}
-						folder={pane}
+						{pane}
 					/>
 				{/each}
 			{/if}
@@ -88,7 +88,7 @@
 <style>
 	.pane-container {
 		display: flex;
-		align-items: center;
+		place-items: center;
 	}
 
 	:global(.pane-container > div) {
