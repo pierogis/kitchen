@@ -13,10 +13,7 @@
 	onMount(() => {
 		const container = folder.element;
 		folderContainer.append(container);
-		pane.element.append(folderContainer);
-
-		// container.style.display = 'flex';
-		// container.style.placeItems = 'center';
+		pane.controller_.rackController.view.element.append(folderContainer);
 
 		return () => {
 			pane.remove(folder);

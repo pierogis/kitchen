@@ -2,7 +2,7 @@
 	export let attached: boolean;
 </script>
 
-<button class:attached>+</button>
+<button class="no-select" class:attached>+</button>
 
 <style>
 	button {
