@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
 
-import type { Prep, PrepType } from '@types';
+import type { PrepType } from '@types';
 
 import type { RecipeState } from '@recipe';
 import { type Action, ActionType } from '@state/actions';
