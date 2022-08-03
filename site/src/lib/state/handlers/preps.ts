@@ -1,6 +1,6 @@
 import { type ActionHandler, ActionType } from '@state/actions';
 import type { RecipeState } from '@recipe';
-import { createEntities, deleteEntities } from './common';
+import { createEntities, updateEntities, deleteEntities } from './common';
 
 const createPreps: ActionHandler<ActionType.CreatePreps, ActionType.DeletePreps> = (
 	stores,
@@ -12,6 +12,20 @@ const createPreps: ActionHandler<ActionType.CreatePreps, ActionType.DeletePreps>
 		type: ActionType.DeletePreps,
 		params: {
 			preps
+		}
+	};
+};
+
+const updatePreps: ActionHandler<ActionType.UpdatePreps, ActionType.UpdatePreps> = (
+	stores,
+	params
+) => {
+	const oldPreps = updateEntities(stores.preps, params.preps);
+
+	return {
+		type: ActionType.UpdatePreps,
+		params: {
+			preps: oldPreps
 		}
 	};
 };
@@ -32,5 +46,6 @@ const deletePreps: ActionHandler<ActionType.DeletePreps, ActionType.CreatePreps>
 
 export function registerPrepHandlers(recipeState: RecipeState) {
 	recipeState.register(ActionType.CreatePreps, createPreps);
+	recipeState.register(ActionType.UpdatePreps, updatePreps);
 	recipeState.register(ActionType.DeletePreps, deletePreps);
 }

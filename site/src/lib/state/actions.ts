@@ -31,6 +31,7 @@ export enum ActionType {
 	UpdateParameters,
 	DeleteParameters,
 	CreatePreps,
+	UpdatePreps,
 	DeletePreps,
 	FocusUsage
 }
@@ -53,6 +54,7 @@ type ActionParamsMapper = {
 	[ActionType.UpdateParameters]: { parameters: Parameter<FlavorType>[] };
 	[ActionType.DeleteParameters]: { parameters: Parameter<FlavorType>[] };
 	[ActionType.CreatePreps]: { preps: Prep<PrepType>[] };
+	[ActionType.UpdatePreps]: { preps: Prep<PrepType>[] };
 	[ActionType.DeletePreps]: { preps: Prep<PrepType>[] };
 	[ActionType.FocusUsage]: { usageUuid: string };
 };

@@ -60,7 +60,7 @@ export interface PrepPrimitive<P extends PrepType> {
 		>;
 	};
 	name: string;
-	create: (ingredientUuid: string) => { prep: Prep<P>; prepFlavors: Flavor[] };
+	create: (prepUuid: string, ingredientUuid: string) => { prep: Prep<P>; prepFlavors: Flavor[] };
 	cook: (scene: THREE.Scene, camera: THREE.Camera, inPayloads: InPayloads<P>) => OutPayloads<P>;
 }
 

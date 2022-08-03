@@ -71,7 +71,9 @@ export function dispatchIngredientCreationActions(
 	});
 
 	const preps = prepPrimitives.map((primitive) => {
-		const { prep, prepFlavors } = primitive.create(ingredient.uuid);
+		const prepUuid = uuid();
+
+		const { prep, prepFlavors } = primitive.create(prepUuid, ingredient.uuid);
 
 		prepFlavors.map((flavor) => flavors.push(flavor));
 

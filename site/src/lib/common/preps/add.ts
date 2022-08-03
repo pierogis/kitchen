@@ -33,8 +33,7 @@ export const AddPrep: PrepPrimitive<PrepType.Add> = {
 		}
 	},
 	name,
-	create: (ingredientUuid: string) => {
-		const prepUuid = uuid();
+	create: (prepUuid: string, ingredientUuid: string) => {
 		const sumFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Number,

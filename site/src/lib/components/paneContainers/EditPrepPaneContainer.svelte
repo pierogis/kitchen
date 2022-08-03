@@ -1,12 +1,15 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { writable } from 'svelte/store';
 
 	import type { TpChangeEvent } from 'tweakpane';
 
 	import { type Prep, PrepType, Direction } from '@types';
 	import type { Terminal } from '@view';
+	import { recipeStateContextKey, type RecipeState } from '@recipe';
+	import { dispatchChangePrepTypeActions } from '$lib/state/batch/prep';
 
-	import { Pane, Input } from '@components/tweakpane';
+	import { Input } from '@components/tweakpane';
 	import { TerminalRack } from '@components/terminals';
 	import { PaneContainer } from '.';
 
@@ -14,13 +17,11 @@
 	export let terminals: Terminal[];
 	export let direction: Direction;
 
+	let recipeState: RecipeState = getContext(recipeStateContextKey);
+
 	function handleNameUpdate() {}
 	function handleTypeUpdate(event: TpChangeEvent<PrepType>) {
-		const prep = {
-			type: event.value
-		};
-
-		// dispatch UpdatePrep action
+		dispatchChangePrepTypeActions(recipeState, prep, event.value);
 	}
 
 	const prepTypes: { [name: string]: PrepType } = {

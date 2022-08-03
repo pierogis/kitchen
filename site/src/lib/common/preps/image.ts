@@ -18,8 +18,7 @@ export const ImagePrep: PrepPrimitive<PrepType.Image> = {
 		image: { directions: [Direction.In, Direction.Out], type: FlavorType.Image, options: null }
 	},
 	name,
-	create: (ingredientUuid: string) => {
-		const prepUuid = uuid();
+	create: (prepUuid: string, ingredientUuid: string) => {
 		const imageFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Image,

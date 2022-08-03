@@ -21,8 +21,7 @@ export const TexturePrep: PrepPrimitive<PrepType.Texture> = {
 		texture: { directions: [Direction.Out], type: FlavorType.Texture, options: null }
 	},
 	name,
-	create: (ingredientUuid: string) => {
-		const prepUuid = uuid();
+	create: (prepUuid: string, ingredientUuid: string) => {
 		const textureFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Texture,

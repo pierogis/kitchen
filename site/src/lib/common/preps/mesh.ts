@@ -23,8 +23,7 @@ export const MeshPrep: PrepPrimitive<PrepType.Mesh> = {
 		material: { directions: [Direction.In], type: FlavorType.Material, options: null }
 	},
 	name,
-	create: (ingredientUuid: string) => {
-		const prepUuid = uuid();
+	create: (prepUuid: string, ingredientUuid: string) => {
 		const meshFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Object,

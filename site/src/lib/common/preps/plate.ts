@@ -21,8 +21,7 @@ export const PlatePrep: PrepPrimitive<PrepType.Plate> = {
 		object: { directions: [Direction.In], type: FlavorType.Object, options: null }
 	},
 	name,
-	create: (ingredientUuid: string) => {
-		const prepUuid = uuid();
+	create: (prepUuid: string, ingredientUuid: string) => {
 		const plateFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Object,
