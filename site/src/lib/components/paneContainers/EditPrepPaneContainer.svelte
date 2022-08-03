@@ -7,7 +7,10 @@
 	import { type Prep, PrepType, Direction } from '@types';
 	import type { Terminal } from '@view';
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
-	import { dispatchChangePrepTypeActions } from '$lib/state/batch/prep';
+	import {
+		dispatchUpdatePrepNameActions,
+		dispatchChangePrepTypeActions
+	} from '$lib/state/batch/prep';
 
 	import { Input } from '@components/tweakpane';
 	import { TerminalRack } from '@components/terminals';
@@ -19,9 +22,11 @@
 
 	let recipeState: RecipeState = getContext(recipeStateContextKey);
 
-	function handleNameUpdate() {}
-	function handleTypeUpdate(event: TpChangeEvent<PrepType>) {
-		dispatchChangePrepTypeActions(recipeState, prep, event.value);
+	function handlePrepNameUpdate(event: TpChangeEvent<string>) {
+		dispatchUpdatePrepNameActions(recipeState, prep.uuid, event.value);
+	}
+	function handlePrepTypeUpdate(event: TpChangeEvent<PrepType>) {
+		dispatchChangePrepTypeActions(recipeState, prep.uuid, prep.ingredientUuid, event.value);
 	}
 
 	const prepTypes: { [name: string]: PrepType } = {
@@ -51,14 +56,14 @@
 		folder={pane}
 		paramsStore={writable({ name: prep.name })}
 		key={'name'}
-		onChange={(event) => console.log(event.value)}
+		onChange={(event) => handlePrepNameUpdate(event)}
 	/>
 	<Input
 		folder={pane}
 		paramsStore={writable({ type: prep.type })}
 		key={'type'}
 		inputParams={{ options: prepTypes }}
-		onChange={(event) => handleTypeUpdate(event)}
+		onChange={(event) => handlePrepTypeUpdate(event)}
 	/>
 	{#if inTerminals.length > 0 && direction != Direction.In}
 		<TerminalRack parentElement={paneContainer} terminals={inTerminals} direction={Direction.In} />

@@ -6,15 +6,37 @@ import type { RecipeState } from '@recipe';
 import { type Action, ActionType } from '@state/actions';
 import { prepPrimitives } from '$lib/common/preps';
 
+export function dispatchUpdatePrepNameActions(
+	recipeState: RecipeState,
+	prepUuid: string,
+	name: string
+) {
+	const oldPrep = get(recipeState.preps).get(prepUuid);
+
+	if (!oldPrep) throw `prep ${prepUuid} not found`;
+
+	if (oldPrep.name != name) {
+		const updatePrepsAction: Action<ActionType.UpdatePreps> = {
+			type: ActionType.UpdatePreps,
+			params: {
+				preps: [{ ...oldPrep, name }]
+			}
+		};
+
+		recipeState.batchDispatch([updatePrepsAction]);
+	}
+}
+
 export function dispatchChangePrepTypeActions(
 	recipeState: RecipeState,
-	oldPrep: Prep<PrepType>,
+	prepUuid: string,
+	ingredientUuid: string,
 	type: PrepType
 ) {
 	// create new flavors
 
 	const prepPrimitive = prepPrimitives[type];
-	const { prep, prepFlavors } = prepPrimitive.create(oldPrep.uuid, oldPrep.ingredientUuid);
+	const { prep, prepFlavors } = prepPrimitive.create(prepUuid, ingredientUuid);
 
 	const createFlavorsAction: Action<ActionType.CreateFlavors> = {
 		type: ActionType.CreateFlavors,
@@ -33,7 +55,7 @@ export function dispatchChangePrepTypeActions(
 
 	// delete old flavors
 	const oldFlavors = Array.from(get(recipeState.flavors).values()).filter(
-		(flavor) => flavor.prepUuid == oldPrep.uuid
+		(flavor) => flavor.prepUuid == prep.uuid
 	);
 
 	const deleteFlavorsAction: Action<ActionType.DeleteFlavors> = {

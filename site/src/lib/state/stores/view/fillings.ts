@@ -102,32 +102,32 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 							direction
 						);
 
+						const monitor =
+							direction == Direction.In
+								? currentConnections.some((connection) => {
+										const flavorHasInConnection = connection.inFlavorUuid == flavor.uuid;
+
+										// if the flavor is on connection's parentIngredient,
+										// connection leading into it would have no usageUuid
+										const flavorIsOnConnectionsParentIngredient =
+											flavor.ingredientUuid == connection.parentIngredientUuid;
+
+										const usageUuid = flavorIsOnConnectionsParentIngredient
+											? undefined
+											: usage.uuid;
+
+										const connectionIsToFlavorsUsage = connection.inUsageUuid == usageUuid;
+
+										return flavorHasInConnection && connectionIsToFlavorsUsage;
+								  })
+								: prep !== undefined;
+
+						const monitorStatus = { monitor: monitor, parameterUuid: parameter?.uuid };
+
+						const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+						camera.position.z = 2;
+
 						if (!filling) {
-							const monitor =
-								direction == Direction.In
-									? currentConnections.some((connection) => {
-											const flavorHasInConnection = connection.inFlavorUuid == flavor.uuid;
-
-											// if the flavor is on connection's parentIngredient,
-											// connection leading into it would have no usageUuid
-											const flavorIsOnConnectionsParentIngredient =
-												flavor.ingredientUuid == connection.parentIngredientUuid;
-
-											const usageUuid = flavorIsOnConnectionsParentIngredient
-												? undefined
-												: usage.uuid;
-
-											const connectionIsToFlavorsUsage = connection.inUsageUuid == usageUuid;
-
-											return flavorHasInConnection && connectionIsToFlavorsUsage;
-									  })
-									: prep !== undefined;
-
-							const monitorStatus = { monitor: monitor, parameterUuid: parameter?.uuid };
-
-							const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-							camera.position.z = 2;
-
 							filling = {
 								payload: writable(payload),
 								camera: writable(camera),
@@ -135,7 +135,11 @@ export function createFillings(recipeState: RecipeState): FillingsState {
 							};
 
 							flavorUsageFillings.set(flavor.uuid, usage.uuid, direction, filling);
+						} else {
+							setPayload(flavor.uuid, usage.uuid, direction, payload);
+							setMonitorStatus(flavor.uuid, usage.uuid, direction, monitorStatus);
 						}
+
 						usedKeys.add([flavor.uuid, usage.uuid, direction].join(','));
 					}
 				}

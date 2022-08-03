@@ -64,6 +64,28 @@ const deleteFlavors: ActionHandler<ActionType.DeleteFlavors, ActionType.CreateCo
 	return { type: ActionType.CreateConnections, params: { connections } };
 };
 
+const updateFlavors: ActionHandler<ActionType.UpdateFlavors, ActionType.CreateConnections> = (
+	stores,
+	params
+) => {
+	const connections: Connection[] = [];
+	const currentConnections = get(stores.connections);
+	for (const flavor of params.flavors) {
+		for (const connection of currentConnections.values()) {
+			if (connection.inFlavorUuid == flavor.uuid || connection.outFlavorUuid == flavor.uuid) {
+				if (flavor.type != connection.flavorType) {
+					// this connection uses this usage
+					connections.push(connection);
+				}
+			}
+		}
+	}
+
+	deleteEntities(stores.connections, connections);
+
+	return { type: ActionType.CreateConnections, params: { connections } };
+};
+
 const deleteCallsFor: ActionHandler<ActionType.DeleteCallsFor, ActionType.CreateConnections> = (
 	stores,
 	params
@@ -91,6 +113,7 @@ export function registerConnectionHandlers(recipeState: RecipeState) {
 	recipeState.register(ActionType.CreateConnections, createConnections);
 	recipeState.register(ActionType.UpdateConnections, updateConnections);
 	recipeState.register(ActionType.DeleteConnections, deleteConnections);
+	recipeState.register(ActionType.UpdateFlavors, updateFlavors);
 	recipeState.register(ActionType.DeleteFlavors, deleteFlavors);
 	recipeState.register(ActionType.DeleteCallsFor, deleteCallsFor);
 }

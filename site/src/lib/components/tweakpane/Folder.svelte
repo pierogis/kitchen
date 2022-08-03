@@ -5,9 +5,11 @@
 
 	export let pane: Pane;
 	export let title: string;
+	export let index: number;
 
 	const folder = pane.addFolder({
-		title
+		title,
+		index
 	});
 
 	onMount(() => {

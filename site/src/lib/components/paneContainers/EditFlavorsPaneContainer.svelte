@@ -1,10 +1,16 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { writable } from 'svelte/store';
 
 	import type { TpChangeEvent } from 'tweakpane';
 
 	import { type Flavor, Direction, FlavorType } from '@types';
+	import { recipeStateContextKey, type RecipeState } from '@recipe';
 	import type { Terminal } from '@view';
+	import {
+		dispatchUpdateFlavorTypeActions,
+		dispatchUpdateFlavorNameActions
+	} from '@state/batch/flavor';
 
 	import { Input, Folder } from '@components/tweakpane';
 	import { TerminalRack } from '@components/terminals';
@@ -14,13 +20,13 @@
 	export let terminals: Terminal[];
 	export let direction: Direction;
 
-	function handleNameUpdate() {}
-	function handleFlavorTypeUpdate(event: TpChangeEvent<FlavorType>) {
-		const prep = {
-			type: event.value
-		};
+	const recipeState: RecipeState = getContext(recipeStateContextKey);
 
-		// dispatch UpdatePrep action
+	function handleFlavorNameUpdate(flavor: Flavor, event: TpChangeEvent<string>) {
+		dispatchUpdateFlavorNameActions(recipeState, flavor.uuid, event.value);
+	}
+	function handleFlavorTypeUpdate(flavor: Flavor, event: TpChangeEvent<FlavorType>) {
+		dispatchUpdateFlavorTypeActions(recipeState, flavor.uuid, event.value);
 	}
 
 	const flavorTypes: { [name: string]: FlavorType } = {
@@ -40,20 +46,20 @@
 </script>
 
 <PaneContainer title={'flavors'} {terminals} {direction} let:pane>
-	{#each flavors as flavor}
-		<Folder {pane} title={flavor.name} let:folder let:folderContainer>
+	{#each flavors as flavor, index (flavor.uuid)}
+		<Folder {pane} title={flavor.name} {index} let:folder let:folderContainer>
 			{#if folderContainer}
 				<Input
 					{folder}
 					paramsStore={writable({ name: flavor.name })}
 					key={'name'}
-					onChange={(event) => console.log(event.value)}
+					onChange={(event) => handleFlavorNameUpdate(flavor, event)}
 				/>
 				<Input
 					{folder}
 					paramsStore={writable({ type: flavor.type })}
 					key={'type'}
-					onChange={(event) => console.log(event.value)}
+					onChange={(event) => handleFlavorTypeUpdate(flavor, event)}
 					inputParams={{ options: flavorTypes }}
 				/>
 				{#if inTerminals.length > 0 && direction != Direction.In}

@@ -17,6 +17,7 @@ export enum ActionType {
 	CreateIngredients,
 	DeleteIngredients,
 	CreateFlavors,
+	UpdateFlavors,
 	DeleteFlavors,
 	CreateUsages,
 	DeleteUsages,
@@ -40,6 +41,7 @@ type ActionParamsMapper = {
 	[ActionType.CreateIngredients]: { ingredients: Ingredient[] };
 	[ActionType.DeleteIngredients]: { ingredients: Ingredient[] };
 	[ActionType.CreateFlavors]: { flavors: Flavor[] };
+	[ActionType.UpdateFlavors]: { flavors: Flavor[] };
 	[ActionType.DeleteFlavors]: { flavors: Flavor[] };
 	[ActionType.CreateUsages]: { usages: Usage[] };
 	[ActionType.DeleteUsages]: { usages: Usage[] };

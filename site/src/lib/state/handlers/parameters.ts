@@ -75,9 +75,37 @@ const createConnections: ActionHandler<
 	};
 };
 
+const updateFlavors: ActionHandler<ActionType.UpdateFlavors, ActionType.CreateParameters> = (
+	stores,
+	params
+) => {
+	const parameters: Parameter<FlavorType>[] = [];
+	const currentParameters = get(stores.parameters);
+
+	for (const flavor of params.flavors) {
+		for (const parameter of currentParameters.values()) {
+			const sameInFlavorUsage = parameter.flavorUuid == flavor.uuid;
+			if (sameInFlavorUsage && flavor.type != parameter.payload.type) {
+				// this connection uses this usage
+				parameters.push(parameter);
+			}
+		}
+	}
+
+	deleteEntities(stores.parameters, parameters);
+
+	return {
+		type: ActionType.CreateParameters,
+		params: {
+			parameters
+		}
+	};
+};
+
 export function registerParameterHandlers(recipeState: RecipeState) {
 	recipeState.register(ActionType.CreateParameters, createParameters);
 	recipeState.register(ActionType.UpdateParameters, updateParameters);
 	recipeState.register(ActionType.DeleteParameters, deleteParameters);
 	recipeState.register(ActionType.CreateConnections, createConnections);
+	recipeState.register(ActionType.UpdateFlavors, updateFlavors);
 }

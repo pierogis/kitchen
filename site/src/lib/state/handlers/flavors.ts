@@ -16,6 +16,18 @@ const createFlavors: ActionHandler<ActionType.CreateFlavors, ActionType.DeleteFl
 	};
 };
 
+const updateFlavors: ActionHandler<ActionType.UpdateFlavors, ActionType.UpdateFlavors> = (
+	stores,
+	params
+) => {
+	const oldFlavors = updateEntities(stores.flavors, params.flavors);
+
+	return {
+		type: ActionType.UpdateFlavors,
+		params: { flavors: oldFlavors }
+	};
+};
+
 const deleteFlavors: ActionHandler<ActionType.DeleteFlavors, ActionType.CreateFlavors> = (
 	stores,
 	params
@@ -32,5 +44,6 @@ const deleteFlavors: ActionHandler<ActionType.DeleteFlavors, ActionType.CreateFl
 
 export function registerFlavorHandlers(recipeState: RecipeState) {
 	recipeState.register(ActionType.CreateFlavors, createFlavors);
+	recipeState.register(ActionType.UpdateFlavors, updateFlavors);
 	recipeState.register(ActionType.DeleteFlavors, deleteFlavors);
 }
