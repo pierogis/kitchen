@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import { get } from 'svelte/store';
 
 	import { Direction, PrepType, type Flavor, type FullPrep } from '@types';
 
@@ -12,6 +13,7 @@
 		PaneContainer
 	} from '@components/paneContainers';
 	import { Flavor as FlavorComponent } from '@components/flavors';
+	import { PrepTypeSelector, FlavorTypeSelector } from '@components/selectors';
 
 	export let focusedUsageUuid: string;
 	export let direction: Direction;
@@ -42,6 +44,9 @@
 
 	const editMode = viewState.editMode;
 	const fillings = viewState.fillings;
+
+	let addingPrep = false;
+	let addingFlavor = false;
 </script>
 
 <div class="dock" class:in={direction == Direction.In} class:out={direction == Direction.Out}>
@@ -79,7 +84,21 @@
 		{/if}
 	{/each}
 	{#if $editMode}
-		<AddTab attached={false} />
+		{#if addingPrep}
+			<PrepTypeSelector
+				coordinates={get(viewState.cursor.coordinates)}
+				on:destroy={() => {
+					addingPrep = false;
+				}}
+			/>
+		{:else}
+			<AddTab
+				attached={false}
+				on:click={() => {
+					addingPrep = true;
+				}}
+			/>
+		{/if}
 	{/if}
 
 	{#if !$editMode}
@@ -106,7 +125,22 @@
 	{:else}
 		<div class="super-pane">
 			<EditFlavorsPaneContainer {flavors} terminals={flavorTerminals} {direction} />
-			<AddTab attached={true} />
+			{#if addingFlavor}
+				<FlavorTypeSelector
+					coordinates={get(viewState.cursor.coordinates)}
+					{direction}
+					on:destroy={() => {
+						addingFlavor = false;
+					}}
+				/>
+			{:else}
+				<AddTab
+					attached={true}
+					on:click={() => {
+						addingFlavor = true;
+					}}
+				/>
+			{/if}
 		</div>
 	{/if}
 </div>

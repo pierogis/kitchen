@@ -64,6 +64,17 @@ export interface PrepPrimitive<P extends PrepType> {
 	cook: (scene: THREE.Scene, camera: THREE.Camera, inPayloads: InPayloads<P>) => OutPayloads<P>;
 }
 
+export const prepTypes: { [name: string]: PrepType } = {
+	add: PrepType.Add,
+	image: PrepType.Image,
+	material: PrepType.Material,
+	mesh: PrepType.Mesh,
+	plate: PrepType.Plate,
+	shader: PrepType.Shader,
+	sphere: PrepType.Sphere,
+	texture: PrepType.Texture
+};
+
 export const prepPrimitives: {
 	[prepType in PrepType]: PrepPrimitive<prepType>;
 } = {

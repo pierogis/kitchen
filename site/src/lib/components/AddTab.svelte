@@ -1,12 +1,22 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
+
 	export let attached: boolean;
+
+	const dispatch = createEventDispatcher();
+
+	function handleClick(event: MouseEvent) {
+		event.stopPropagation();
+		dispatch('click');
+	}
 </script>
 
-<button class="no-select" class:attached>+</button>
+<button class="no-select" class:attached on:click|preventDefault={handleClick}>+</button>
 
 <style>
 	button {
 		background-color: var(--primary-color);
+		transition: background-color 200ms;
 		color: var(--label-color);
 
 		border: 0;
@@ -20,6 +30,14 @@
 		border-radius: 4px 4px 4px 4px;
 
 		align-self: center;
+	}
+
+	button:hover {
+		background-color: var(--button-color);
+	}
+
+	button:active {
+		background-color: var(--primary-color);
 	}
 
 	.attached {

@@ -6,14 +6,14 @@ import type { CallFor, Flavor, Ingredient, Location, Usage, Coordinates, PrepTyp
 
 import type { RecipeState } from '@recipe';
 import { type Action, ActionType } from '@state/actions';
-import type { PrepPrimitive } from '$lib/common/preps';
+import { prepPrimitives } from '$lib/common/preps';
 
 export function dispatchIngredientCreationActions(
 	recipeState: RecipeState,
 	coordinates: Coordinates,
 	focusedIngredientUuid: string,
 	flavorDescriptions: Pick<Flavor, 'name' | 'directions' | 'type' | 'options'>[],
-	prepPrimitives: PrepPrimitive<PrepType>[]
+	prepTypes: PrepType[]
 ) {
 	const ingredient: Ingredient = {
 		uuid: uuid(),
@@ -70,8 +70,10 @@ export function dispatchIngredientCreationActions(
 		};
 	});
 
-	const preps = prepPrimitives.map((primitive) => {
+	const preps = prepTypes.map((type) => {
 		const prepUuid = uuid();
+
+		const primitive = prepPrimitives[type];
 
 		const { prep, prepFlavors } = primitive.create(prepUuid, ingredient.uuid);
 

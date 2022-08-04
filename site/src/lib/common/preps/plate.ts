@@ -29,16 +29,7 @@ export const PlatePrep: PrepPrimitive<PrepType.Plate> = {
 			options: null,
 			ingredientUuid: ingredientUuid,
 			prepUuid: prepUuid,
-			directions: [Direction.Out]
-		};
-		const objectFlavor: Flavor = {
-			uuid: uuid(),
-			type: FlavorType.Object,
-			name: 'object',
-			options: null,
-			ingredientUuid: ingredientUuid,
-			prepUuid: prepUuid,
-			directions: [Direction.In]
+			directions: [Direction.In, Direction.Out]
 		};
 
 		const prep: Prep<PrepType.Plate> = {
@@ -48,7 +39,7 @@ export const PlatePrep: PrepPrimitive<PrepType.Plate> = {
 			type: PrepType.Plate,
 			// map from default names on prep operands and outputs to flavor uuids
 			inFlavorUuidMap: {
-				object: objectFlavor.uuid
+				object: plateFlavor.uuid
 			},
 			outFlavorUuidMap: {
 				plate: plateFlavor.uuid
@@ -56,7 +47,7 @@ export const PlatePrep: PrepPrimitive<PrepType.Plate> = {
 			direction: Direction.Out
 		};
 
-		const prepFlavors = [objectFlavor, plateFlavor];
+		const prepFlavors = [plateFlavor];
 
 		return { prep, prepFlavors };
 	},

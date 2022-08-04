@@ -1,10 +1,36 @@
 import { get } from 'svelte/store';
 
+import { v4 as uuid } from 'uuid';
+
 import type { PrepType } from '@types';
 
 import type { RecipeState } from '@recipe';
 import { type Action, ActionType } from '@state/actions';
 import { prepPrimitives } from '$lib/common/preps';
+
+export function dispatchAddPrepActions(
+	recipeState: RecipeState,
+	ingredientUuid: string,
+	type: PrepType
+) {
+	const prepUuid = uuid();
+	const { prep, prepFlavors } = prepPrimitives[type].create(prepUuid, ingredientUuid);
+
+	const createPrepsAction: Action<ActionType.CreatePreps> = {
+		type: ActionType.CreatePreps,
+		params: {
+			preps: [prep]
+		}
+	};
+	const createFlavorsAction: Action<ActionType.CreateFlavors> = {
+		type: ActionType.CreateFlavors,
+		params: {
+			flavors: prepFlavors
+		}
+	};
+
+	recipeState.batchDispatch([createFlavorsAction, createPrepsAction]);
+}
 
 export function dispatchUpdatePrepNameActions(
 	recipeState: RecipeState,

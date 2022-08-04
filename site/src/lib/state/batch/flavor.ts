@@ -1,8 +1,37 @@
-import type { FlavorType } from '@types';
+import { get } from 'svelte/store';
 
+import { v4 as uuid } from 'uuid';
+
+import type { Flavor, FlavorType, Direction } from '@types';
 import type { RecipeState } from '@recipe';
 import { type Action, ActionType } from '@state/actions';
-import { get } from 'svelte/store';
+
+export function dispatchAddFlavorActions(
+	recipeState: RecipeState,
+	ingredientUuid: string,
+	direction: Direction,
+	type: FlavorType,
+	name: string
+) {
+	const flavorUuid = uuid();
+	const flavor: Flavor = {
+		uuid: flavorUuid,
+		ingredientUuid,
+		type,
+		name: name,
+		options: null,
+		directions: [direction]
+	};
+
+	const createFlavorsAction: Action<ActionType.CreateFlavors> = {
+		type: ActionType.CreateFlavors,
+		params: {
+			flavors: [flavor]
+		}
+	};
+
+	recipeState.batchDispatch([createFlavorsAction]);
+}
 
 export function dispatchUpdateFlavorNameActions(
 	recipeState: RecipeState,

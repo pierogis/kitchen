@@ -5,6 +5,7 @@
 	import type { TpChangeEvent } from 'tweakpane';
 
 	import { type Flavor, Direction, FlavorType } from '@types';
+	import { flavorTypes } from '$lib/common/flavors';
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
 	import type { Terminal } from '@view';
 	import {
@@ -28,18 +29,6 @@
 	function handleFlavorTypeUpdate(flavor: Flavor, event: TpChangeEvent<FlavorType>) {
 		dispatchUpdateFlavorTypeActions(recipeState, flavor.uuid, event.value);
 	}
-
-	const flavorTypes: { [name: string]: FlavorType } = {
-		color: FlavorType.Color,
-		geometry: FlavorType.Geometry,
-		image: FlavorType.Image,
-		material: FlavorType.Material,
-		number: FlavorType.Number,
-		object: FlavorType.Object,
-		shader: FlavorType.Shader,
-		text: FlavorType.Text,
-		texture: FlavorType.Texture
-	};
 
 	$: inTerminals = terminals.filter((terminal) => terminal.direction == Direction.In);
 	$: outTerminals = terminals.filter((terminal) => terminal.direction == Direction.Out);

@@ -5,6 +5,7 @@
 	import type { TpChangeEvent } from 'tweakpane';
 
 	import { type Prep, PrepType, Direction } from '@types';
+	import { prepTypes } from '$lib/common/preps';
 	import type { Terminal } from '@view';
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
 	import {
@@ -28,17 +29,6 @@
 	function handlePrepTypeUpdate(event: TpChangeEvent<PrepType>) {
 		dispatchChangePrepTypeActions(recipeState, prep.uuid, prep.ingredientUuid, event.value);
 	}
-
-	const prepTypes: { [name: string]: PrepType } = {
-		add: PrepType.Add,
-		image: PrepType.Image,
-		material: PrepType.Material,
-		mesh: PrepType.Mesh,
-		plate: PrepType.Plate,
-		shader: PrepType.Shader,
-		sphere: PrepType.Sphere,
-		texture: PrepType.Texture
-	};
 
 	$: inTerminals = terminals.filter((terminal) => terminal.direction == Direction.In);
 	$: outTerminals = terminals.filter((terminal) => terminal.direction == Direction.Out);

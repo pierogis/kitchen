@@ -6,7 +6,8 @@
 	import type { ViewState } from '@view';
 	import type { RecipeState } from '@recipe';
 
-	import { PrimitiveSelector, Dock, Ingredient as IngredientComponent } from '@components';
+	import { Dock, Ingredient as IngredientComponent } from '@components';
+	import { PrimitiveSelector } from '@components/selectors';
 	import { Cable as CableComponent } from '@components/cables';
 	import { LiveTerminal } from '@components/terminals';
 
@@ -16,7 +17,6 @@
 	export let width: number;
 	export let height: number;
 
-	const focusedIngredient = viewState.focusedIngredient;
 	const dockedFlavors = viewState.dockedFlavors;
 	const preps = viewState.preps;
 	const nodes = viewState.nodes;
@@ -90,8 +90,6 @@
 {#if selectingPrimitive}
 	<PrimitiveSelector
 		coordinates={get(viewState.cursor.coordinates)}
-		{recipeState}
-		focusedIngredientUuid={get(focusedIngredient).uuid}
 		on:destroy={() => {
 			selectingPrimitive = false;
 		}}
