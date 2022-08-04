@@ -27,11 +27,17 @@
 		dispatchUpdatePrepNameActions(recipeState, prep.uuid, event.value);
 	}
 	function handlePrepTypeUpdate(event: TpChangeEvent<PrepType>) {
-		dispatchChangePrepTypeActions(recipeState, prep.uuid, prep.ingredientUuid, event.value);
+		dispatchChangePrepTypeActions(
+			recipeState,
+			prep.uuid,
+			prep.ingredientUuid,
+			direction,
+			event.value
+		);
 	}
 
-	$: inTerminals = terminals.filter((terminal) => terminal.direction == Direction.In);
-	$: outTerminals = terminals.filter((terminal) => terminal.direction == Direction.Out);
+	$: oppositeDirection = direction == Direction.Out ? Direction.In : Direction.Out;
+	$: terminals = terminals.filter((terminal) => terminal.direction == oppositeDirection);
 
 	let paneContainer: HTMLElement;
 </script>
@@ -55,14 +61,7 @@
 		inputParams={{ options: prepTypes }}
 		onChange={(event) => handlePrepTypeUpdate(event)}
 	/>
-	{#if inTerminals.length > 0 && direction != Direction.In}
-		<TerminalRack parentElement={paneContainer} terminals={inTerminals} direction={Direction.In} />
-	{/if}
-	{#if outTerminals.length > 0 && direction != Direction.Out}
-		<TerminalRack
-			parentElement={paneContainer}
-			terminals={outTerminals}
-			direction={Direction.Out}
-		/>
+	{#if terminals.length > 0}
+		<TerminalRack parentElement={paneContainer} {terminals} direction={oppositeDirection} />
 	{/if}
 </PaneContainer>

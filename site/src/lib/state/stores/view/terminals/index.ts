@@ -1,7 +1,14 @@
-import { derived, type Readable } from 'svelte/store';
+import { derived, get, type Readable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
-import { Direction, FlavorType, type Connection, type FlavorUsage } from '@types';
+import {
+	Direction,
+	FlavorType,
+	PrepType,
+	type Connection,
+	type FlavorUsage,
+	type Prep
+} from '@types';
 
 import type { LiveConnectionState, Node } from '@view';
 
@@ -22,7 +29,8 @@ export function createTerminals(
 	inFocusConnections: Readable<Connection[]>,
 	nodes: Readable<Node[]>,
 	liveConnection: LiveConnectionState,
-	dockedFlavors: Readable<FlavorUsage[]>
+	dockedFlavors: Readable<FlavorUsage[]>,
+	preps: Readable<Map<string, Prep<PrepType>>>
 ): Readable<Terminal[]> {
 	const flavorNovelConnectionUuids: Map<string, string> = new Map();
 	// track connectionIds that have already been used
@@ -116,6 +124,8 @@ export function createTerminals(
 				...$dockedFlavors
 			];
 
+			const currentPreps = get(preps);
+
 			// creating novel terminals for each flavor
 			allFlavorUsages.forEach((flavorUsage) => {
 				flavorUsage.directions.forEach((direction) => {
@@ -124,6 +134,27 @@ export function createTerminals(
 						$liveConnection?.disconnectedFlavorUuid != flavorUsage.uuid ||
 						$liveConnection?.dragDirection != direction
 					) {
+						// don't create a terminal pointing out of the focused ingredient
+						if (flavorUsage.prepUuid) {
+							const prep = currentPreps.get(flavorUsage.prepUuid);
+							if (!prep) throw `prep ${flavorUsage.prepUuid} not found`;
+
+							if (!flavorUsage.usageUuid) {
+								// this flavor usage is docked
+								// suppress the terminals pointing out of the focused ingredient
+
+								if (direction == prep.direction) {
+									return;
+								}
+							} else {
+								// this flavor is part of a node (in the focused view)
+								// suppress the terminals pointing into the node flavor
+								if (direction == (prep.direction == Direction.Out ? Direction.In : Direction.Out)) {
+									return;
+								}
+							}
+						}
+
 						// there should only be one in terminal on each flavor
 						if (direction == Direction.In) {
 							if (
@@ -156,29 +187,26 @@ export function createTerminals(
 								});
 							}
 						} else {
-							// don't create a terminal pointing out of the focused ingredient
-							if (!flavorUsage.prepUuid || flavorUsage.usageUuid) {
-								// do the same for out terminal
-								let outNovelConnectionUuid = flavorNovelConnectionUuids.get(
-									flavorUsage.uuid + Direction.Out
+							// do the same for out terminal
+							let outNovelConnectionUuid = flavorNovelConnectionUuids.get(
+								flavorUsage.uuid + Direction.Out
+							);
+							if (!outNovelConnectionUuid) {
+								outNovelConnectionUuid = uuid();
+								flavorNovelConnectionUuids.set(
+									flavorUsage.uuid + Direction.Out,
+									outNovelConnectionUuid
 								);
-								if (!outNovelConnectionUuid) {
-									outNovelConnectionUuid = uuid();
-									flavorNovelConnectionUuids.set(
-										flavorUsage.uuid + Direction.Out,
-										outNovelConnectionUuid
-									);
-								}
-
-								novelTerminals.push({
-									flavorUuid: flavorUsage.uuid,
-									direction: Direction.Out,
-									connectionUuid: outNovelConnectionUuid,
-									cabled: false,
-									flavorType: flavorUsage.type,
-									usageUuid: flavorUsage.usageUuid
-								});
 							}
+
+							novelTerminals.push({
+								flavorUuid: flavorUsage.uuid,
+								direction: Direction.Out,
+								connectionUuid: outNovelConnectionUuid,
+								cabled: false,
+								flavorType: flavorUsage.type,
+								usageUuid: flavorUsage.usageUuid
+							});
 						}
 					}
 				});

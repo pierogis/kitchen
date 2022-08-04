@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { get } from 'svelte/store';
 
 	import { Direction, PrepType, type Flavor, type FullPrep } from '@types';
 
@@ -47,6 +46,8 @@
 
 	let addingPrep = false;
 	let addingFlavor = false;
+
+	$: oppositeDirection = direction == Direction.Out ? Direction.In : Direction.Out;
 </script>
 
 <div class="dock" class:in={direction == Direction.In} class:out={direction == Direction.Out}>
@@ -65,11 +66,9 @@
 						filling={fillings.getFilling(
 							flavor.uuid,
 							focusedUsageUuid,
-							direction && !flavor.prepUuid
+							(direction && !flavor.prepUuid) || flavor.directions.includes(direction)
 								? direction
-								: flavor.directions.includes(Direction.Out)
-								? Direction.Out
-								: Direction.In
+								: oppositeDirection
 						)}
 						terminals={(prepTerminals.get(prep.uuid) || []).filter(
 							(terminal) => terminal.flavorUuid == flavor.uuid
@@ -86,7 +85,7 @@
 	{#if $editMode}
 		{#if addingPrep}
 			<PrepTypeSelector
-				coordinates={get(viewState.cursor.coordinates)}
+				{direction}
 				on:destroy={() => {
 					addingPrep = false;
 				}}
@@ -110,11 +109,9 @@
 					filling={fillings.getFilling(
 						flavor.uuid,
 						focusedUsageUuid,
-						direction && !flavor.prepUuid
+						(direction && !flavor.prepUuid) || flavor.directions.includes(direction)
 							? direction
-							: flavor.directions.includes(Direction.Out)
-							? Direction.Out
-							: Direction.In
+							: oppositeDirection
 					)}
 					terminals={flavorTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)}
 					usageUuid={focusedUsageUuid}
@@ -127,7 +124,6 @@
 			<EditFlavorsPaneContainer {flavors} terminals={flavorTerminals} {direction} />
 			{#if addingFlavor}
 				<FlavorTypeSelector
-					coordinates={get(viewState.cursor.coordinates)}
 					{direction}
 					on:destroy={() => {
 						addingFlavor = false;

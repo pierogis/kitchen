@@ -38,7 +38,7 @@ export const CanvasInputPlugin: TP.InputBindingPlugin<CanvasValue, CanvasValue, 
 		binding: {
 			reader(_args) {
 				return (exValue: unknown): CanvasValue => {
-					let object = exValue as CanvasValue;
+					const object = exValue as CanvasValue;
 					if (!object.scene) {
 						object.scene = new THREE.Scene();
 					}

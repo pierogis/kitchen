@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, getContext } from 'svelte';
 
-	import type { Coordinates, PrepType } from '@types';
+	import { Direction, type Coordinates, type PrepType } from '@types';
 	import { prepTypes } from '$lib/common/preps';
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
 	import { viewStateContextKey, type ViewState } from '@view';
@@ -25,7 +25,7 @@
 			coordinates,
 			$focusedIngredient.uuid,
 			[],
-			[event.detail[1]]
+			[{ type: event.detail[1], direction: Direction.Out }]
 		);
 	}
 
@@ -38,4 +38,12 @@
 
 <svelte:window on:click={handleClick} />
 
-<Selector {options} x={coordinates.x} y={coordinates.y} on:select={handleSelect} />
+<div style:left="{coordinates.x}px" style:top="{coordinates.y}px">
+	<Selector {options} on:select={handleSelect} />
+</div>
+
+<style>
+	div {
+		position: absolute;
+	}
+</style>

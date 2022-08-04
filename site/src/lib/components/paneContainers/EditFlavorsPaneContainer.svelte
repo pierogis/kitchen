@@ -30,8 +30,8 @@
 		dispatchUpdateFlavorTypeActions(recipeState, flavor.uuid, event.value);
 	}
 
-	$: inTerminals = terminals.filter((terminal) => terminal.direction == Direction.In);
-	$: outTerminals = terminals.filter((terminal) => terminal.direction == Direction.Out);
+	$: oppositeDirection = direction == Direction.Out ? Direction.In : Direction.Out;
+	$: terminals = terminals.filter((terminal) => terminal.direction == oppositeDirection);
 </script>
 
 <PaneContainer title={'flavors'} {terminals} {direction} let:pane>
@@ -51,22 +51,13 @@
 					onChange={(event) => handleFlavorTypeUpdate(flavor, event)}
 					inputParams={{ options: flavorTypes }}
 				/>
-				{#if inTerminals.length > 0 && direction != Direction.In}
+				{#if terminals.length > 0}
 					<TerminalRack
 						parentElement={folderContainer}
-						terminals={inTerminals.filter(
+						terminals={terminals.filter(
 							(terminal) => terminal.flavorUuid == flavor.uuid && terminal.direction != direction
 						)}
-						direction={Direction.In}
-					/>
-				{/if}
-				{#if outTerminals.length > 0 && direction != Direction.Out}
-					<TerminalRack
-						parentElement={folderContainer}
-						terminals={outTerminals.filter(
-							(terminal) => terminal.flavorUuid == flavor.uuid && terminal.direction != direction
-						)}
-						direction={Direction.Out}
+						direction={oppositeDirection}
 					/>
 				{/if}
 			{/if}

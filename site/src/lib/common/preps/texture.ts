@@ -21,7 +21,7 @@ export const TexturePrep: PrepPrimitive<PrepType.Texture> = {
 		texture: { directions: [Direction.Out], type: FlavorType.Texture, options: null }
 	},
 	name,
-	create: (prepUuid: string, ingredientUuid: string) => {
+	create: (prepUuid: string, ingredientUuid: string, direction: Direction) => {
 		const textureFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Texture,
@@ -53,7 +53,7 @@ export const TexturePrep: PrepPrimitive<PrepType.Texture> = {
 			outFlavorUuidMap: {
 				texture: textureFlavor.uuid
 			},
-			direction: Direction.Out
+			direction
 		};
 
 		const prepFlavors = [shaderFlavor, textureFlavor];

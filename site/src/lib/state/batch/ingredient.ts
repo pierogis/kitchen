@@ -2,7 +2,16 @@ import { get } from 'svelte/store';
 
 import { v4 as uuid } from 'uuid';
 
-import type { CallFor, Flavor, Ingredient, Location, Usage, Coordinates, PrepType } from '@types';
+import type {
+	CallFor,
+	Flavor,
+	Ingredient,
+	Location,
+	Usage,
+	Coordinates,
+	PrepType,
+	Prep
+} from '@types';
 
 import type { RecipeState } from '@recipe';
 import { type Action, ActionType } from '@state/actions';
@@ -13,7 +22,7 @@ export function dispatchIngredientCreationActions(
 	coordinates: Coordinates,
 	focusedIngredientUuid: string,
 	flavorDescriptions: Pick<Flavor, 'name' | 'directions' | 'type' | 'options'>[],
-	prepTypes: PrepType[]
+	prepDescriptions: Pick<Prep<PrepType>, 'type' | 'direction'>[]
 ) {
 	const ingredient: Ingredient = {
 		uuid: uuid(),
@@ -70,12 +79,12 @@ export function dispatchIngredientCreationActions(
 		};
 	});
 
-	const preps = prepTypes.map((type) => {
+	const preps = prepDescriptions.map(({ type, direction }) => {
 		const prepUuid = uuid();
 
 		const primitive = prepPrimitives[type];
 
-		const { prep, prepFlavors } = primitive.create(prepUuid, ingredient.uuid);
+		const { prep, prepFlavors } = primitive.create(prepUuid, ingredient.uuid, direction);
 
 		prepFlavors.map((flavor) => flavors.push(flavor));
 

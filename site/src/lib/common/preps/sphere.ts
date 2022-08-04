@@ -20,7 +20,7 @@ export const SpherePrep: PrepPrimitive<PrepType.Sphere> = {
 		radius: { directions: [Direction.In], type: FlavorType.Number, options: null }
 	},
 	name,
-	create: (prepUuid: string, ingredientUuid: string) => {
+	create: (prepUuid: string, ingredientUuid: string, direction: Direction) => {
 		const sphereFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Geometry,
@@ -52,7 +52,7 @@ export const SpherePrep: PrepPrimitive<PrepType.Sphere> = {
 			outFlavorUuidMap: {
 				sphere: sphereFlavor.uuid
 			},
-			direction: Direction.Out
+			direction
 		};
 
 		const prepFlavors = [sphereFlavor, radiusFlavor];

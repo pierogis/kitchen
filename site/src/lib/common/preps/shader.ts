@@ -18,7 +18,7 @@ export const ShaderPrep: PrepPrimitive<PrepType.Shader> = {
 		shader: { directions: [Direction.Out], type: FlavorType.Shader, options: null }
 	},
 	name,
-	create: (prepUuid: string, ingredientUuid: string) => {
+	create: (prepUuid: string, ingredientUuid: string, direction: Direction) => {
 		const shaderFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Shader,
@@ -39,7 +39,7 @@ export const ShaderPrep: PrepPrimitive<PrepType.Shader> = {
 			outFlavorUuidMap: {
 				shader: shaderFlavor.uuid
 			},
-			direction: Direction.Out
+			direction
 		};
 
 		const prepFlavors = [shaderFlavor];

@@ -160,7 +160,13 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const nodes = createNodes(recipeState, inFocusSubComponents);
 
 	// centrally track terminals that should be created on flavors
-	const terminals = createTerminals(inFocusConnections, nodes, liveConnection, dockedFlavors);
+	const terminals = createTerminals(
+		inFocusConnections,
+		nodes,
+		liveConnection,
+		dockedFlavors,
+		recipeState.preps
+	);
 
 	// terminals feed back their location for use with drawing cables
 	const terminalsCoordinates = createTerminalsCoordinates(terminals, liveConnection);

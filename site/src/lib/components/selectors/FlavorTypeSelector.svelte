@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, getContext } from 'svelte';
 
-	import type { Coordinates, FlavorType, Direction } from '@types';
+	import type { FlavorType, Direction } from '@types';
 	import { flavorTypes } from '$lib/common/flavors';
 	import { viewStateContextKey, type ViewState } from '@view';
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
@@ -9,7 +9,6 @@
 
 	import Selector from './Selector.svelte';
 
-	export let coordinates: Coordinates;
 	export let direction: Direction;
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
@@ -35,4 +34,12 @@
 
 <svelte:window on:click={handleClick} />
 
-<Selector {options} x={coordinates.x} y={coordinates.y} on:select={handleSelect} />
+<div>
+	<Selector {options} on:select={handleSelect} />
+</div>
+
+<style>
+	div {
+		align-self: center;
+	}
+</style>

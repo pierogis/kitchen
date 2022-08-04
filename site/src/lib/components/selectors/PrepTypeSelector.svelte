@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, getContext } from 'svelte';
 
-	import type { Coordinates, PrepType } from '@types';
+	import type { PrepType, Direction } from '@types';
 	import { prepTypes } from '$lib/common/preps';
 	import { viewStateContextKey, type ViewState } from '@view';
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
@@ -9,7 +9,7 @@
 
 	import Selector from './Selector.svelte';
 
-	export let coordinates: Coordinates;
+	export let direction: Direction;
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 	const viewState: ViewState = getContext(viewStateContextKey);
@@ -20,7 +20,7 @@
 
 	function handleSelect(event: CustomEvent<[string, PrepType]>) {
 		dispatch('destroy');
-		dispatchAddPrepActions(recipeState, $focusedIngredient.uuid, event.detail[1]);
+		dispatchAddPrepActions(recipeState, $focusedIngredient.uuid, direction, event.detail[1]);
 	}
 
 	function handleClick() {
@@ -32,4 +32,12 @@
 
 <svelte:window on:click={handleClick} />
 
-<Selector {options} x={coordinates.x} y={coordinates.y} on:select={handleSelect} />
+<div>
+	<Selector {options} on:select={handleSelect} />
+</div>
+
+<style>
+	div {
+		align-self: center;
+	}
+</style>

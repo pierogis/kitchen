@@ -21,7 +21,7 @@ export const PlatePrep: PrepPrimitive<PrepType.Plate> = {
 		object: { directions: [Direction.In], type: FlavorType.Object, options: null }
 	},
 	name,
-	create: (prepUuid: string, ingredientUuid: string) => {
+	create: (prepUuid: string, ingredientUuid: string, direction: Direction) => {
 		const plateFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Object,
@@ -44,7 +44,7 @@ export const PlatePrep: PrepPrimitive<PrepType.Plate> = {
 			outFlavorUuidMap: {
 				plate: plateFlavor.uuid
 			},
-			direction: Direction.Out
+			direction
 		};
 
 		const prepFlavors = [plateFlavor];

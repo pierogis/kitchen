@@ -33,7 +33,7 @@ export const AddPrep: PrepPrimitive<PrepType.Add> = {
 		}
 	},
 	name,
-	create: (prepUuid: string, ingredientUuid: string) => {
+	create: (prepUuid: string, ingredientUuid: string, direction: Direction) => {
 		const sumFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Number,
@@ -74,7 +74,7 @@ export const AddPrep: PrepPrimitive<PrepType.Add> = {
 			outFlavorUuidMap: {
 				sum: sumFlavor.uuid
 			},
-			direction: Direction.Out
+			direction
 		};
 
 		const prepFlavors = [sumFlavor, operand1Flavor, operand2Flavor];

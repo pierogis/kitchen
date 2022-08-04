@@ -2,7 +2,7 @@ import { get } from 'svelte/store';
 
 import { v4 as uuid } from 'uuid';
 
-import type { PrepType } from '@types';
+import type { Direction, PrepType } from '@types';
 
 import type { RecipeState } from '@recipe';
 import { type Action, ActionType } from '@state/actions';
@@ -11,10 +11,11 @@ import { prepPrimitives } from '$lib/common/preps';
 export function dispatchAddPrepActions(
 	recipeState: RecipeState,
 	ingredientUuid: string,
+	direction: Direction,
 	type: PrepType
 ) {
 	const prepUuid = uuid();
-	const { prep, prepFlavors } = prepPrimitives[type].create(prepUuid, ingredientUuid);
+	const { prep, prepFlavors } = prepPrimitives[type].create(prepUuid, ingredientUuid, direction);
 
 	const createPrepsAction: Action<ActionType.CreatePreps> = {
 		type: ActionType.CreatePreps,
@@ -57,12 +58,13 @@ export function dispatchChangePrepTypeActions(
 	recipeState: RecipeState,
 	prepUuid: string,
 	ingredientUuid: string,
+	direction: Direction,
 	type: PrepType
 ) {
 	// create new flavors
 
 	const prepPrimitive = prepPrimitives[type];
-	const { prep, prepFlavors } = prepPrimitive.create(prepUuid, ingredientUuid);
+	const { prep, prepFlavors } = prepPrimitive.create(prepUuid, ingredientUuid, direction);
 
 	const createFlavorsAction: Action<ActionType.CreateFlavors> = {
 		type: ActionType.CreateFlavors,

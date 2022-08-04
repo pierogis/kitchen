@@ -18,7 +18,7 @@ export const ImagePrep: PrepPrimitive<PrepType.Image> = {
 		image: { directions: [Direction.In, Direction.Out], type: FlavorType.Image, options: null }
 	},
 	name,
-	create: (prepUuid: string, ingredientUuid: string) => {
+	create: (prepUuid: string, ingredientUuid: string, direction: Direction) => {
 		const imageFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Image,
@@ -41,7 +41,7 @@ export const ImagePrep: PrepPrimitive<PrepType.Image> = {
 			outFlavorUuidMap: {
 				image: imageFlavor.uuid
 			},
-			direction: Direction.Out
+			direction
 		};
 
 		const prepFlavors = [imageFlavor];
