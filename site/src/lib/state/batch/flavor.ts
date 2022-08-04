@@ -33,6 +33,20 @@ export function dispatchAddFlavorActions(
 	recipeState.batchDispatch([createFlavorsAction]);
 }
 
+export function dispatchDeleteFlavorActions(recipeState: RecipeState, flavorUuid: string) {
+	const oldFlavor = get(recipeState.flavors).get(flavorUuid);
+	if (!oldFlavor) throw `flavor ${flavorUuid} not found`;
+
+	const deleteFlavorsAction: Action<ActionType.DeleteFlavors> = {
+		type: ActionType.DeleteFlavors,
+		params: {
+			flavors: [oldFlavor]
+		}
+	};
+
+	recipeState.batchDispatch([deleteFlavorsAction]);
+}
+
 export function dispatchUpdateFlavorNameActions(
 	recipeState: RecipeState,
 	flavorUuid: string,

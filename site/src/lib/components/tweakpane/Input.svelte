@@ -20,18 +20,14 @@
 	let inputElement: HTMLElement;
 
 	onMount(() => {
-		let inputApi: InputBindingApi<unknown, T>;
-
 		let params = $paramsStore;
-		inputApi = folder.addInput(params, key, { ...inputParams, index }).on('change', onChange);
+		const inputApi: InputBindingApi<unknown, T> = folder
+			.addInput(params, key, { ...inputParams, index })
+			.on('change', onChange);
 
-		// const element = inputApi.controller_.valueController.view.element.parentElement;
-		const element = inputApi.element;
-		if (element) {
-			inputElement = element;
-			// monitorElement.style.maxWidth = '9rem';
-			// monitorElement.style.display = 'flex';
-		}
+		inputElement = inputApi.element;
+		// inputElement.style.maxWidth = '9rem';
+		// inputElement.style.display = 'flex';
 
 		return () => {
 			inputApi.dispose();

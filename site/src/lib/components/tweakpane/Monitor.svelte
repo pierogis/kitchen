@@ -20,20 +20,17 @@
 	let monitorElement: HTMLElement;
 
 	onMount(() => {
-		let monitorApi: MonitorBindingApi<T>;
-
 		let params = $paramsStore;
-		monitorApi = folder.addMonitor(params, key, { ...monitorParams, index, interval });
+		const monitorApi: MonitorBindingApi<T> = folder.addMonitor(params, key, {
+			...monitorParams,
+			index,
+			interval
+		});
 
-		// const element = monitorApi.controller_.valueController.view.element.parentElement;
-		const element = monitorApi.element;
-		if (element) {
-			monitorElement = element;
-			// monitorElement.style.maxWidth = '9rem';
-			// monitorElement.style.display = 'flex';
-		}
+		monitorElement = monitorApi.element;
+		// monitorElement.style.maxWidth = '9rem';
+		// monitorElement.style.display = 'flex';
 
-		// this is so fucked
 		let fired = false;
 		paramsStore.subscribe((newParams) => {
 			if (fired) {

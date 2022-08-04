@@ -33,13 +33,37 @@ export function dispatchAddPrepActions(
 	recipeState.batchDispatch([createFlavorsAction, createPrepsAction]);
 }
 
+export function dispatchDeletePrepActions(recipeState: RecipeState, prepUuid: string) {
+	const oldPrep = get(recipeState.preps).get(prepUuid);
+	if (!oldPrep) throw `prep ${prepUuid} not found`;
+
+	const deletePrepsAction: Action<ActionType.DeletePreps> = {
+		type: ActionType.DeletePreps,
+		params: {
+			preps: [oldPrep]
+		}
+	};
+
+	// delete old flavors
+	const oldFlavors = Array.from(get(recipeState.flavors).values()).filter(
+		(flavor) => flavor.prepUuid == oldPrep.uuid
+	);
+	const deleteFlavorsAction: Action<ActionType.DeleteFlavors> = {
+		type: ActionType.DeleteFlavors,
+		params: {
+			flavors: oldFlavors
+		}
+	};
+
+	recipeState.batchDispatch([deletePrepsAction, deleteFlavorsAction]);
+}
+
 export function dispatchUpdatePrepNameActions(
 	recipeState: RecipeState,
 	prepUuid: string,
 	name: string
 ) {
 	const oldPrep = get(recipeState.preps).get(prepUuid);
-
 	if (!oldPrep) throw `prep ${prepUuid} not found`;
 
 	if (oldPrep.name != name) {

@@ -2,18 +2,17 @@
 	import { getContext } from 'svelte';
 	import { writable } from 'svelte/store';
 
-	import type { TpChangeEvent } from 'tweakpane';
-
-	import { type Flavor, Direction, FlavorType } from '@types';
+	import { type Flavor, Direction } from '@types';
 	import { flavorTypes } from '$lib/common/flavors';
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
 	import type { Terminal } from '@view';
 	import {
 		dispatchUpdateFlavorTypeActions,
-		dispatchUpdateFlavorNameActions
+		dispatchUpdateFlavorNameActions,
+		dispatchDeleteFlavorActions
 	} from '@state/batch/flavor';
 
-	import { Input, Folder } from '@components/tweakpane';
+	import { Input, Folder, Button } from '@components/tweakpane';
 	import { TerminalRack } from '@components/terminals';
 	import PaneContainer from './PaneContainer.svelte';
 
@@ -22,13 +21,6 @@
 	export let direction: Direction;
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
-
-	function handleFlavorNameUpdate(flavor: Flavor, event: TpChangeEvent<string>) {
-		dispatchUpdateFlavorNameActions(recipeState, flavor.uuid, event.value);
-	}
-	function handleFlavorTypeUpdate(flavor: Flavor, event: TpChangeEvent<FlavorType>) {
-		dispatchUpdateFlavorTypeActions(recipeState, flavor.uuid, event.value);
-	}
 
 	$: oppositeDirection = direction == Direction.Out ? Direction.In : Direction.Out;
 	$: terminals = terminals.filter((terminal) => terminal.direction == oppositeDirection);
@@ -42,14 +34,21 @@
 					{folder}
 					paramsStore={writable({ name: flavor.name })}
 					key={'name'}
-					onChange={(event) => handleFlavorNameUpdate(flavor, event)}
+					onChange={({ value: name }) =>
+						dispatchUpdateFlavorNameActions(recipeState, flavor.uuid, name)}
 				/>
 				<Input
 					{folder}
 					paramsStore={writable({ type: flavor.type })}
 					key={'type'}
-					onChange={(event) => handleFlavorTypeUpdate(flavor, event)}
+					onChange={({ value: type }) =>
+						dispatchUpdateFlavorTypeActions(recipeState, flavor.uuid, type)}
 					inputParams={{ options: flavorTypes }}
+				/>
+				<Button
+					{folder}
+					title={'delete'}
+					onClick={() => dispatchDeleteFlavorActions(recipeState, flavor.uuid)}
 				/>
 				{#if terminals.length > 0}
 					<TerminalRack
