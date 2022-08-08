@@ -1,38 +1,37 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import type { Readable } from 'svelte/store';
 
-	import type { InputBindingApi, TpChangeEvent } from '@tweakpane/core';
-	import type { FolderApi, InputParams } from 'tweakpane';
+	import type { InputParams, Pane } from 'tweakpane';
+	import type { FolderApi, InputBindingApi, TabPageApi, TpChangeEvent } from '@tweakpane/core';
 
 	import type { CanvasValue } from '$lib/common/plugins/canvas/view';
 
 	// generic for the bound value type of this input
 	type T = $$Generic<string | number | CanvasValue>;
 
-	export let folder: FolderApi;
+	export let parent: Pane | FolderApi | TabPageApi;
 	export let paramsStore: Readable<{ [key: string]: T }>;
 	export let onChange: (ev: TpChangeEvent<T>) => void;
 	export let key: string;
 	export let inputParams: InputParams | undefined = undefined;
 	export let index: number | undefined = undefined;
+	export let disabled: boolean = false;
 
-	let inputElement: HTMLElement;
+	let params = $paramsStore;
+	const inputApi: InputBindingApi<unknown, T> = parent
+		.addInput(params, key, { ...inputParams, index, disabled })
+		.on('change', onChange);
 
-	onMount(() => {
-		let params = $paramsStore;
-		const inputApi: InputBindingApi<unknown, T> = folder
-			.addInput(params, key, { ...inputParams, index })
-			.on('change', onChange);
+	$: inputApi.disabled = disabled;
 
-		inputElement = inputApi.element;
-		// inputElement.style.maxWidth = '9rem';
-		// inputElement.style.display = 'flex';
+	const inputElement = inputApi.element;
+	// inputElement.style.maxWidth = '9rem';
+	// inputElement.style.display = 'flex';
 
-		return () => {
-			inputApi.dispose();
-			folder.remove(inputApi);
-		};
+	onDestroy(() => {
+		inputApi.dispose();
+		parent.remove(inputApi);
 	});
 </script>
 

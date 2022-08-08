@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import type { FolderApi } from 'tweakpane';
-	import type { TpEvent } from '@tweakpane/core';
+	import type { Pane } from 'tweakpane';
+	import type { FolderApi, TpEvent, TabPageApi } from '@tweakpane/core';
 
-	export let folder: FolderApi;
+	export let parent: Pane | FolderApi | TabPageApi;
 	export let title: string;
 	export let onClick: (ev: TpEvent) => void;
 	export let index: number | undefined = undefined;
@@ -12,7 +12,7 @@
 	let buttonElement: HTMLElement;
 
 	onMount(() => {
-		const buttonApi = folder.addButton({
+		const buttonApi = parent.addButton({
 			title,
 			index
 		});
@@ -23,7 +23,7 @@
 
 		return () => {
 			buttonApi.dispose();
-			folder.remove(buttonApi);
+			parent.remove(buttonApi);
 		};
 	});
 </script>

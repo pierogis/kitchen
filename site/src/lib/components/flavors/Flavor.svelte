@@ -96,7 +96,7 @@
 	{#if $monitor}
 		<Monitor
 			{index}
-			folder={pane}
+			parent={pane}
 			{paramsStore}
 			monitorParams={optParams}
 			key={flavor.name}
@@ -124,7 +124,7 @@
 	{:else}
 		<Input
 			{index}
-			folder={pane}
+			parent={pane}
 			{paramsStore}
 			inputParams={optParams}
 			onChange={(ev) => $onChange(ev)}
