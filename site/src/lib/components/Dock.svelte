@@ -20,21 +20,8 @@
 	const terminals = viewState.terminals;
 
 	$: flavorUuids = flavors.map((flavor) => flavor.uuid);
-
 	$: flavorTerminals = $terminals.filter(
 		(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
-	);
-
-	$: prepTerminals = new Map(
-		preps.map((prep) => {
-			const flavorUuids = prep.flavors.map((flavor) => flavor.uuid);
-			return [
-				prep.uuid,
-				$terminals.filter(
-					(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
-				)
-			];
-		})
 	);
 
 	const editMode = viewState.editMode;
@@ -48,13 +35,12 @@
 
 <div class="dock" class:in={direction == Direction.In} class:out={direction == Direction.Out}>
 	{#each preps as prep (prep.uuid)}
+		{@const prepFlavorUuids = prep.flavors.map((flavor) => flavor.uuid)}
+		{@const prepTerminals = $terminals.filter(
+			(terminal) => terminal.flavorUuid && prepFlavorUuids.includes(terminal.flavorUuid)
+		)}
 		{#if !$editMode}
-			<PaneContainer
-				{direction}
-				title={prep.name}
-				terminals={prepTerminals.get(prep.uuid) || []}
-				let:pane
-			>
+			<PaneContainer {direction} title={prep.name} terminals={prepTerminals} let:pane>
 				{#each prep.flavors as flavor, index (flavor.uuid)}
 					<FlavorComponent
 						{index}
@@ -66,23 +52,15 @@
 								? direction
 								: oppositeDirection
 						)}
-						terminals={(prepTerminals.get(prep.uuid) || []).filter(
-							(terminal) => terminal.flavorUuid == flavor.uuid
-						)}
+						terminals={prepTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)}
 						usageUuid={focusedUsageUuid}
 						{pane}
 					/>
 				{/each}
 			</PaneContainer>
 		{:else}
-			<PaneContainer terminals={flavorTerminals} {direction} let:pane let:paneContainer>
-				<EditPrep
-					{pane}
-					{paneContainer}
-					{prep}
-					terminals={prepTerminals.get(prep.uuid) || []}
-					{direction}
-				/>
+			<PaneContainer terminals={prepTerminals} {direction} let:pane let:paneContainer>
+				<EditPrep {pane} {paneContainer} {prep} terminals={prepTerminals} {direction} />
 			</PaneContainer>
 		{/if}
 	{/each}
@@ -107,16 +85,17 @@
 	{#if !$editMode}
 		<PaneContainer {direction} title={'flavors'} terminals={flavorTerminals} let:pane>
 			{#each flavors as flavor, index (flavor.uuid)}
+				{@const filling = fillings.getFilling(
+					flavor.uuid,
+					focusedUsageUuid,
+					(direction && !flavor.prepUuid) || flavor.directions.includes(direction)
+						? direction
+						: oppositeDirection
+				)}
 				<FlavorComponent
 					{index}
 					{flavor}
-					filling={fillings.getFilling(
-						flavor.uuid,
-						focusedUsageUuid,
-						(direction && !flavor.prepUuid) || flavor.directions.includes(direction)
-							? direction
-							: oppositeDirection
-					)}
+					{filling}
 					terminals={flavorTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)}
 					usageUuid={focusedUsageUuid}
 					{pane}
