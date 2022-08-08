@@ -2,7 +2,9 @@
 	import { getContext } from 'svelte';
 	import { writable } from 'svelte/store';
 
-	import { type Prep, PrepType, Direction } from '@types';
+	import type { Pane } from 'tweakpane';
+
+	import { type FullPrep, PrepType, Direction } from '@types';
 	import { prepTypes } from '$lib/common/preps';
 	import type { Terminal } from '@view';
 	import { recipeStateContextKey, type RecipeState } from '@recipe';
@@ -12,11 +14,14 @@
 		dispatchDeletePrepActions
 	} from '$lib/state/batch/prep';
 
-	import { Input, Button } from '@components/tweakpane';
+	import { Input, Button, Tab } from '@components/tweakpane';
 	import { TerminalRack } from '@components/terminals';
-	import { PaneContainer } from '.';
+	import { EditFlavors } from '@components/paneContainers';
 
-	export let prep: Prep<PrepType>;
+	export let pane: Pane;
+	export let paneContainer: HTMLElement;
+
+	export let prep: FullPrep<PrepType>;
 	export let terminals: Terminal[];
 	export let direction: Direction;
 
@@ -25,23 +30,25 @@
 	$: oppositeDirection = direction == Direction.Out ? Direction.In : Direction.Out;
 	$: terminals = terminals.filter((terminal) => terminal.direction == oppositeDirection);
 
-	let paneContainer: HTMLElement;
+	let showFlavorsTab = false;
 </script>
 
-<PaneContainer
-	{terminals}
-	{direction}
-	let:pane
-	on:paneContainer={(event) => (paneContainer = event.detail)}
+<Tab
+	parent={pane}
+	pages={[{ title: prep.name }, { title: 'flavors' }]}
+	let:tab
+	on:select={(event) => {
+		showFlavorsTab = event.detail.index == 1;
+	}}
 >
 	<Input
-		folder={pane}
+		parent={tab.pages[0]}
 		paramsStore={writable({ name: prep.name })}
 		key={'name'}
 		onChange={({ value: name }) => dispatchUpdatePrepNameActions(recipeState, prep.uuid, name)}
 	/>
 	<Input
-		folder={pane}
+		parent={tab.pages[0]}
 		paramsStore={writable({ type: prep.type })}
 		key={'type'}
 		inputParams={{ options: prepTypes }}
@@ -49,11 +56,20 @@
 			dispatchChangePrepTypeActions(recipeState, prep.uuid, prep.ingredientUuid, direction, type)}
 	/>
 	<Button
-		folder={pane}
+		parent={tab.pages[0]}
 		title={'delete'}
 		onClick={() => dispatchDeletePrepActions(recipeState, prep.uuid)}
 	/>
-	{#if terminals.length > 0}
-		<TerminalRack parentElement={paneContainer} {terminals} direction={oppositeDirection} />
-	{/if}
-</PaneContainer>
+	<EditFlavors
+		tab={{ api: tab, pageIndex: 1 }}
+		flavors={prep.flavors}
+		terminals={showFlavorsTab ? terminals : []}
+		{direction}
+		allowChangeType={false}
+		allowDelete={false}
+	/>
+</Tab>
+
+{#if !showFlavorsTab && terminals.length > 0}
+	<TerminalRack parentElement={paneContainer} {terminals} direction={oppositeDirection} />
+{/if}

@@ -6,11 +6,7 @@
 	import { viewStateContextKey, type ViewState } from '@view';
 
 	import { AddTab } from '@components';
-	import {
-		EditFlavorsPaneContainer,
-		EditPrepPaneContainer,
-		PaneContainer
-	} from '@components/paneContainers';
+	import { EditFlavors, EditPrep, PaneContainer } from '@components/paneContainers';
 	import { Flavor as FlavorComponent } from '@components/flavors';
 	import { PrepTypeSelector, FlavorTypeSelector } from '@components/selectors';
 
@@ -79,7 +75,15 @@
 				{/each}
 			</PaneContainer>
 		{:else}
-			<EditPrepPaneContainer {prep} terminals={prepTerminals.get(prep.uuid) || []} {direction} />
+			<PaneContainer terminals={flavorTerminals} {direction} let:pane let:paneContainer>
+				<EditPrep
+					{pane}
+					{paneContainer}
+					{prep}
+					terminals={prepTerminals.get(prep.uuid) || []}
+					{direction}
+				/>
+			</PaneContainer>
 		{/if}
 	{/each}
 	{#if $editMode}
@@ -121,7 +125,9 @@
 		</PaneContainer>
 	{:else}
 		<div class="super-pane">
-			<EditFlavorsPaneContainer {flavors} terminals={flavorTerminals} {direction} />
+			<PaneContainer title={'flavors'} terminals={flavorTerminals} {direction} let:pane>
+				<EditFlavors {pane} {flavors} terminals={flavorTerminals} {direction} />
+			</PaneContainer>
 			{#if addingFlavor}
 				<FlavorTypeSelector
 					{direction}

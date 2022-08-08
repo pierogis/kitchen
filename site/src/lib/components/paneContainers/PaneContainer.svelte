@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
-
 	import { Direction } from '@types';
 	import type { Terminal } from '@view';
 
 	import { TerminalRack } from '@components/terminals';
-
-	import { Pane } from '../tweakpane';
+	import { Pane } from '@components/tweakpane';
 
 	export let title: string | undefined = undefined;
 	export let terminals: Terminal[];
@@ -18,11 +15,6 @@
 	function handleFold() {
 		folded = !folded;
 	}
-
-	const dispatch = createEventDispatcher();
-	onMount(() => {
-		dispatch('paneContainer', paneContainer);
-	});
 
 	$: inTerminals = terminals.filter((terminal) => terminal.direction == Direction.In);
 	$: outTerminals = terminals.filter((terminal) => terminal.direction == Direction.Out);
@@ -37,7 +29,7 @@
 	{#if paneContainer}
 		<Pane {title} container={paneContainer} let:pane on:fold={handleFold}>
 			{#if !folded}
-				<slot {pane} />
+				<slot {pane} {paneContainer} />
 			{/if}
 		</Pane>
 		{#if folded}

@@ -54,11 +54,6 @@
 		(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
 	);
 
-	let paneContainer: HTMLElement;
-	function handlePaneContainer(ev: CustomEvent<HTMLElement>) {
-		paneContainer = ev.detail;
-	}
-
 	const fillings = viewState.fillings;
 </script>
 
@@ -70,24 +65,21 @@
 	style:--node-header-size="{nodeHeaderSize}px"
 	use:draggableAction={grabTarget}
 >
-	{#if paneContainer}
-		<div class="header">
-			<div class="focus no-select" on:mousedown|stopPropagation={handleFocus} />
+	<div class="header">
+		<div class="focus no-select" on:mousedown|stopPropagation={handleFocus} />
 
-			<div class="grab no-select" bind:this={grabTarget} class:dragging>
-				<div class="grab-dot" />
-				<div class="grab-dot" />
-			</div>
-
-			<div class="remove no-select" on:mousedown|stopPropagation={handleRemove} />
+		<div class="grab no-select" bind:this={grabTarget} class:dragging>
+			<div class="grab-dot" />
+			<div class="grab-dot" />
 		</div>
-	{/if}
+
+		<div class="remove no-select" on:mousedown|stopPropagation={handleRemove} />
+	</div>
 	<PaneContainer
 		title={ingredient.name}
 		terminals={terminals.filter(
 			(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
 		)}
-		on:paneContainer={handlePaneContainer}
 		let:pane
 	>
 		{#each flavors as flavor, index (flavor.uuid)}

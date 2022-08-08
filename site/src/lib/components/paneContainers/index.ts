@@ -1,5 +1,5 @@
-import EditFlavorsPaneContainer from './EditFlavorsPaneContainer.svelte';
-import EditPrepPaneContainer from './EditPrepPaneContainer.svelte';
+import EditFlavors from './EditFlavors.svelte';
+import EditPrep from './EditPrep.svelte';
 import PaneContainer from './PaneContainer.svelte';
 
-export { EditFlavorsPaneContainer, EditPrepPaneContainer, PaneContainer };
+export { EditFlavors, EditPrep, PaneContainer };
