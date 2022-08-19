@@ -1,34 +1,21 @@
-<script lang="ts" context="module">
-	import { storeRecipe } from '@state';
-	import { recipeStateContextKey } from '@recipe';
-	import { viewStateContextKey } from '@view';
-
-	import { defaultRecipe } from './_recipe';
-
-	/** @type {import('./index').Load} */
-	export async function load() {
-		return {
-			props: {
-				recipe: defaultRecipe
-			}
-		};
-	}
-</script>
-
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
 	import { derived } from 'svelte/store';
 
-	import type { FullRecipe } from '@types';
-	import { readableViewState } from '@view';
+	import type { PageData } from './$types';
+
+	import { storeRecipe } from '@state';
+	import { recipeStateContextKey } from '@recipe';
+	import { readableViewState, viewStateContextKey } from '@view';
 
 	import Pan from '@components/Pan.svelte';
 	import Recipe from '@components/Recipe.svelte';
 	import { ActionType } from '$lib/state/actions';
 
-	let innerWidth: number, innerHeight: number;
+	export let data: PageData;
+	const { recipe } = data;
 
-	export let recipe: FullRecipe;
+	let innerWidth: number, innerHeight: number;
 
 	const recipeState = storeRecipe(recipe);
 	const viewState = readableViewState(recipeState);
