@@ -27,13 +27,13 @@
 		dispatch('destroy');
 	}
 
-	const options = prepTypes;
+	const optGroups = prepTypes;
 </script>
 
 <svelte:window on:click={handleClick} />
 
 <div>
-	<Selector {options} on:select={handleSelect} />
+	<Selector {optGroups} on:select={handleSelect} />
 </div>
 
 <style>

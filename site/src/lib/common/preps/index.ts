@@ -71,16 +71,17 @@ export interface PrepPrimitive<P extends PrepType> {
 	cook: (scene: THREE.Scene, camera: THREE.Camera, inPayloads: InPayloads<P>) => OutPayloads<P>;
 }
 
-export const prepTypes: { [name: string]: PrepType } = {
-	sphere: PrepType.Sphere,
-	box: PrepType.Box,
-	add: PrepType.Add,
-	image: PrepType.Image,
-	material: PrepType.Material,
-	mesh: PrepType.Mesh,
-	plate: PrepType.Plate,
-	shader: PrepType.Shader,
-	texture: PrepType.Texture
+export const prepTypes: { [groupName: string]: { [name: string]: PrepType } } = {
+	shape: { sphere: PrepType.Sphere, box: PrepType.Box },
+	fundamental: { add: PrepType.Add },
+	file: { image: PrepType.Image },
+	'3d': {
+		material: PrepType.Material,
+		mesh: PrepType.Mesh,
+		texture: PrepType.Texture,
+		shader: PrepType.Shader
+	},
+	output: { plate: PrepType.Plate }
 };
 
 export const prepPrimitives: {
