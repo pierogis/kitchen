@@ -25,9 +25,7 @@
 			await tick();
 			// calculate the rect and dispatch to the callback
 			let rect: DOMRect = element.getBoundingClientRect();
-			// accounts for scroll
-			rect.x += window.pageXOffset;
-			rect.y += window.pageYOffset;
+
 			let center = calculateCenter(rect);
 
 			return center;
