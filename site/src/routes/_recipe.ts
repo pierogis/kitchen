@@ -228,10 +228,10 @@ const boxGeometryFlavor = {
 	options: null
 };
 
-const boxXFlavor = {
-	uuid: 'x-box-flavor',
+const boxWidthFlavor = {
+	uuid: 'box-width-flavor',
 	ingredientUuid: boxIngredientUuid,
-	name: 'x',
+	name: 'width',
 	type: FlavorType.Number,
 
 	directions: [Direction.In],
@@ -239,10 +239,10 @@ const boxXFlavor = {
 	options: null
 };
 
-const boxYFlavor = {
-	uuid: 'y-box-flavor',
+const boxHeightFlavor = {
+	uuid: 'box-height-flavor',
 	ingredientUuid: boxIngredientUuid,
-	name: 'y',
+	name: 'height',
 	type: FlavorType.Number,
 
 	directions: [Direction.In],
@@ -250,10 +250,10 @@ const boxYFlavor = {
 	options: null
 };
 
-const boxZFlavor = {
-	uuid: 'z-box-flavor',
+const boxDepthFlavor = {
+	uuid: 'box-depth-flavor',
 	ingredientUuid: boxIngredientUuid,
-	name: 'z',
+	name: 'depth',
 	type: FlavorType.Number,
 	directions: [Direction.In],
 	prepUuid: boxGeometryPrepUuid,
@@ -266,7 +266,11 @@ const boxGeometryPrep: Prep<PrepType.Box> = {
 	name: 'box',
 	type: PrepType.Box,
 	direction: Direction.In,
-	inFlavorUuidMap: { x: boxXFlavor.uuid, y: boxYFlavor.uuid, z: boxZFlavor.uuid },
+	inFlavorUuidMap: {
+		width: boxWidthFlavor.uuid,
+		height: boxHeightFlavor.uuid,
+		depth: boxDepthFlavor.uuid
+	},
 	outFlavorUuidMap: { box: boxGeometryFlavor.uuid }
 };
 
@@ -520,9 +524,9 @@ const boxIngredient: FullIngredient = {
 	parentIngredientUuid: mainIngredient.uuid,
 	name: 'box',
 	flavors: [
-		boxXFlavor,
-		boxYFlavor,
-		boxZFlavor,
+		boxWidthFlavor,
+		boxHeightFlavor,
+		boxDepthFlavor,
 		boxGeometryFlavor,
 		boxColorFlavor,
 		boxMaterialFlavor,
@@ -641,10 +645,10 @@ const colorInputParameter: Parameter<FlavorType.Color> = {
 	}
 };
 
-const boxXParameter: Parameter<FlavorType.Number> = {
-	uuid: 'box-x-parameter',
+const boxWidthParameter: Parameter<FlavorType.Number> = {
+	uuid: 'box-width-parameter',
 	recipeUuid,
-	flavorUuid: boxXFlavor.uuid,
+	flavorUuid: boxWidthFlavor.uuid,
 	usageUuid: boxUsage.uuid,
 	payload: {
 		type: FlavorType.Number,
@@ -652,10 +656,10 @@ const boxXParameter: Parameter<FlavorType.Number> = {
 	}
 };
 
-const boxYParameter: Parameter<FlavorType.Number> = {
-	uuid: 'box-y-parameter',
+const boxHeightParameter: Parameter<FlavorType.Number> = {
+	uuid: 'box-height-parameter',
 	recipeUuid,
-	flavorUuid: boxYFlavor.uuid,
+	flavorUuid: boxHeightFlavor.uuid,
 	usageUuid: boxUsage.uuid,
 	payload: {
 		type: FlavorType.Number,
@@ -663,10 +667,10 @@ const boxYParameter: Parameter<FlavorType.Number> = {
 	}
 };
 
-const boxZParameter: Parameter<FlavorType.Number> = {
-	uuid: 'box-z-parameter',
+const boxDepthParameter: Parameter<FlavorType.Number> = {
+	uuid: 'box-depth-parameter',
 	recipeUuid,
-	flavorUuid: boxZFlavor.uuid,
+	flavorUuid: boxDepthFlavor.uuid,
 	usageUuid: boxUsage.uuid,
 	payload: {
 		type: FlavorType.Number,
@@ -689,9 +693,9 @@ export const defaultRecipe: FullRecipe = {
 	parameters: [
 		radiusInputParameter,
 		colorInputParameter,
-		boxXParameter,
-		boxYParameter,
-		boxZParameter
+		boxWidthParameter,
+		boxHeightParameter,
+		boxDepthParameter
 	],
 	shaders: []
 };

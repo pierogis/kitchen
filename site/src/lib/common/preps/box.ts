@@ -6,9 +6,9 @@ import { Direction, FlavorType, PrepType, type Flavor, type Prep } from '@types'
 import type { InPayloads, PrepPrimitive } from '.';
 
 export const BoxOperands = {
-	x: FlavorType.Number,
-	y: FlavorType.Number,
-	z: FlavorType.Number
+	width: FlavorType.Number,
+	height: FlavorType.Number,
+	depth: FlavorType.Number
 } as const;
 export const BoxOutputs = {
 	box: FlavorType.Geometry
@@ -19,9 +19,9 @@ const name = 'box';
 export const BoxPrep: PrepPrimitive<PrepType.Box> = {
 	flavors: {
 		box: { directions: [Direction.Out], type: FlavorType.Geometry, options: null },
-		x: { directions: [Direction.In], type: FlavorType.Number, options: null },
-		y: { directions: [Direction.In], type: FlavorType.Number, options: null },
-		z: { directions: [Direction.In], type: FlavorType.Number, options: null }
+		width: { directions: [Direction.In], type: FlavorType.Number, options: null },
+		height: { directions: [Direction.In], type: FlavorType.Number, options: null },
+		depth: { directions: [Direction.In], type: FlavorType.Number, options: null }
 	},
 	name,
 	create: (prepUuid: string, ingredientUuid: string, direction: Direction) => {
@@ -37,7 +37,7 @@ export const BoxPrep: PrepPrimitive<PrepType.Box> = {
 		const xFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Number,
-			name: 'x',
+			name: 'width',
 			options: null,
 			ingredientUuid: ingredientUuid,
 			prepUuid: prepUuid,
@@ -46,7 +46,7 @@ export const BoxPrep: PrepPrimitive<PrepType.Box> = {
 		const yFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Number,
-			name: 'y',
+			name: 'height',
 			options: null,
 			ingredientUuid: ingredientUuid,
 			prepUuid: prepUuid,
@@ -55,7 +55,7 @@ export const BoxPrep: PrepPrimitive<PrepType.Box> = {
 		const zFlavor: Flavor = {
 			uuid: uuid(),
 			type: FlavorType.Number,
-			name: 'z',
+			name: 'depth',
 			options: null,
 			ingredientUuid: ingredientUuid,
 			prepUuid: prepUuid,
@@ -69,9 +69,9 @@ export const BoxPrep: PrepPrimitive<PrepType.Box> = {
 			type: PrepType.Box,
 			// map from default names on prep operands and outputs to flavor uuids
 			inFlavorUuidMap: {
-				x: xFlavor.uuid,
-				y: yFlavor.uuid,
-				z: zFlavor.uuid
+				width: xFlavor.uuid,
+				height: yFlavor.uuid,
+				depth: zFlavor.uuid
 			},
 			outFlavorUuidMap: {
 				box: boxFlavor.uuid
@@ -84,10 +84,10 @@ export const BoxPrep: PrepPrimitive<PrepType.Box> = {
 		return { prep, prepFlavors };
 	},
 	cook: (_scene, _camera, inPayloads: InPayloads<PrepType.Box>) => {
-		const x = inPayloads['x'].value;
-		const y = inPayloads['y'].value;
-		const z = inPayloads['z'].value;
-		const geometry = new THREE.BoxGeometry(x, y, z);
+		const width = inPayloads['width'].value;
+		const height = inPayloads['height'].value;
+		const depth = inPayloads['depth'].value;
+		const geometry = new THREE.BoxGeometry(width, height, depth);
 
 		return {
 			box: { type: FlavorType.Geometry, value: geometry }
