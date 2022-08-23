@@ -4,17 +4,19 @@ import { Direction, PrepType, type Flavor, type Payload, type Prep } from '@type
 import { AddPrep, AddOperands, AddOutputs } from './add';
 import { ImagePrep, ImageOperands, ImageOutputs } from './image';
 import { ShaderPrep, ShaderOperands, ShaderOutputs } from './shader';
-import { SpherePrep, SphereOperands, SphereOutputs } from './sphere';
 import { TexturePrep, TextureOperands, TextureOutputs } from './texture';
 import { PlatePrep, PlateOperands, PlateOutputs } from './plate';
 import { MeshPrep, MeshOperands, MeshOutputs } from './mesh';
 import { MaterialPrep, MaterialOperands, MaterialOutputs } from './material';
+import { SpherePrep, SphereOperands, SphereOutputs } from './sphere';
+import { BoxPrep, BoxOperands, BoxOutputs } from './box';
 
 export const PrepOperands = {
+	[PrepType.Sphere]: SphereOperands,
+	[PrepType.Box]: BoxOperands,
 	[PrepType.Add]: AddOperands,
 	[PrepType.Image]: ImageOperands,
 	[PrepType.Shader]: ShaderOperands,
-	[PrepType.Sphere]: SphereOperands,
 	[PrepType.Texture]: TextureOperands,
 	[PrepType.Plate]: PlateOperands,
 	[PrepType.Mesh]: MeshOperands,
@@ -28,10 +30,11 @@ export type PrepOperand<P, O> = P extends PrepType
 	: never;
 
 export const PrepOutputs = {
+	[PrepType.Sphere]: SphereOutputs,
+	[PrepType.Box]: BoxOutputs,
 	[PrepType.Add]: AddOutputs,
 	[PrepType.Image]: ImageOutputs,
 	[PrepType.Shader]: ShaderOutputs,
-	[PrepType.Sphere]: SphereOutputs,
 	[PrepType.Texture]: TextureOutputs,
 	[PrepType.Plate]: PlateOutputs,
 	[PrepType.Mesh]: MeshOutputs,
@@ -69,23 +72,25 @@ export interface PrepPrimitive<P extends PrepType> {
 }
 
 export const prepTypes: { [name: string]: PrepType } = {
+	sphere: PrepType.Sphere,
+	box: PrepType.Box,
 	add: PrepType.Add,
 	image: PrepType.Image,
 	material: PrepType.Material,
 	mesh: PrepType.Mesh,
 	plate: PrepType.Plate,
 	shader: PrepType.Shader,
-	sphere: PrepType.Sphere,
 	texture: PrepType.Texture
 };
 
 export const prepPrimitives: {
 	[prepType in PrepType]: PrepPrimitive<prepType>;
 } = {
+	[PrepType.Sphere]: SpherePrep,
+	[PrepType.Box]: BoxPrep,
 	[PrepType.Add]: AddPrep,
 	[PrepType.Image]: ImagePrep,
 	[PrepType.Shader]: ShaderPrep,
-	[PrepType.Sphere]: SpherePrep,
 	[PrepType.Texture]: TexturePrep,
 	[PrepType.Plate]: PlatePrep,
 	[PrepType.Mesh]: MeshPrep,
