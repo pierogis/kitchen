@@ -10,6 +10,7 @@
 	import type { ViewState } from '@view';
 	import { ActionType, type Action } from '@state/actions';
 
+	import { DragHeader } from '@components';
 	import { PaneContainer } from '@components/paneContainers';
 	import { Flavor as FlavorComponent } from '@components/flavors';
 
@@ -20,9 +21,6 @@
 	export let flavors: Flavor[];
 	export let callFor: CallFor;
 	export let location: Location;
-
-	let grabTarget: HTMLElement;
-	let dragging = false;
 
 	// focus node on focus button
 	function handleFocus(_event: MouseEvent) {
@@ -48,13 +46,13 @@
 
 	$: flavorUuids = flavors.map((flavor) => flavor.uuid);
 
-	$: allTerminals = viewState.terminals;
+	const allTerminals = viewState.terminals;
 
 	$: terminals = $allTerminals.filter(
 		(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
 	);
 
-	const fillings = viewState.fillings;
+	let dragTarget: HTMLElement;
 </script>
 
 <div
@@ -63,18 +61,11 @@
 	style:max-width="{nodeWidth}px"
 	style:top="{location.y - nodeHeaderSize / 2}px"
 	style:--node-header-size="{nodeHeaderSize}px"
-	use:draggableAction={grabTarget}
+	bind:this={dragTarget}
 >
-	<div class="header">
-		<div class="focus no-select" on:mousedown|stopPropagation={handleFocus} />
-
-		<div class="grab no-select" bind:this={grabTarget} class:dragging>
-			<div class="grab-dot" />
-			<div class="grab-dot" />
-		</div>
-
-		<div class="remove no-select" on:mousedown|stopPropagation={handleRemove} />
-	</div>
+	{#if dragTarget}
+		<DragHeader {handleFocus} {handleRemove} {dragTarget} />
+	{/if}
 	<PaneContainer
 		title={ingredient.name}
 		terminals={terminals.filter(
@@ -83,14 +74,15 @@
 		let:pane
 	>
 		{#each flavors as flavor, index (flavor.uuid)}
+			{@const filling = viewState.fillings.getFilling(
+				flavor.uuid,
+				callFor.usageUuid,
+				flavor.directions.includes(Direction.Out) ? Direction.Out : Direction.In
+			)}
 			<FlavorComponent
 				{index}
 				{flavor}
-				filling={fillings.getFilling(
-					flavor.uuid,
-					callFor.usageUuid,
-					flavor.directions.includes(Direction.Out) ? Direction.Out : Direction.In
-				)}
+				{filling}
 				terminals={terminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)}
 				usageUuid={callFor.usageUuid}
 				{pane}
@@ -106,60 +98,5 @@
 		display: block;
 
 		transform: translate(-50%, 0);
-	}
-	.header {
-		display: flex;
-		height: var(--node-header-size);
-		margin-bottom: 4px;
-	}
-
-	.grab {
-		background-color: var(--primary-color);
-
-		box-shadow: 0 2px 4px var(--shadow-color);
-
-		flex: 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-
-		cursor: grab;
-	}
-
-	.grab-dot {
-		background-color: var(--button-color-hover);
-		border-radius: 50%;
-		height: 4px;
-		width: 4px;
-		margin: 2px;
-	}
-
-	.focus,
-	.remove {
-		box-shadow: 0 2px 4px var(--primary-color-shadow);
-		width: var(--node-header-size);
-		cursor: pointer;
-	}
-
-	.remove:hover,
-	.focus:hover,
-	.grab:hover {
-		filter: brightness(90%) saturate(150%);
-	}
-
-	.focus {
-		background-color: var(--focus-color);
-
-		border-radius: 6px 0px 0px 6px;
-
-		margin-right: 5px;
-	}
-
-	.remove {
-		background-color: var(--remove-color);
-
-		border-radius: 0px 6px 6px 0px;
-
-		margin-left: 5px;
 	}
 </style>

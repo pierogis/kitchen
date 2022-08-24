@@ -1,19 +1,13 @@
-export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
+export function draggableAction(handle: HTMLElement, dragTarget?: HTMLElement) {
 	let pos1 = 0,
 		pos2 = 0,
 		pos3 = 0,
 		pos4 = 0;
 
-	let grabTarget: HTMLElement;
+	handle.addEventListener('mousedown', handleMouseDown);
+	handle.addEventListener('touchstart', handleTouchStart);
 
-	if (handle) {
-		grabTarget = handle;
-	} else {
-		grabTarget = element;
-	}
-
-	grabTarget.addEventListener('mousedown', handleMouseDown);
-	grabTarget.addEventListener('touchstart', handleTouchStart);
+	let element = dragTarget || handle;
 
 	function handleMouseDown(event: MouseEvent) {
 		if (event.button == 0) {
@@ -25,7 +19,7 @@ export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
 			document.addEventListener('mouseup', handleMouseUp);
 			// call a function whenever the cursor moves
 			document.addEventListener('mousemove', handleMouseMove);
-			grabTarget.style.cursor = 'grabbing';
+			handle.style.cursor = 'grabbing';
 		}
 	}
 	function handleTouchStart(event: TouchEvent) {
@@ -39,7 +33,7 @@ export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
 			document.addEventListener('touchend', handleTouchEnd);
 			// call a function whenever the cursor moves
 			document.addEventListener('touchmove', handleTouchMove);
-			grabTarget.style.cursor = 'grabbing';
+			handle.style.cursor = 'grabbing';
 		}
 	}
 
@@ -76,8 +70,8 @@ export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
 
 	function handleMouseUp(event: MouseEvent) {
 		// stop moving when mouse button is released:
-		grabTarget.style.cursor = '';
-		element.dispatchEvent(
+		handle.style.cursor = '';
+		handle.dispatchEvent(
 			new CustomEvent('release', {
 				detail: { x: event.clientX, y: event.clientY }
 			})
@@ -88,8 +82,8 @@ export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
 
 	function handleTouchEnd(_event: TouchEvent) {
 		// stop moving when touch is released:
-		grabTarget.style.cursor = '';
-		element.dispatchEvent(
+		handle.style.cursor = '';
+		handle.dispatchEvent(
 			new CustomEvent('release', {
 				detail: { x: pos3, y: pos4 }
 			})
@@ -99,25 +93,21 @@ export function draggableAction(element: HTMLElement, handle?: HTMLElement) {
 	}
 
 	return {
-		update(newHandle?: HTMLElement) {
-			grabTarget.removeEventListener('mousedown', handleMouseDown);
-			grabTarget.removeEventListener('touchstart', handleTouchStart);
+		update(newDragTarget?: HTMLElement) {
+			handle.removeEventListener('mousedown', handleMouseDown);
+			handle.removeEventListener('touchstart', handleTouchStart);
 
-			if (newHandle) {
-				grabTarget = newHandle;
-			} else {
-				grabTarget = element;
-			}
+			element = newDragTarget || handle;
 
-			grabTarget.addEventListener('mousedown', handleMouseDown);
-			grabTarget.addEventListener('touchstart', handleTouchStart);
+			handle.addEventListener('mousedown', handleMouseDown);
+			handle.addEventListener('touchstart', handleTouchStart);
 		},
 		destroy() {
-			grabTarget.removeEventListener('mousedown', handleMouseDown);
+			handle.removeEventListener('mousedown', handleMouseDown);
 			document.removeEventListener('mousemove', handleMouseMove);
 			document.removeEventListener('mouseup', handleMouseUp);
 
-			grabTarget.removeEventListener('touchstart', handleTouchStart);
+			handle.removeEventListener('touchstart', handleTouchStart);
 			document.removeEventListener('touchmove', handleTouchMove);
 			document.removeEventListener('touchend', handleTouchEnd);
 		}
