@@ -11,6 +11,8 @@
 	import Pan from '@components/Pan.svelte';
 	import Recipe from '@components/Recipe.svelte';
 	import { ActionType } from '$lib/state/actions';
+	import { Menu } from '@components/menu';
+	import { HelpModal } from '@components/modals';
 
 	export let data: PageData;
 	const { recipe } = data;
@@ -22,6 +24,8 @@
 
 	setContext(recipeStateContextKey, recipeState);
 	setContext(viewStateContextKey, viewState);
+
+	const showHelp = viewState.showHelp;
 
 	const handleMouseMove = (ev: MouseEvent) => {
 		viewState.cursor.coordinates.set({ x: ev.clientX, y: ev.clientY });
@@ -69,9 +73,15 @@
 	<button on:click={handleUnfocusClick} />
 {/if}
 
+<Menu />
+
 <Recipe width={innerWidth} height={innerHeight} {recipeState} {viewState} />
 
 <Pan width={innerWidth} height={innerHeight} {recipeState} {viewState} />
+
+{#if $showHelp}
+	<HelpModal />
+{/if}
 
 <style>
 	button {

@@ -41,5 +41,6 @@
 <style>
 	div {
 		align-self: center;
+		z-index: 1;
 	}
 </style>

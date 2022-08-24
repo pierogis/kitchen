@@ -24,6 +24,9 @@
 		--focus-color: hsla(220, 70%, 70%, 0.8);
 		--remove-color: hsla(0, 70%, 70%, 0.8);
 		--cable-color-number: rgba(120, 150, 190, 1);
+
+		--border-radius: 8px;
+		--bs-br: var(--border-radius);
 	}
 	body {
 		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
