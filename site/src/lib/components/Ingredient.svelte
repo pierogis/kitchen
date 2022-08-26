@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 
-	import { draggableAction } from '$lib/common/actions/draggableAction';
-
 	import { Direction, type CallFor, type Flavor, type Ingredient, type Location } from '@types';
 	import { viewStateContextKey } from '@view';
 	import { recipeStateContextKey } from '@recipe';

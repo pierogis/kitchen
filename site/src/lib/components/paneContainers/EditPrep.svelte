@@ -51,7 +51,7 @@
 		parent={tab.pages[0]}
 		paramsStore={writable({ type: prep.type })}
 		key={'type'}
-		inputParams={{ options: prepTypes }}
+		inputParams={{ view: 'grouplist', optgroups: prepTypes }}
 		onChange={({ value: type }) =>
 			dispatchChangePrepTypeActions(recipeState, prep.uuid, prep.ingredientUuid, direction, type)}
 	/>
