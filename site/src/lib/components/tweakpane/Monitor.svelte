@@ -5,7 +5,7 @@
 	import type { MonitorParams, Pane } from 'tweakpane';
 	import type { FolderApi, MonitorBindingApi, TabPageApi } from '@tweakpane/core';
 
-	import type { CanvasValue } from '$lib/common/plugins/canvas/view';
+	import type { CanvasValue } from '$lib/common/plugins/three/view';
 
 	// generic for the bound value type of this monitor
 	type T = $$Generic<string | number | CanvasValue>;

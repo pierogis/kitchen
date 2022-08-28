@@ -25,4 +25,4 @@
 	});
 </script>
 
-<slot {paramsStore} optParams={{ ...options, view: 'canvas' }} />
+<slot {paramsStore} optParams={{ ...options, view: 'three' }} />

@@ -5,13 +5,12 @@ import { createPluginController } from './controller';
 import type { CanvasValue } from './view';
 
 export interface CanvasMonitorParams extends TP.BaseMonitorParams {
-	view: 'canvas';
+	view: 'three';
 }
 
-export const CanvasMonitorPlugin: TP.MonitorBindingPlugin<CanvasValue, CanvasMonitorParams> = {
+export const ThreeMonitorPlugin: TP.MonitorBindingPlugin<CanvasValue, CanvasMonitorParams> = {
 	id: 'monitor-canvas',
 	type: 'monitor',
-	css: '__css__',
 	accept(exValue: unknown, params: Record<string, unknown>) {
 		const object = exValue as CanvasValue;
 		if (!object.scene || !object.camera) {
@@ -21,7 +20,7 @@ export const CanvasMonitorPlugin: TP.MonitorBindingPlugin<CanvasValue, CanvasMon
 
 		const p = TP.ParamsParsers;
 		const result = TP.parseParams<CanvasMonitorParams>(params, {
-			view: p.required.constant('canvas')
+			view: p.required.constant('three')
 		});
 		if (!result) {
 			return null;

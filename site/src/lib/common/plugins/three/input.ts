@@ -5,14 +5,13 @@ import { createPluginController } from './controller';
 import type { CanvasValue } from './view';
 
 export interface CanvasInputParams extends TP.BaseInputParams {
-	view: 'canvas';
+	view: 'three';
 }
 
-export const CanvasInputPlugin: TP.InputBindingPlugin<CanvasValue, CanvasValue, CanvasInputParams> =
+export const ThreeInputPlugin: TP.InputBindingPlugin<CanvasValue, CanvasValue, CanvasInputParams> =
 	{
 		id: 'input-canvas',
 		type: 'input',
-		css: '__css__',
 		accept(exValue: unknown, params: Record<string, unknown>) {
 			const object = exValue as CanvasValue;
 			if (!object.scene || !object.camera) {
@@ -22,7 +21,7 @@ export const CanvasInputPlugin: TP.InputBindingPlugin<CanvasValue, CanvasValue, 
 
 			const p = TP.ParamsParsers;
 			const result = TP.parseParams<CanvasInputParams>(params, {
-				view: p.required.constant('canvas')
+				view: p.required.constant('three')
 			});
 			if (!result) {
 				return null;

@@ -60,12 +60,14 @@
 	},
 	"dependencies": {
 		"@prisma/client": "^4.2.1",
+		"@tweakpane/plugin-essentials": "^0.1.5",
 		"ansi-regex": "^6.0.1",
 		"glob-parent": "^6.0.2",
 		"json-schema": "^0.4.0",
 		"nth-check": "^2.1.1",
 		"striptags": "^3.2.0",
 		"tweakpane": "^3.1.0",
+		"@pierogis/tweakpane-plugin-grouplist": "^0.1.0",
 		"uuid": "^8.3.2"
 	},
 	"type": "module"

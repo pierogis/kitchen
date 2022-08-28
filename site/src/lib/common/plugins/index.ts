@@ -1,9 +1,10 @@
 import type { Pane } from 'tweakpane';
 
-import { CanvasInputPlugin, CanvasMonitorPlugin } from './canvas';
-import { GroupListBladePlugin, GroupListStringInputPlugin } from './groupList';
+import * as GrouplistPlugin from '@pierogis/tweakpane-plugin-grouplist';
+
+import * as ThreePlugin from './three';
 
 export function registerPlugins(pane: Pane) {
-	pane.registerPlugin({ plugins: [CanvasInputPlugin, CanvasMonitorPlugin] });
-	pane.registerPlugin({ plugins: [GroupListBladePlugin, GroupListStringInputPlugin] });
+	pane.registerPlugin(ThreePlugin);
+	pane.registerPlugin(GrouplistPlugin);
 }
