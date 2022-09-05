@@ -1,6 +1,9 @@
-import type { PrepPrimitive } from '.';
-import { Direction, FlavorType, PrepType } from '@types';
+import { v4 as uuid } from 'uuid';
+
 import * as THREE from 'three';
+
+import { Direction, FlavorType, PrepType, type Flavor, type Prep } from '@types';
+import type { PrepPrimitive } from '.';
 
 export const PlateOperands = {
 	object: FlavorType.Object
@@ -10,10 +13,43 @@ export const PlateOutputs = {
 	plate: FlavorType.Object
 } as const;
 
+const name = 'plate';
+
 export const PlatePrep: PrepPrimitive<PrepType.Plate> = {
 	flavors: {
-		plate: { directions: [Direction.Out], type: FlavorType.Object },
-		object: { directions: [Direction.In], type: FlavorType.Object }
+		plate: { directions: [Direction.Out], type: FlavorType.Object, options: null },
+		object: { directions: [Direction.In], type: FlavorType.Object, options: null }
+	},
+	name,
+	create: (prepUuid: string, ingredientUuid: string, direction: Direction) => {
+		const plateFlavor: Flavor = {
+			uuid: uuid(),
+			type: FlavorType.Object,
+			name: 'plate',
+			options: null,
+			ingredientUuid: ingredientUuid,
+			prepUuid: prepUuid,
+			directions: [Direction.In, Direction.Out]
+		};
+
+		const prep: Prep<PrepType.Plate> = {
+			uuid: prepUuid,
+			name,
+			ingredientUuid,
+			type: PrepType.Plate,
+			// map from default names on prep operands and outputs to flavor uuids
+			inFlavorUuidMap: {
+				object: plateFlavor.uuid
+			},
+			outFlavorUuidMap: {
+				plate: plateFlavor.uuid
+			},
+			direction
+		};
+
+		const prepFlavors = [plateFlavor];
+
+		return { prep, prepFlavors };
 	},
 	cook: (scene, _camera, inPayloads) => {
 		const object = inPayloads['object'].value;

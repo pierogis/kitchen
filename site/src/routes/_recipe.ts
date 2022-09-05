@@ -15,9 +15,10 @@ const recipeUuid = '0-recipe';
 
 // ingredientUuids
 const mainIngredientUuid = 'main-ingredient';
-const meshIngredientUuid = 'mesh-ingredient';
+const sphereMeshIngredientUuid = 'sphere-mesh-ingredient';
 const sphereIngredientUuid = 'sphere-ingredient';
-const materialIngredientUuid = 'material-ingredient';
+const sphereMaterialIngredientUuid = 'material-ingredient';
+const boxIngredientUuid = 'box-ingredient';
 
 // preps
 
@@ -64,11 +65,11 @@ const platePrep: Prep<PrepType.Plate> = {
 	outFlavorUuidMap: { plate: platePrepFlavor.uuid }
 };
 
-const meshPrepUuid = 'mesh-prep';
+const sphereMeshPrepUuid = 'spehre-mesh-prep';
 
-const meshRadiusInputFlavor: Flavor = {
-	uuid: 'mesh-radius-input-flavor',
-	ingredientUuid: meshIngredientUuid,
+const sphereMeshRadiusInputFlavor: Flavor = {
+	uuid: 'sphere-mesh-radius-input-flavor',
+	ingredientUuid: sphereMeshIngredientUuid,
 	name: 'radius',
 	type: FlavorType.Number,
 	prepUuid: undefined,
@@ -76,9 +77,9 @@ const meshRadiusInputFlavor: Flavor = {
 	options: null
 };
 
-const meshColorInputFlavor: Flavor = {
-	uuid: 'mesh-color-input-flavor',
-	ingredientUuid: meshIngredientUuid,
+const sphereMeshColorInputFlavor: Flavor = {
+	uuid: 'sphere-mesh-color-input-flavor',
+	ingredientUuid: sphereMeshIngredientUuid,
 	name: 'color',
 	type: FlavorType.Color,
 	prepUuid: undefined,
@@ -86,39 +87,39 @@ const meshColorInputFlavor: Flavor = {
 	options: null
 };
 
-const meshPrepFlavor = {
-	uuid: 'mesh-prep-flavor',
-	ingredientUuid: meshIngredientUuid,
+const sphereMeshPrepFlavor = {
+	uuid: 'sphere-mesh-prep-flavor',
+	ingredientUuid: sphereMeshIngredientUuid,
 	name: 'mesh',
 	type: FlavorType.Object,
-	prepUuid: meshPrepUuid,
+	prepUuid: sphereMeshPrepUuid,
 	directions: [Direction.Out],
 	options: null
 };
 
 const geometryPrepFlavor = {
-	uuid: 'geometry-prep-flavor',
-	ingredientUuid: meshIngredientUuid,
+	uuid: 'sphere-geometry-prep-flavor',
+	ingredientUuid: sphereMeshIngredientUuid,
 	name: 'geometry',
 	type: FlavorType.Geometry,
-	prepUuid: meshPrepUuid,
+	prepUuid: sphereMeshPrepUuid,
 	directions: [Direction.In],
 	options: null
 };
 
 const meshMaterialPrepFlavor = {
-	uuid: 'mesh-material-prep-flavor',
-	ingredientUuid: meshIngredientUuid,
+	uuid: 'sphere-mesh-material-prep-flavor',
+	ingredientUuid: sphereMeshIngredientUuid,
 	name: 'material',
 	type: FlavorType.Material,
-	prepUuid: meshPrepUuid,
+	prepUuid: sphereMeshPrepUuid,
 	directions: [Direction.In],
 	options: null
 };
 
 const meshPrep: Prep<PrepType.Mesh> = {
-	uuid: meshPrepUuid,
-	ingredientUuid: meshIngredientUuid,
+	uuid: sphereMeshPrepUuid,
+	ingredientUuid: sphereMeshIngredientUuid,
 	name: 'sphere',
 	type: PrepType.Mesh,
 	direction: Direction.Out,
@@ -127,7 +128,7 @@ const meshPrep: Prep<PrepType.Mesh> = {
 		geometry: geometryPrepFlavor.uuid
 	},
 	outFlavorUuidMap: {
-		mesh: meshPrepFlavor.uuid
+		mesh: sphereMeshPrepFlavor.uuid
 	}
 };
 
@@ -172,45 +173,177 @@ const spherePrep: Prep<PrepType.Sphere> = {
 	outFlavorUuidMap: { sphere: spherePrepFlavor.uuid }
 };
 
-const materialPrepUuid = 'material-prep';
+const sphereMaterialPrepUuid = 'sphere-material-prep';
 
-const materialPrepFlavor = {
-	uuid: 'material-prep-flavor',
-	ingredientUuid: materialIngredientUuid,
+const sphereMaterialPrepFlavor = {
+	uuid: 'sphere-material-prep-flavor',
+	ingredientUuid: sphereMaterialIngredientUuid,
 	name: 'material',
 	type: FlavorType.Material,
-	prepUuid: materialPrepUuid,
+	prepUuid: sphereMaterialPrepUuid,
 	directions: [Direction.Out],
 	options: null
 };
 
-const colorPrepFlavor = {
-	uuid: 'color-prep-flavor',
-	ingredientUuid: materialIngredientUuid,
+const sphereMaterialColorPrepFlavor = {
+	uuid: 'sphere-material-color-prep-flavor',
+	ingredientUuid: sphereMaterialIngredientUuid,
 	name: 'color',
 	type: FlavorType.Color,
-	prepUuid: materialPrepUuid,
+	prepUuid: sphereMaterialPrepUuid,
 	directions: [Direction.In],
 	options: null
 };
 
-const colorMaterialFlavor = {
+const sphereColorMaterialFlavor = {
 	uuid: 'color-material-flavor',
-	ingredientUuid: materialIngredientUuid,
+	ingredientUuid: sphereMaterialIngredientUuid,
 	name: 'color',
 	type: FlavorType.Color,
 	directions: [Direction.In],
 	options: null
 };
 
-const materialPrep: Prep<PrepType.Material> = {
-	uuid: materialPrepUuid,
-	ingredientUuid: materialIngredientUuid,
+const sphereMaterialPrep: Prep<PrepType.Material> = {
+	uuid: sphereMaterialPrepUuid,
+	ingredientUuid: sphereMaterialIngredientUuid,
 	name: 'material',
 	type: PrepType.Material,
 	direction: Direction.Out,
-	inFlavorUuidMap: { color: colorPrepFlavor.uuid },
-	outFlavorUuidMap: { material: materialPrepFlavor.uuid }
+	inFlavorUuidMap: { color: sphereMaterialColorPrepFlavor.uuid },
+	outFlavorUuidMap: { material: sphereMaterialPrepFlavor.uuid }
+};
+
+// box
+
+const boxGeometryPrepUuid = 'box-geometry-prep';
+
+const boxGeometryFlavor = {
+	uuid: 'box-geometry-flavor',
+	ingredientUuid: boxIngredientUuid,
+	name: 'box',
+	type: FlavorType.Geometry,
+	directions: [Direction.Out],
+	prepUuid: boxGeometryPrepUuid,
+	options: null
+};
+
+const boxWidthFlavor = {
+	uuid: 'box-width-flavor',
+	ingredientUuid: boxIngredientUuid,
+	name: 'width',
+	type: FlavorType.Number,
+	directions: [Direction.In],
+	prepUuid: boxGeometryPrepUuid,
+	options: null
+};
+
+const boxHeightFlavor = {
+	uuid: 'box-height-flavor',
+	ingredientUuid: boxIngredientUuid,
+	name: 'height',
+	type: FlavorType.Number,
+	directions: [Direction.In],
+	prepUuid: boxGeometryPrepUuid,
+	options: null
+};
+
+const boxDepthFlavor = {
+	uuid: 'box-depth-flavor',
+	ingredientUuid: boxIngredientUuid,
+	name: 'depth',
+	type: FlavorType.Number,
+	directions: [Direction.In],
+	prepUuid: boxGeometryPrepUuid,
+	options: null
+};
+
+const boxGeometryPrep: Prep<PrepType.Box> = {
+	uuid: boxGeometryPrepUuid,
+	ingredientUuid: boxIngredientUuid,
+	name: 'box',
+	type: PrepType.Box,
+	direction: Direction.In,
+	inFlavorUuidMap: {
+		width: boxWidthFlavor.uuid,
+		height: boxHeightFlavor.uuid,
+		depth: boxDepthFlavor.uuid
+	},
+	outFlavorUuidMap: { box: boxGeometryFlavor.uuid }
+};
+
+const boxMaterialPrepUuid = 'box-material-prep';
+
+const boxColorFlavor = {
+	uuid: 'box-color-flavor',
+	ingredientUuid: boxIngredientUuid,
+	name: 'color',
+	type: FlavorType.Color,
+	prepUuid: boxMaterialPrepUuid,
+	directions: [Direction.In],
+	options: null
+};
+
+const boxMaterialFlavor = {
+	uuid: 'box-material-flavor',
+	ingredientUuid: boxIngredientUuid,
+	name: 'material',
+	type: FlavorType.Material,
+	directions: [Direction.Out],
+	prepUuid: boxMaterialPrepUuid,
+	options: null
+};
+
+const boxMaterialPrep: Prep<PrepType.Material> = {
+	uuid: boxMaterialPrepUuid,
+	ingredientUuid: boxIngredientUuid,
+	name: 'box',
+	type: PrepType.Material,
+	direction: Direction.In,
+	inFlavorUuidMap: { color: boxColorFlavor.uuid },
+	outFlavorUuidMap: { material: boxMaterialFlavor.uuid }
+};
+
+const boxMeshPrepUuid = 'box-mesh-prep';
+
+const boxMeshGeometryFlavor = {
+	uuid: 'box-mesh-geometry-flavor',
+	ingredientUuid: boxIngredientUuid,
+	name: 'geometry',
+	type: FlavorType.Geometry,
+	directions: [Direction.In],
+	prepUuid: boxMeshPrepUuid,
+	options: null
+};
+
+const boxMeshMaterialFlavor = {
+	uuid: 'box-mesh-material-flavor',
+	ingredientUuid: boxIngredientUuid,
+	name: 'material',
+	type: FlavorType.Material,
+	directions: [Direction.In],
+	prepUuid: boxMeshPrepUuid,
+	options: null
+};
+
+const boxMeshFlavor = {
+	uuid: 'box-mesh-flavor',
+	ingredientUuid: boxIngredientUuid,
+	name: 'mesh',
+	type: FlavorType.Object,
+	directions: [Direction.Out],
+	prepUuid: boxMeshPrepUuid,
+	options: null
+};
+
+const boxMeshPrep: Prep<PrepType.Mesh> = {
+	uuid: boxMeshPrepUuid,
+	ingredientUuid: boxIngredientUuid,
+	name: 'box',
+	type: PrepType.Mesh,
+	direction: Direction.Out,
+	inFlavorUuidMap: { geometry: boxMeshGeometryFlavor.uuid, material: boxMeshMaterialFlavor.uuid },
+	outFlavorUuidMap: { mesh: boxMeshFlavor.uuid }
 };
 
 // usages and ingredients
@@ -220,22 +353,28 @@ const mainUsage: Usage = {
 	parentUsageUuid: undefined
 };
 
-const meshUsage: Usage = {
-	uuid: 'mesh-usage',
-	ingredientUuid: meshIngredientUuid,
+const sphereMeshUsage: Usage = {
+	uuid: 'sphere-mesh-usage',
+	ingredientUuid: sphereMeshIngredientUuid,
 	parentUsageUuid: mainUsage.uuid
 };
 
-const materialUsage: Usage = {
-	uuid: 'material-usage',
-	ingredientUuid: materialIngredientUuid,
-	parentUsageUuid: meshUsage.uuid
+const sphereMaterialUsage: Usage = {
+	uuid: 'sphere-material-usage',
+	ingredientUuid: sphereMaterialIngredientUuid,
+	parentUsageUuid: sphereMeshUsage.uuid
 };
 
 const sphereUsage: Usage = {
 	uuid: 'sphere-usage',
 	ingredientUuid: sphereIngredientUuid,
-	parentUsageUuid: meshUsage.uuid
+	parentUsageUuid: sphereMeshUsage.uuid
+};
+
+const boxUsage: Usage = {
+	uuid: 'box-usage',
+	ingredientUuid: boxIngredientUuid,
+	parentUsageUuid: mainUsage.uuid
 };
 
 const mainIngredient: FullIngredient = {
@@ -249,25 +388,34 @@ const mainIngredient: FullIngredient = {
 			flavorType: FlavorType.Object,
 			parentIngredientUuid: mainIngredientUuid,
 			inFlavorUuid: platePrepFlavor.uuid,
-			outFlavorUuid: meshPrepFlavor.uuid,
+			outFlavorUuid: sphereMeshPrepFlavor.uuid,
 			inUsageUuid: undefined,
-			outUsageUuid: meshUsage.uuid
+			outUsageUuid: sphereMeshUsage.uuid
 		},
 		{
 			uuid: 'main-radius-connection',
 			flavorType: FlavorType.Number,
 			parentIngredientUuid: mainIngredientUuid,
-			inFlavorUuid: meshRadiusInputFlavor.uuid,
+			inFlavorUuid: sphereMeshRadiusInputFlavor.uuid,
 			outFlavorUuid: radiusInputFlavor.uuid,
-			inUsageUuid: meshUsage.uuid,
+			inUsageUuid: sphereMeshUsage.uuid,
 			outUsageUuid: undefined
 		},
 		{
-			uuid: 'main-color-connection',
+			uuid: 'main-sphere-color-connection',
 			flavorType: FlavorType.Color,
 			parentIngredientUuid: mainIngredientUuid,
-			inFlavorUuid: meshColorInputFlavor.uuid,
-			inUsageUuid: meshUsage.uuid,
+			inFlavorUuid: sphereMeshColorInputFlavor.uuid,
+			inUsageUuid: sphereMeshUsage.uuid,
+			outFlavorUuid: colorInputFlavor.uuid,
+			outUsageUuid: undefined
+		},
+		{
+			uuid: 'main-box-color-connection',
+			flavorType: FlavorType.Color,
+			parentIngredientUuid: mainIngredientUuid,
+			inFlavorUuid: boxColorFlavor.uuid,
+			inUsageUuid: boxUsage.uuid,
 			outFlavorUuid: colorInputFlavor.uuid,
 			outUsageUuid: undefined
 		}
@@ -277,21 +425,21 @@ const mainIngredient: FullIngredient = {
 };
 
 const meshIngredient: FullIngredient = {
-	uuid: meshIngredientUuid,
+	uuid: sphereMeshIngredientUuid,
 	parentIngredientUuid: mainIngredient.uuid,
 	name: 'mesh',
 	flavors: [
-		meshPrepFlavor,
+		sphereMeshPrepFlavor,
 		meshMaterialPrepFlavor,
 		geometryPrepFlavor,
-		meshRadiusInputFlavor,
-		meshColorInputFlavor
+		sphereMeshRadiusInputFlavor,
+		sphereMeshColorInputFlavor
 	],
 	connections: [
 		{
 			uuid: 'mesh-geometry-connection',
 			flavorType: FlavorType.Geometry,
-			parentIngredientUuid: meshIngredientUuid,
+			parentIngredientUuid: sphereMeshIngredientUuid,
 			outFlavorUuid: spherePrepFlavor.uuid,
 			outUsageUuid: sphereUsage.uuid,
 			inFlavorUuid: geometryPrepFlavor.uuid,
@@ -300,17 +448,17 @@ const meshIngredient: FullIngredient = {
 		{
 			uuid: 'mesh-material-connection',
 			flavorType: FlavorType.Material,
-			parentIngredientUuid: meshIngredientUuid,
-			outFlavorUuid: materialPrepFlavor.uuid,
-			outUsageUuid: materialUsage.uuid,
+			parentIngredientUuid: sphereMeshIngredientUuid,
+			outFlavorUuid: sphereMaterialPrepFlavor.uuid,
+			outUsageUuid: sphereMaterialUsage.uuid,
 			inFlavorUuid: meshMaterialPrepFlavor.uuid,
 			inUsageUuid: undefined
 		},
 		{
 			uuid: 'mesh-radius-connection',
 			flavorType: FlavorType.Number,
-			parentIngredientUuid: meshIngredientUuid,
-			outFlavorUuid: meshRadiusInputFlavor.uuid,
+			parentIngredientUuid: sphereMeshIngredientUuid,
+			outFlavorUuid: sphereMeshRadiusInputFlavor.uuid,
 			outUsageUuid: undefined,
 			inFlavorUuid: radiusSphereFlavor.uuid,
 			inUsageUuid: sphereUsage.uuid
@@ -318,35 +466,35 @@ const meshIngredient: FullIngredient = {
 		{
 			uuid: 'mesh-color-connection',
 			flavorType: FlavorType.Color,
-			parentIngredientUuid: meshIngredientUuid,
-			outFlavorUuid: meshColorInputFlavor.uuid,
+			parentIngredientUuid: sphereMeshIngredientUuid,
+			outFlavorUuid: sphereMeshColorInputFlavor.uuid,
 			outUsageUuid: undefined,
-			inFlavorUuid: colorMaterialFlavor.uuid,
-			inUsageUuid: materialUsage.uuid
+			inFlavorUuid: sphereColorMaterialFlavor.uuid,
+			inUsageUuid: sphereMaterialUsage.uuid
 		}
 	],
-	usages: [meshUsage],
+	usages: [sphereMeshUsage],
 	preps: [meshPrep]
 };
 
 const materialIngredient: FullIngredient = {
-	uuid: materialIngredientUuid,
+	uuid: sphereMaterialIngredientUuid,
 	parentIngredientUuid: meshIngredient.uuid,
 	name: 'material',
-	flavors: [materialPrepFlavor, colorPrepFlavor, colorMaterialFlavor],
+	flavors: [sphereMaterialPrepFlavor, sphereMaterialColorPrepFlavor, sphereColorMaterialFlavor],
 	connections: [
 		{
 			uuid: 'material-color-connection',
 			flavorType: FlavorType.Color,
-			parentIngredientUuid: materialIngredientUuid,
-			inFlavorUuid: colorPrepFlavor.uuid,
-			outFlavorUuid: colorMaterialFlavor.uuid,
+			parentIngredientUuid: sphereMaterialIngredientUuid,
+			inFlavorUuid: sphereMaterialColorPrepFlavor.uuid,
+			outFlavorUuid: sphereColorMaterialFlavor.uuid,
 			inUsageUuid: undefined,
 			outUsageUuid: undefined
 		}
 	],
-	usages: [materialUsage],
-	preps: [materialPrep]
+	usages: [sphereMaterialUsage],
+	preps: [sphereMaterialPrep]
 };
 
 const sphereIngredient: FullIngredient = {
@@ -369,6 +517,45 @@ const sphereIngredient: FullIngredient = {
 	preps: [spherePrep]
 };
 
+const boxIngredient: FullIngredient = {
+	uuid: boxIngredientUuid,
+	parentIngredientUuid: mainIngredient.uuid,
+	name: 'box',
+	flavors: [
+		boxWidthFlavor,
+		boxHeightFlavor,
+		boxDepthFlavor,
+		boxGeometryFlavor,
+		boxColorFlavor,
+		boxMaterialFlavor,
+		boxMeshGeometryFlavor,
+		boxMeshMaterialFlavor,
+		boxMeshFlavor
+	],
+	connections: [
+		{
+			uuid: 'box-geometry-connection',
+			flavorType: FlavorType.Geometry,
+			parentIngredientUuid: boxIngredientUuid,
+			inFlavorUuid: boxMeshGeometryFlavor.uuid,
+			outFlavorUuid: boxGeometryFlavor.uuid,
+			inUsageUuid: undefined,
+			outUsageUuid: undefined
+		},
+		{
+			uuid: 'box-material-connection',
+			flavorType: FlavorType.Material,
+			parentIngredientUuid: boxIngredientUuid,
+			inFlavorUuid: boxMeshMaterialFlavor.uuid,
+			outFlavorUuid: boxMaterialFlavor.uuid,
+			inUsageUuid: undefined,
+			outUsageUuid: undefined
+		}
+	],
+	usages: [boxUsage],
+	preps: [boxGeometryPrep, boxMaterialPrep, boxMeshPrep]
+};
+
 const mainCallForUuid = 'main-callFor';
 const mainCallFor: FullCallFor = {
 	uuid: mainCallForUuid,
@@ -386,12 +573,12 @@ const meshCallForUuid = 'mesh-callFor';
 const meshCallFor: FullCallFor = {
 	uuid: meshCallForUuid,
 	recipeUuid,
-	usageUuid: meshUsage.uuid,
+	usageUuid: sphereMeshUsage.uuid,
 	location: {
 		uuid: 'mesh-location',
 		callForUuid: meshCallForUuid,
 		x: 500,
-		y: 200
+		y: 100
 	}
 };
 
@@ -404,7 +591,7 @@ const sphereCallFor: FullCallFor = {
 		uuid: 'sphere-location',
 		callForUuid: sphereCallForUuid,
 		x: 400,
-		y: 400
+		y: 200
 	}
 };
 
@@ -412,12 +599,25 @@ const materialCallForUuid = 'material-callFor';
 const materialCallFor: FullCallFor = {
 	uuid: materialCallForUuid,
 	recipeUuid,
-	usageUuid: materialUsage.uuid,
+	usageUuid: sphereMaterialUsage.uuid,
 	location: {
 		uuid: 'material-location',
 		callForUuid: materialCallForUuid,
 		x: 400,
-		y: 200
+		y: 400
+	}
+};
+
+const boxCallForUuid = 'box-callFor';
+const boxCallFor: FullCallFor = {
+	uuid: boxCallForUuid,
+	recipeUuid,
+	usageUuid: boxUsage.uuid,
+	location: {
+		uuid: 'box-location',
+		callForUuid: boxCallForUuid,
+		x: 500,
+		y: 400
 	}
 };
 
@@ -443,12 +643,57 @@ const colorInputParameter: Parameter<FlavorType.Color> = {
 	}
 };
 
+const boxWidthParameter: Parameter<FlavorType.Number> = {
+	uuid: 'box-width-parameter',
+	recipeUuid,
+	flavorUuid: boxWidthFlavor.uuid,
+	usageUuid: boxUsage.uuid,
+	payload: {
+		type: FlavorType.Number,
+		value: 1
+	}
+};
+
+const boxHeightParameter: Parameter<FlavorType.Number> = {
+	uuid: 'box-height-parameter',
+	recipeUuid,
+	flavorUuid: boxHeightFlavor.uuid,
+	usageUuid: boxUsage.uuid,
+	payload: {
+		type: FlavorType.Number,
+		value: 1
+	}
+};
+
+const boxDepthParameter: Parameter<FlavorType.Number> = {
+	uuid: 'box-depth-parameter',
+	recipeUuid,
+	flavorUuid: boxDepthFlavor.uuid,
+	usageUuid: boxUsage.uuid,
+	payload: {
+		type: FlavorType.Number,
+		value: 1
+	}
+};
+
 // const asd: FlavorMap<PrepType.addToScene> = {};
 export const defaultRecipe: FullRecipe = {
 	uuid: recipeUuid,
 	mainCallForUuid: mainCallFor.uuid,
-	ingredients: [mainIngredient, meshIngredient, sphereIngredient, materialIngredient],
-	callsFor: [mainCallFor, meshCallFor, sphereCallFor, materialCallFor],
-	parameters: [radiusInputParameter, colorInputParameter],
+	ingredients: [
+		mainIngredient,
+		meshIngredient,
+		sphereIngredient,
+		materialIngredient,
+		boxIngredient
+	],
+	callsFor: [mainCallFor, meshCallFor, sphereCallFor, materialCallFor, boxCallFor],
+	parameters: [
+		radiusInputParameter,
+		colorInputParameter,
+		boxWidthParameter,
+		boxHeightParameter,
+		boxDepthParameter
+	],
 	shaders: []
 };

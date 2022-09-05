@@ -21,7 +21,8 @@ export enum PrepType {
 	Texture = 'Texture',
 	Material = 'Material',
 	Plate = 'Plate',
-	Mesh = 'Mesh'
+	Mesh = 'Mesh',
+	Box = 'Box'
 }
 
 export enum Direction {

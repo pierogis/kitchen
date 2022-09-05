@@ -1,34 +1,20 @@
 <script lang="ts">
-	import { createEventDispatcher, getContext, onMount } from 'svelte';
+	import { Direction } from '@types';
+	import type { Terminal } from '@view';
 
-	import { type Flavor, Direction } from '@types';
-	import { viewStateContextKey, type Terminal, type ViewState } from '@view';
+	import { TerminalRack } from '@components/terminals';
+	import { Pane } from '@components/tweakpane';
 
-	import TerminalRack from './TerminalRack.svelte';
-	import FlavorComponent from './Flavor.svelte';
-
-	import Pane from './tweakpane/Pane.svelte';
-
-	export let name: string;
-	export let flavors: Flavor[];
+	export let title: string | undefined = undefined;
 	export let terminals: Terminal[];
-	export let usageUuid: string;
 	export let direction: Direction | undefined = undefined;
 
 	let paneContainer: HTMLElement;
-
-	let viewState: ViewState = getContext(viewStateContextKey);
-	const fillings = viewState.fillings;
 
 	let folded = false;
 	function handleFold() {
 		folded = !folded;
 	}
-
-	const dispatch = createEventDispatcher();
-	onMount(() => {
-		dispatch('paneContainer', paneContainer);
-	});
 
 	$: inTerminals = terminals.filter((terminal) => terminal.direction == Direction.In);
 	$: outTerminals = terminals.filter((terminal) => terminal.direction == Direction.Out);
@@ -41,28 +27,9 @@
 	class="pane-container no-select"
 >
 	{#if paneContainer}
-		<Pane title={name} container={paneContainer} let:pane on:fold={handleFold}>
+		<Pane {title} container={paneContainer} let:pane on:fold={handleFold}>
 			{#if !folded}
-				{#each flavors as flavor, index (flavor.uuid)}
-					<FlavorComponent
-						{index}
-						{flavor}
-						filling={fillings.getFilling(
-							flavor.uuid,
-							usageUuid,
-							direction && !flavor.prepUuid
-								? direction
-								: flavor.directions.includes(Direction.Out)
-								? Direction.Out
-								: Direction.In
-						)}
-						terminals={terminals.filter(
-							(terminal) => terminal.flavorUuid == flavor.uuid && terminal.direction != direction
-						)}
-						{usageUuid}
-						folder={pane}
-					/>
-				{/each}
+				<slot {pane} {paneContainer} />
 			{/if}
 		</Pane>
 		{#if folded}
@@ -88,7 +55,7 @@
 <style>
 	.pane-container {
 		display: flex;
-		align-items: center;
+		place-items: center;
 	}
 
 	:global(.pane-container > div) {

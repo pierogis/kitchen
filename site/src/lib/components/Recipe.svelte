@@ -1,27 +1,55 @@
 <script lang="ts">
-	import type { Readable } from 'svelte/store';
+	import { get } from 'svelte/store';
 
-	import { Direction, type Flavor, type FullPrep, type PrepType } from '@types';
+	import { Direction } from '@types';
 
-	import type { Terminal, Node, Cable } from '@view';
+	import type { ViewState } from '@view';
+	import type { RecipeState } from '@recipe';
 
-	import IngredientComponent from '@components/Ingredient.svelte';
-	import Dock from '@components/Dock.svelte';
-	import CableComponent from '@components/Cable.svelte';
-	import LiveTerminal from '@components/LiveTerminal.svelte';
+	import { Dock, Ingredient as IngredientComponent } from '@components';
+	import { PrimitiveSelector } from '@components/selectors';
+	import { Cable as CableComponent } from '@components/cables';
+	import { LiveTerminal } from '@components/terminals';
 
-	export let focusedUsageUuid: Readable<string>;
-	export let dockedFlavors: Readable<Flavor[]>;
-	export let preps: Readable<FullPrep<PrepType>[]>;
-	export let nodes: Readable<Node[]>;
-	export let cables: Readable<Cable[]>;
-	export let liveTerminal: Readable<Terminal | undefined>;
+	export let recipeState: RecipeState;
+	export let viewState: ViewState;
 
 	export let width: number;
 	export let height: number;
 
+	const dockedFlavors = viewState.dockedFlavors;
+	const preps = viewState.preps;
+	const nodes = viewState.nodes;
+	const cables = viewState.cables;
+	const liveTerminal = viewState.liveTerminal;
+
+	const focusedUsageUuid = recipeState.focusedUsageUuid;
+
 	const pathStrokeWidth = 2;
+
+	let selectingPrimitive = false;
+
+	function handleDoubleClick(event: MouseEvent) {
+		event.preventDefault();
+
+		const elements = document.elementsFromPoint(event.clientX, event.clientY);
+		// the top most element clicked on should be an svg
+		if (elements[0].tagName == 'svg') {
+			selectingPrimitive = true;
+		}
+	}
+
+	function handleKeyPress(event: KeyboardEvent & { currentTarget: EventTarget & Window }) {
+		if (event.repeat) return;
+
+		if ((event.ctrlKey || event.metaKey) && event.key == 'e') {
+			event.preventDefault();
+			viewState.editMode.update(($editMode) => !$editMode);
+		}
+	}
 </script>
+
+<svelte:window on:dblclick={handleDoubleClick} on:keydown={handleKeyPress} />
 
 {#each $nodes as node (node.callFor.uuid)}
 	<IngredientComponent
@@ -59,8 +87,21 @@
 	focusedUsageUuid={$focusedUsageUuid}
 />
 
+{#if selectingPrimitive}
+	<PrimitiveSelector
+		coordinates={get(viewState.cursor.coordinates)}
+		on:destroy={() => {
+			selectingPrimitive = false;
+		}}
+	/>
+{/if}
+
 <style>
 	svg {
 		display: block;
+
+		position: fixed;
+		top: 0;
+		left: 0;
 	}
 </style>

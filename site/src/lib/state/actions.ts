@@ -6,6 +6,8 @@ import type {
 	Ingredient,
 	Location,
 	Parameter,
+	Prep,
+	PrepType,
 	Usage
 } from '@types';
 import type { FlatRecipe } from '@recipe';
@@ -15,6 +17,7 @@ export enum ActionType {
 	CreateIngredients,
 	DeleteIngredients,
 	CreateFlavors,
+	UpdateFlavors,
 	DeleteFlavors,
 	CreateUsages,
 	DeleteUsages,
@@ -28,6 +31,9 @@ export enum ActionType {
 	CreateParameters,
 	UpdateParameters,
 	DeleteParameters,
+	CreatePreps,
+	UpdatePreps,
+	DeletePreps,
 	FocusUsage
 }
 
@@ -35,6 +41,7 @@ type ActionParamsMapper = {
 	[ActionType.CreateIngredients]: { ingredients: Ingredient[] };
 	[ActionType.DeleteIngredients]: { ingredients: Ingredient[] };
 	[ActionType.CreateFlavors]: { flavors: Flavor[] };
+	[ActionType.UpdateFlavors]: { flavors: Flavor[] };
 	[ActionType.DeleteFlavors]: { flavors: Flavor[] };
 	[ActionType.CreateUsages]: { usages: Usage[] };
 	[ActionType.DeleteUsages]: { usages: Usage[] };
@@ -48,6 +55,9 @@ type ActionParamsMapper = {
 	[ActionType.CreateParameters]: { parameters: Parameter<FlavorType>[] };
 	[ActionType.UpdateParameters]: { parameters: Parameter<FlavorType>[] };
 	[ActionType.DeleteParameters]: { parameters: Parameter<FlavorType>[] };
+	[ActionType.CreatePreps]: { preps: Prep<PrepType>[] };
+	[ActionType.UpdatePreps]: { preps: Prep<PrepType>[] };
+	[ActionType.DeletePreps]: { preps: Prep<PrepType>[] };
 	[ActionType.FocusUsage]: { usageUuid: string };
 };
 

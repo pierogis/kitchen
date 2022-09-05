@@ -12,7 +12,7 @@ interface Config {
 	viewProps: TP.ViewProps;
 }
 
-const className = TP.ClassName('geo');
+const className = TP.ClassName('three');
 
 let renderer: THREE.WebGLRenderer;
 
@@ -58,7 +58,7 @@ export function createPluginView(doc: Document, config: Config): TP.View {
 	value.emitter.on('change', onValueChange);
 
 	const canvas = doc.createElement('canvas');
-	canvas.classList.add(className('canvas'));
+	canvas.classList.add(className('c'));
 	canvas.style.width = '100%';
 
 	element.appendChild(canvas);

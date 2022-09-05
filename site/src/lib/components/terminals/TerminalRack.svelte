@@ -4,7 +4,7 @@
 
 	import { type Terminal, terminalHeight } from '@view';
 
-	import TerminalComponent from '@components/Terminal.svelte';
+	import TerminalComponent from './Terminal.svelte';
 
 	export let direction: Direction;
 

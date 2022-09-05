@@ -1,13 +1,6 @@
 import { derived, get, type Readable } from 'svelte/store';
 
-import {
-	Direction,
-	type CallFor,
-	type Flavor,
-	type Ingredient,
-	type Location,
-	type Usage
-} from '@types';
+import type { CallFor, Flavor, Ingredient, Location, Usage } from '@types';
 import type { RecipeState } from '@recipe';
 
 export type Node = {
@@ -27,13 +20,27 @@ export function createNodes(
 		const allFlavors = Array.from(get(recipeState.flavors).values());
 		const allLocations = Array.from(get(recipeState.locations).values());
 
+		const currentPreps = get(recipeState.preps);
+
 		return $inFocusSubComponents.map(({ usage, ingredient }) => {
 			// get the flavors that attach to this ingredient
-			const flavors = allFlavors.filter(
-				(flavor) =>
-					flavor.ingredientUuid == usage.ingredientUuid &&
-					(flavor.prepUuid == undefined || flavor.directions.includes(Direction.Out))
-			);
+			const flavors = allFlavors.filter((flavor) => {
+				// only looking for this ingredient's flavors
+				if (flavor.ingredientUuid != ingredient.uuid) {
+					return false;
+				} else {
+					// if the flavor doesn't have a prep, include it in the node
+					if (flavor.prepUuid == undefined) {
+						return true;
+					} else {
+						// if it does, make sure that it's not an "internal" flavor for a prep
+						const prep = currentPreps.get(flavor.prepUuid);
+						if (!prep) throw `prep ${flavor.prepUuid} not found`;
+
+						return flavor.directions.includes(prep.direction);
+					}
+				}
+			});
 
 			const callFor = allCallsFor.find((callFor) => callFor.usageUuid == usage.uuid);
 			if (!callFor) throw `callFor referencing usage ${usage.uuid} not found`;

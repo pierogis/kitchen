@@ -41,6 +41,8 @@ export interface ViewState {
 	cursor: CursorState;
 	windowSize: Writable<{ width: number; height: number }>;
 	mainCamera: Readable<THREE.Camera>;
+	editMode: Writable<boolean>;
+	showHelp: Writable<boolean>;
 }
 
 // dont use the derived properties thing for recipe store
@@ -159,7 +161,13 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 	const nodes = createNodes(recipeState, inFocusSubComponents);
 
 	// centrally track terminals that should be created on flavors
-	const terminals = createTerminals(inFocusConnections, nodes, liveConnection, dockedFlavors);
+	const terminals = createTerminals(
+		inFocusConnections,
+		nodes,
+		liveConnection,
+		dockedFlavors,
+		recipeState.preps
+	);
 
 	// terminals feed back their location for use with drawing cables
 	const terminalsCoordinates = createTerminalsCoordinates(terminals, liveConnection);
@@ -203,6 +211,9 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		});
 	});
 
+	const editMode = writable(false);
+	const showHelp = writable(false);
+
 	return {
 		parentUsageUuid,
 		focusedIngredient,
@@ -217,6 +228,8 @@ export function readableViewState(recipeState: RecipeState): ViewState {
 		cables,
 		cursor,
 		windowSize,
-		mainCamera
+		mainCamera,
+		editMode,
+		showHelp
 	};
 }

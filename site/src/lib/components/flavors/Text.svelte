@@ -10,8 +10,7 @@
 	export let options: MonitorParams | InputParams;
 
 	const paramsStore = derived(filling.payload, ($payload) => {
-		if (typeof $payload.value != 'string' && typeof $payload.value != 'number')
-			throw 'payload value is not string or number';
+		if (typeof $payload.value != 'string') throw 'payload value is not string';
 
 		return { [name]: $payload.value };
 	});

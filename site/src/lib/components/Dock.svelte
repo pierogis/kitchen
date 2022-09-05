@@ -5,7 +5,10 @@
 
 	import { viewStateContextKey, type ViewState } from '@view';
 
-	import PaneContainer from './PaneContainer.svelte';
+	import { AddTab } from '@components';
+	import { EditFlavors, EditPrep, PaneContainer } from '@components/paneContainers';
+	import { Flavor as FlavorComponent } from '@components/flavors';
+	import { PrepTypeSelector, FlavorTypeSelector } from '@components/selectors';
 
 	export let focusedUsageUuid: string;
 	export let direction: Direction;
@@ -17,41 +20,110 @@
 	const terminals = viewState.terminals;
 
 	$: flavorUuids = flavors.map((flavor) => flavor.uuid);
-
 	$: flavorTerminals = $terminals.filter(
 		(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
 	);
 
-	$: prepTerminals = new Map(
-		preps.map((prep) => {
-			const flavorUuids = prep.flavors.map((flavor) => flavor.uuid);
-			return [
-				prep.uuid,
-				$terminals.filter(
-					(terminal) => terminal.flavorUuid && flavorUuids.includes(terminal.flavorUuid)
-				)
-			];
-		})
-	);
+	const editMode = viewState.editMode;
+	const fillings = viewState.fillings;
+
+	let addingPrep = false;
+	let addingFlavor = false;
+
+	$: oppositeDirection = direction == Direction.Out ? Direction.In : Direction.Out;
 </script>
 
 <div class="dock" class:in={direction == Direction.In} class:out={direction == Direction.Out}>
 	{#each preps as prep (prep.uuid)}
-		<PaneContainer
-			{direction}
-			usageUuid={focusedUsageUuid}
-			name={prep.name}
-			flavors={prep.flavors}
-			terminals={prepTerminals.get(prep.uuid) || []}
-		/>
+		{@const prepFlavorUuids = prep.flavors.map((flavor) => flavor.uuid)}
+		{@const prepTerminals = $terminals.filter(
+			(terminal) => terminal.flavorUuid && prepFlavorUuids.includes(terminal.flavorUuid)
+		)}
+		{#if !$editMode}
+			<PaneContainer {direction} title={prep.name} terminals={prepTerminals} let:pane>
+				{#each prep.flavors as flavor, index (flavor.uuid)}
+					<FlavorComponent
+						{index}
+						{flavor}
+						filling={fillings.getFilling(
+							flavor.uuid,
+							focusedUsageUuid,
+							(direction && !flavor.prepUuid) || flavor.directions.includes(direction)
+								? direction
+								: oppositeDirection
+						)}
+						terminals={prepTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)}
+						usageUuid={focusedUsageUuid}
+						{pane}
+					/>
+				{/each}
+			</PaneContainer>
+		{:else}
+			<PaneContainer terminals={prepTerminals} {direction} let:pane let:paneContainer>
+				<EditPrep {pane} {paneContainer} {prep} terminals={prepTerminals} {direction} />
+			</PaneContainer>
+		{/if}
 	{/each}
-	<PaneContainer
-		{direction}
-		usageUuid={focusedUsageUuid}
-		name={'flavors'}
-		{flavors}
-		terminals={flavorTerminals}
-	/>
+	{#if $editMode}
+		{#if addingPrep}
+			<PrepTypeSelector
+				{direction}
+				on:destroy={() => {
+					addingPrep = false;
+				}}
+			/>
+		{:else}
+			<AddTab
+				attached={false}
+				on:click={() => {
+					addingPrep = true;
+				}}
+			/>
+		{/if}
+	{/if}
+
+	{#if !$editMode}
+		<PaneContainer {direction} title={'flavors'} terminals={flavorTerminals} let:pane>
+			{#each flavors as flavor, index (flavor.uuid)}
+				{@const filling = fillings.getFilling(
+					flavor.uuid,
+					focusedUsageUuid,
+					(direction && !flavor.prepUuid) || flavor.directions.includes(direction)
+						? direction
+						: oppositeDirection
+				)}
+				<FlavorComponent
+					{index}
+					{flavor}
+					{filling}
+					terminals={flavorTerminals.filter((terminal) => terminal.flavorUuid == flavor.uuid)}
+					usageUuid={focusedUsageUuid}
+					{pane}
+				/>
+			{/each}
+		</PaneContainer>
+	{:else}
+		<div class="super-pane">
+			<PaneContainer title={'flavors'} terminals={flavorTerminals} {direction} let:pane>
+				<EditFlavors {pane} {flavors} terminals={flavorTerminals} {direction} />
+			</PaneContainer>
+			{#if addingFlavor}
+				<FlavorTypeSelector
+					{direction}
+					on:destroy={() => {
+						addingFlavor = false;
+					}}
+				/>
+			{:else}
+				<AddTab
+					attached={true}
+					on:click={() => {
+						addingFlavor = true;
+					}}
+				/>
+			{/if}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -72,12 +144,18 @@
 		left: 0%;
 		justify-content: left;
 
-		align-items: start;
+		align-items: flex-start;
 	}
 	.out {
 		right: 0%;
 		justify-content: right;
 
-		align-items: end;
+		align-items: flex-end;
+	}
+
+	.super-pane {
+		display: flex;
+		flex-direction: column;
+		place-items: center;
 	}
 </style>
