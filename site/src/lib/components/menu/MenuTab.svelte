@@ -14,6 +14,9 @@
 
 <style>
 	.tab {
+		display: flex;
+		flex-direction: row;
+
 		max-height: 10px;
 
 		padding-top: 0px;

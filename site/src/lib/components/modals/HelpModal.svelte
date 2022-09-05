@@ -53,8 +53,8 @@
 		background-color: var(--primary-color);
 		color: var(--text-color);
 
-		font-family: var(--font-family);
-		font-size: 12px;
+		font-family: Menlo;
+		font-size: 11px;
 
 		border-radius: var(--border-radius);
 	}

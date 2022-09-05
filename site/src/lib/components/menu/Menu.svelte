@@ -1,11 +1,13 @@
-<script>
-	import HelpTab from './HelpTab.svelte';
+<script lang="ts">
 	import MenuTab from './MenuTab.svelte';
+	import HelpButton from './HelpButton.svelte';
+	import UnfocusButton from './UnfocusButton.svelte';
 </script>
 
 <div class="menu">
 	<MenuTab>
-		<HelpTab />
+		<UnfocusButton />
+		<HelpButton />
 	</MenuTab>
 </div>
 
@@ -13,7 +15,6 @@
 	.menu {
 		position: absolute;
 		top: 0;
-		right: 0;
 
 		z-index: 1;
 	}

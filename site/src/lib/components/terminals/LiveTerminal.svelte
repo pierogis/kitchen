@@ -62,7 +62,7 @@
 			if (event.button == 0 && liveConnection) {
 				element.style.cursor = '';
 				// for live terminal
-				const nearTerminalDistance = 20;
+				const nearTerminalDistance = 10;
 
 				const targetTerminals: Terminal[] =
 					viewState.terminalsCoordinates.getMatchingTerminals(terminal);

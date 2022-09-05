@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
-	import { derived } from 'svelte/store';
 
 	import type { PageData } from './$types';
 
@@ -10,7 +9,6 @@
 
 	import Pan from '@components/Pan.svelte';
 	import Recipe from '@components/Recipe.svelte';
-	import { ActionType } from '$lib/state/actions';
 	import { Menu } from '@components/menu';
 	import { HelpModal } from '@components/modals';
 
@@ -30,19 +28,6 @@
 	const handleMouseMove = (ev: MouseEvent) => {
 		viewState.cursor.coordinates.set({ x: ev.clientX, y: ev.clientY });
 	};
-
-	const parentUsageUuid = derived(
-		viewState.parentUsageUuid,
-		($parentUsageUuid) => $parentUsageUuid
-	);
-	function handleUnfocusClick(ev: MouseEvent) {
-		if (ev.button == 0 && $parentUsageUuid) {
-			recipeState.dispatch({
-				type: ActionType.FocusUsage,
-				params: { usageUuid: $parentUsageUuid }
-			});
-		}
-	}
 
 	function handleResize() {
 		viewState.windowSize.set({ width: innerWidth, height: innerHeight });
@@ -69,10 +54,6 @@
 	<title>kitchen</title>
 </svelte:head>
 
-{#if $parentUsageUuid}
-	<button on:click={handleUnfocusClick} />
-{/if}
-
 <Menu />
 
 <Recipe width={innerWidth} height={innerHeight} {recipeState} {viewState} />
@@ -82,9 +63,3 @@
 {#if $showHelp}
 	<HelpModal />
 {/if}
-
-<style>
-	button {
-		position: fixed;
-	}
-</style>

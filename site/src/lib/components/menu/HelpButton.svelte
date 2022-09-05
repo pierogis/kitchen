@@ -10,9 +10,4 @@
 	}
 </script>
 
-<div class="help">
-	<button on:click={handleClick}>?</button>
-</div>
-
-<style>
-</style>
+<button on:click={handleClick}>?</button>

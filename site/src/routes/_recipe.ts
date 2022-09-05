@@ -214,7 +214,7 @@ const sphereMaterialPrep: Prep<PrepType.Material> = {
 	outFlavorUuidMap: { material: sphereMaterialPrepFlavor.uuid }
 };
 
-//box
+// box
 
 const boxGeometryPrepUuid = 'box-geometry-prep';
 
@@ -233,7 +233,6 @@ const boxWidthFlavor = {
 	ingredientUuid: boxIngredientUuid,
 	name: 'width',
 	type: FlavorType.Number,
-
 	directions: [Direction.In],
 	prepUuid: boxGeometryPrepUuid,
 	options: null
@@ -244,7 +243,6 @@ const boxHeightFlavor = {
 	ingredientUuid: boxIngredientUuid,
 	name: 'height',
 	type: FlavorType.Number,
-
 	directions: [Direction.In],
 	prepUuid: boxGeometryPrepUuid,
 	options: null
@@ -580,7 +578,7 @@ const meshCallFor: FullCallFor = {
 		uuid: 'mesh-location',
 		callForUuid: meshCallForUuid,
 		x: 500,
-		y: 200
+		y: 100
 	}
 };
 
@@ -593,7 +591,7 @@ const sphereCallFor: FullCallFor = {
 		uuid: 'sphere-location',
 		callForUuid: sphereCallForUuid,
 		x: 400,
-		y: 400
+		y: 200
 	}
 };
 
@@ -606,7 +604,7 @@ const materialCallFor: FullCallFor = {
 		uuid: 'material-location',
 		callForUuid: materialCallForUuid,
 		x: 400,
-		y: 200
+		y: 400
 	}
 };
 
@@ -619,7 +617,7 @@ const boxCallFor: FullCallFor = {
 		uuid: 'box-location',
 		callForUuid: boxCallForUuid,
 		x: 500,
-		y: 600
+		y: 400
 	}
 };
 
