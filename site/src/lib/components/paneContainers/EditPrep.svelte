@@ -14,7 +14,7 @@
 		dispatchDeletePrepActions
 	} from '$lib/state/batch/prep';
 
-	import { Input, Button, Tab } from '@components/tweakpane';
+	import { Input, Button, Tab } from '@pierogis/svelte-tweakpane';
 	import { TerminalRack } from '@components/terminals';
 	import { EditFlavors } from '@components/paneContainers';
 

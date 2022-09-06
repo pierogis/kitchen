@@ -3,7 +3,10 @@
 	import type { Terminal } from '@view';
 
 	import { TerminalRack } from '@components/terminals';
-	import { Pane } from '@components/tweakpane';
+	import { Pane } from '@pierogis/svelte-tweakpane';
+
+	import * as GrouplistPlugin from '@pierogis/tweakpane-plugin-grouplist';
+	import * as ThreePlugin from '$lib/common/plugins/three';
 
 	export let title: string | undefined = undefined;
 	export let terminals: Terminal[];
@@ -27,7 +30,13 @@
 	class="pane-container no-select"
 >
 	{#if paneContainer}
-		<Pane {title} container={paneContainer} let:pane on:fold={handleFold}>
+		<Pane
+			{title}
+			container={paneContainer}
+			let:pane
+			on:fold={handleFold}
+			plugins={[GrouplistPlugin, ThreePlugin]}
+		>
 			{#if !folded}
 				<slot {pane} {paneContainer} />
 			{/if}

@@ -14,7 +14,7 @@
 		dispatchDeleteFlavorActions
 	} from '@state/batch/flavor';
 
-	import { Input, Folder, Button } from '@components/tweakpane';
+	import { Input, Folder, Button } from '@pierogis/svelte-tweakpane';
 	import { TerminalRack } from '@components/terminals';
 
 	export let pane: Pane | undefined = undefined;

@@ -13,7 +13,7 @@
 	import type { Filling } from '@view/fillings';
 	import { ActionType, type Action } from '@state/actions';
 
-	import { Monitor, Input } from '@components/tweakpane';
+	import { Monitor, Input } from '@pierogis/svelte-tweakpane';
 	import { TerminalRack } from '@components/terminals';
 
 	import { flavorComponents } from '.';
