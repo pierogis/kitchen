@@ -2,11 +2,10 @@
 	import { Direction } from '@types';
 	import type { Terminal } from '@view';
 
-	import { TerminalRack } from '@components/terminals';
 	import { Pane } from '@pierogis/svelte-tweakpane';
 
-	import * as GrouplistPlugin from '@pierogis/tweakpane-plugin-grouplist';
-	import * as ThreePlugin from '$lib/common/plugins/three';
+	import { TerminalRack } from '@components/terminals';
+	import { ThreePlugin, GrouplistPlugin } from '$lib/common/plugins';
 
 	export let title: string | undefined = undefined;
 	export let terminals: Terminal[];
