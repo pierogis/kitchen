@@ -22,6 +22,9 @@
 		<div>ctrl + e -> edit mode</div>
 		<div>dbl click -> new ingredient</div>
 		<div>
+			<a href="https://github.com/pierogis/kitchen">github</a>
+		</div>
+		<div>
 			<a href="/glossary">glossary</a>
 		</div>
 	</div>
