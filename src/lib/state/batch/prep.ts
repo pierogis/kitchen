@@ -2,10 +2,10 @@ import { get } from 'svelte/store';
 
 import { v4 as uuid } from 'uuid';
 
-import type { Direction, PrepType } from '@types';
+import type { Direction, PrepType } from '$types';
 
-import type { RecipeState } from '@recipe';
-import { type Action, ActionType } from '@state/actions';
+import type { RecipeState } from '$recipe';
+import { type Action, ActionType } from '$state/actions';
 import { prepPrimitives } from '$lib/common/preps';
 
 export function dispatchAddPrepActions(

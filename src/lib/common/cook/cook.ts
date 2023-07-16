@@ -2,8 +2,8 @@ import { get } from 'svelte/store';
 
 import type * as THREE from 'three';
 
-import type { FlatRecipe } from '@recipe';
-import type { ViewState } from '@view';
+import type { FlatRecipe } from '$recipe';
+import type { ViewState } from '$view';
 import {
 	FlavorType,
 	Direction,
@@ -11,7 +11,7 @@ import {
 	type Prep,
 	PrepType,
 	type FlavorUuidMap
-} from '@types';
+} from '$types';
 import { prepPrimitives, type InPayloads } from '../preps';
 import { valueDefaults } from '$lib/state/stores/view/fillings';
 

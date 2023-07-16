@@ -2,8 +2,8 @@
 	import { getContext } from 'svelte';
 	import { get, type Readable } from 'svelte/store';
 
-	import type { Coordinates } from '@types';
-	import { type Terminal, terminalHeight, type ViewState, viewStateContextKey } from '@view';
+	import type { Coordinates } from '$types';
+	import { type Terminal, terminalHeight, type ViewState, viewStateContextKey } from '$view';
 
 	import { checkPointWithinBox } from '$lib/common/utils';
 

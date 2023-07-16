@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { getContext, tick } from 'svelte';
 
-	import { Direction } from '@types';
+	import { Direction } from '$types';
 	import { calculateCenter } from '$lib/common/utils';
 
-	import { type LiveConnection, type ViewState, viewStateContextKey } from '@view';
-	import type { Terminal } from '@view/terminals';
+	import { type LiveConnection, type ViewState, viewStateContextKey } from '$view';
+	import type { Terminal } from '$view/terminals';
 	import { derived } from 'svelte/store';
 
 	import { useActions, type ActionDescription } from '$lib/common/actions/useActions';

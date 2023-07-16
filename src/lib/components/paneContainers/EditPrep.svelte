@@ -4,10 +4,10 @@
 
 	import type { Pane } from 'tweakpane';
 
-	import { type FullPrep, PrepType, Direction } from '@types';
+	import { type FullPrep, PrepType, Direction } from '$types';
 	import { prepTypes } from '$lib/common/preps';
-	import type { Terminal } from '@view';
-	import { recipeStateContextKey, type RecipeState } from '@recipe';
+	import type { Terminal } from '$view';
+	import { recipeStateContextKey, type RecipeState } from '$recipe';
 	import {
 		dispatchUpdatePrepNameActions,
 		dispatchChangePrepTypeActions,
@@ -15,8 +15,8 @@
 	} from '$lib/state/batch/prep';
 
 	import { Input, Button, Tab } from '@pierogis/svelte-tweakpane';
-	import { TerminalRack } from '@components/terminals';
-	import { EditFlavors } from '@components/paneContainers';
+	import { TerminalRack } from '$components/terminals';
+	import { EditFlavors } from '$components/paneContainers';
 
 	export let pane: Pane;
 	export let paneContainer: HTMLElement;

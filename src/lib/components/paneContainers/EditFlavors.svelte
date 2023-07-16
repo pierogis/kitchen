@@ -4,18 +4,18 @@
 
 	import type { Pane, TabApi } from 'tweakpane';
 
-	import { type Flavor, Direction } from '@types';
+	import { type Flavor, Direction } from '$types';
 	import { flavorTypes } from '$lib/common/flavors';
-	import { recipeStateContextKey, type RecipeState } from '@recipe';
-	import type { Terminal } from '@view';
+	import { recipeStateContextKey, type RecipeState } from '$recipe';
+	import type { Terminal } from '$view';
 	import {
 		dispatchUpdateFlavorTypeActions,
 		dispatchUpdateFlavorNameActions,
 		dispatchDeleteFlavorActions
-	} from '@state/batch/flavor';
+	} from '$state/batch/flavor';
 
 	import { Input, Folder, Button } from '@pierogis/svelte-tweakpane';
-	import { TerminalRack } from '@components/terminals';
+	import { TerminalRack } from '$components/terminals';
 
 	export let pane: Pane | undefined = undefined;
 	export let tab: { api: TabApi; pageIndex: number } | undefined = undefined;

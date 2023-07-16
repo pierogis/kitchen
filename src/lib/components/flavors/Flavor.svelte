@@ -6,15 +6,15 @@
 
 	import type { InputParams, MonitorParams, Pane, TpChangeEvent } from 'tweakpane';
 
-	import { type Flavor, Direction } from '@types';
+	import { type Flavor, Direction } from '$types';
 
-	import { recipeStateContextKey, type RecipeState } from '@recipe';
-	import type { Terminal } from '@view';
-	import type { Filling } from '@view/fillings';
-	import { ActionType, type Action } from '@state/actions';
+	import { recipeStateContextKey, type RecipeState } from '$recipe';
+	import type { Terminal } from '$view';
+	import type { Filling } from '$view/fillings';
+	import { ActionType, type Action } from '$state/actions';
 
 	import { Monitor, Input } from '@pierogis/svelte-tweakpane';
-	import { TerminalRack } from '@components/terminals';
+	import { TerminalRack } from '$components/terminals';
 
 	import { flavorComponents } from '.';
 

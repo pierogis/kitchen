@@ -15,6 +15,7 @@
 <style>
 	.tab {
 		display: flex;
+		gap: 4px;
 		flex-direction: row;
 
 		max-height: 10px;

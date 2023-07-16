@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { createEventDispatcher, getContext } from 'svelte';
 
-	import { Direction, type Coordinates, type PrepType } from '@types';
+	import { Direction, type Coordinates, type PrepType } from '$types';
 	import { prepTypes } from '$lib/common/preps';
-	import { recipeStateContextKey, type RecipeState } from '@recipe';
-	import { viewStateContextKey, type ViewState } from '@view';
-	import { dispatchIngredientCreationActions } from '@state/batch/ingredient';
+	import { recipeStateContextKey, type RecipeState } from '$recipe';
+	import { viewStateContextKey, type ViewState } from '$view';
+	import { dispatchIngredientCreationActions } from '$state/batch/ingredient';
 
 	import Selector from './Selector.svelte';
 

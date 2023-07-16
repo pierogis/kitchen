@@ -1,5 +1,5 @@
-import { type ActionHandler, ActionType } from '@state/actions';
-import type { RecipeState } from '@recipe';
+import { type ActionHandler, ActionType } from '$state/actions';
+import type { RecipeState } from '$recipe';
 
 import { createEntities, deleteEntities } from './common';
 

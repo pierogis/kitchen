@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 
-	import { Direction, type CallFor, type Flavor, type Ingredient, type Location } from '@types';
-	import { viewStateContextKey } from '@view';
-	import { recipeStateContextKey } from '@recipe';
-	import type { RecipeState } from '@recipe';
-	import type { ViewState } from '@view';
-	import { ActionType, type Action } from '@state/actions';
+	import { Direction, type CallFor, type Flavor, type Ingredient, type Location } from '$types';
+	import { viewStateContextKey } from '$view';
+	import { recipeStateContextKey } from '$recipe';
+	import type { RecipeState } from '$recipe';
+	import type { ViewState } from '$view';
+	import { ActionType, type Action } from '$state/actions';
 
-	import { DragHeader } from '@components';
-	import { PaneContainer } from '@components/paneContainers';
-	import { Flavor as FlavorComponent } from '@components/flavors';
+	import { DragHeader } from '$components';
+	import { PaneContainer } from '$components/paneContainers';
+	import { Flavor as FlavorComponent } from '$components/flavors';
 
 	const recipeState: RecipeState = getContext(recipeStateContextKey);
 	const viewState: ViewState = getContext(viewStateContextKey);

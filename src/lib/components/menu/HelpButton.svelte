@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 
-	import { type ViewState, viewStateContextKey } from '@view';
+	import { type ViewState, viewStateContextKey } from '$view';
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 

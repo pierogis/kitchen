@@ -11,10 +11,10 @@ import type {
 	Coordinates,
 	PrepType,
 	Prep
-} from '@types';
+} from '$types';
 
-import type { RecipeState } from '@recipe';
-import { type Action, ActionType } from '@state/actions';
+import type { RecipeState } from '$recipe';
+import { type Action, ActionType } from '$state/actions';
 import { prepPrimitives } from '$lib/common/preps';
 
 export function dispatchIngredientCreationActions(

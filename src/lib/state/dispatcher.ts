@@ -1,7 +1,7 @@
 import type { Writable } from 'svelte/store';
 
-import type { ActionType, Action, ActionHandler } from '@state/actions';
-import type { FlatRecipe } from '@recipe';
+import type { ActionType, Action, ActionHandler } from '$state/actions';
+import type { FlatRecipe } from '$recipe';
 
 export function dispatcher(stores: {
 	[key in keyof FlatRecipe]: Writable<FlatRecipe[key]>;

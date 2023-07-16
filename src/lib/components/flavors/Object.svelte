@@ -4,7 +4,7 @@
 	import type { InputParams, MonitorParams } from 'tweakpane';
 	import * as THREE from 'three';
 
-	import type { Filling } from '@view/fillings';
+	import type { Filling } from '$view/fillings';
 
 	export let name: string;
 	export let filling: Filling;

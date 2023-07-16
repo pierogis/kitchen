@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 
-	import { Direction, PrepType, type Flavor, type FullPrep } from '@types';
+	import { Direction, PrepType, type Flavor, type FullPrep } from '$types';
 
-	import { viewStateContextKey, type ViewState } from '@view';
+	import { viewStateContextKey, type ViewState } from '$view';
 
-	import { AddTab } from '@components';
-	import { EditFlavors, EditPrep, PaneContainer } from '@components/paneContainers';
-	import { Flavor as FlavorComponent } from '@components/flavors';
-	import { PrepTypeSelector, FlavorTypeSelector } from '@components/selectors';
+	import { AddTab } from '$components';
+	import { EditFlavors, EditPrep, PaneContainer } from '$components/paneContainers';
+	import { Flavor as FlavorComponent } from '$components/flavors';
+	import { PrepTypeSelector, FlavorTypeSelector } from '$components/selectors';
 
 	export let focusedUsageUuid: string;
 	export let direction: Direction;

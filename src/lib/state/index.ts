@@ -1,4 +1,4 @@
-import type { Connection, Flavor, FullRecipe, Prep, PrepType, Usage } from '@types';
+import type { Connection, Flavor, FullRecipe, Prep, PrepType, Usage } from '$types';
 
 import { registerCallForHandlers } from './handlers/callsFor';
 import { registerConnectionHandlers } from './handlers/connections';

@@ -1,6 +1,6 @@
 import type { SvelteComponent } from 'svelte';
 
-import { FlavorType } from '@types';
+import { FlavorType } from '$types';
 
 import Color from './Color.svelte';
 import Geometry from './Geometry.svelte';

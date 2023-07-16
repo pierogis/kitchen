@@ -8,9 +8,9 @@ import {
 	type Connection,
 	type FlavorUsage,
 	type Prep
-} from '@types';
+} from '$types';
 
-import type { LiveConnectionState, Node } from '@view';
+import type { LiveConnectionState, Node } from '$view';
 
 export { createTerminalsCoordinates, type TerminalsCoordinatesState } from './coordinates';
 

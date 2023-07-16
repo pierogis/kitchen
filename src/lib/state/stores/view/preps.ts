@@ -1,8 +1,8 @@
 import { derived, type Readable } from 'svelte/store';
 
 import { prepPrimitives } from '$lib/common/preps';
-import type { Flavor, FullPrep, PrepType } from '@types';
-import type { RecipeState } from '@recipe';
+import type { Flavor, FullPrep, PrepType } from '$types';
+import type { RecipeState } from '$recipe';
 
 export function createPreps(recipeState: RecipeState, focusedIngredientUuid: Readable<string>) {
 	// preps belonging to the focused ingredient

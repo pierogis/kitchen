@@ -1,6 +1,6 @@
 import type * as THREE from 'three';
 
-import { Direction, PrepType, type Flavor, type Payload, type Prep } from '@types';
+import { Direction, PrepType, type Flavor, type Payload, type Prep } from '$types';
 import { AddPrep, AddOperands, AddOutputs } from './add';
 import { ImagePrep, ImageOperands, ImageOutputs } from './image';
 import { ShaderPrep, ShaderOperands, ShaderOutputs } from './shader';

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 
-	import { viewStateContextKey, type Cable, type ViewState } from '@view';
+	import { viewStateContextKey, type Cable, type ViewState } from '$view';
 	import CableInternal from './CableInternal.svelte';
 
 	const viewState: ViewState = getContext(viewStateContextKey);

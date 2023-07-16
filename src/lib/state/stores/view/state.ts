@@ -10,8 +10,8 @@ import {
 	type FullPrep,
 	type PrepType,
 	Direction
-} from '@types';
-import type { RecipeState } from '@recipe';
+} from '$types';
+import type { RecipeState } from '$recipe';
 
 import { createLiveConnection, type LiveConnectionState } from './liveConnection';
 import { createCables, type Cable } from './cables';

@@ -1,6 +1,6 @@
-import { type ActionHandler, ActionType } from '@state/actions';
-import type { RecipeState } from '@recipe';
-import type { Location } from '@types';
+import { type ActionHandler, ActionType } from '$state/actions';
+import type { RecipeState } from '$recipe';
+import type { Location } from '$types';
 import { createEntities, deleteEntities } from './common';
 import { get } from 'svelte/store';
 

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { Direction } from '@types';
-	import type { Terminal } from '@view';
+	import { Direction } from '$types';
+	import type { Terminal } from '$view';
 
 	import { Pane } from '@pierogis/svelte-tweakpane';
 
-	import { TerminalRack } from '@components/terminals';
+	import { TerminalRack } from '$components/terminals';
 	import { ThreePlugin, GrouplistPlugin } from '$lib/common/plugins';
 
 	export let title: string | undefined = undefined;

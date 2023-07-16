@@ -1,4 +1,4 @@
-import type { ViewState } from '@view';
+import type { ViewState } from '$view';
 import * as THREE from 'three';
 
 export function init(viewState: ViewState, canvas: HTMLCanvasElement) {

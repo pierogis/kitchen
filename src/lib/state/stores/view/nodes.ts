@@ -1,7 +1,7 @@
 import { derived, get, type Readable } from 'svelte/store';
 
-import type { CallFor, Flavor, Ingredient, Location, Usage } from '@types';
-import type { RecipeState } from '@recipe';
+import type { CallFor, Flavor, Ingredient, Location, Usage } from '$types';
+import type { RecipeState } from '$recipe';
 
 export type Node = {
 	ingredient: Ingredient;

@@ -1,8 +1,8 @@
-import { Direction } from '@types';
+import { Direction } from '$types';
 import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
 
-import type { Coordinates } from '@types';
-import type { LiveConnectionState } from '@view';
+import type { Coordinates } from '$types';
+import type { LiveConnectionState } from '$view';
 import type { Terminal } from '.';
 
 export type TerminalsCoordinatesState = {

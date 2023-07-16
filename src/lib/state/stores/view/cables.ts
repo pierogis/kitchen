@@ -1,7 +1,7 @@
 import { derived, type Readable } from 'svelte/store';
 
-import { Direction, type FlavorType } from '@types';
-import type { Terminal } from '@view';
+import { Direction, type FlavorType } from '$types';
+import type { Terminal } from '$view';
 
 export interface Cable {
 	connectionUuid: string;

@@ -9,7 +9,7 @@ import {
 	type FullCallFor,
 	type Parameter,
 	type Flavor
-} from '@types';
+} from '$types';
 
 const recipeUuid = '0-recipe';
 

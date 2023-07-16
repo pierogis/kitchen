@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 
 import * as THREE from 'three';
 
-import { Direction, FlavorType, PrepType, type Flavor, type Prep } from '@types';
+import { Direction, FlavorType, PrepType, type Flavor, type Prep } from '$types';
 import type { PrepPrimitive } from '.';
 
 export const MeshOperands = {

@@ -1,4 +1,4 @@
-import { FlavorType } from '@types';
+import { FlavorType } from '$types';
 
 export const flavorTypes: { [name: string]: FlavorType } = {
 	color: FlavorType.Color,

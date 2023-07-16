@@ -2,9 +2,9 @@
 	import { getContext } from 'svelte';
 	import { derived } from 'svelte/store';
 
-	import { type ViewState, viewStateContextKey } from '@view';
-	import { type RecipeState, recipeStateContextKey } from '@recipe';
-	import { ActionType } from '@state/actions';
+	import { type ViewState, viewStateContextKey } from '$view';
+	import { type RecipeState, recipeStateContextKey } from '$recipe';
+	import { ActionType } from '$state/actions';
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 	const recipeState: RecipeState = getContext(recipeStateContextKey);

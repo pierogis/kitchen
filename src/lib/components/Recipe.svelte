@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
 
-	import { Direction } from '@types';
+	import { Direction } from '$types';
 
-	import type { ViewState } from '@view';
-	import type { RecipeState } from '@recipe';
+	import type { ViewState } from '$view';
+	import type { RecipeState } from '$recipe';
 
-	import { Dock, Ingredient as IngredientComponent } from '@components';
-	import { PrimitiveSelector } from '@components/selectors';
-	import { Cable as CableComponent } from '@components/cables';
-	import { LiveTerminal } from '@components/terminals';
+	import { Dock, Ingredient as IngredientComponent } from '$components';
+	import { PrimitiveSelector } from '$components/selectors';
+	import { Cable as CableComponent } from '$components/cables';
+	import { LiveTerminal } from '$components/terminals';
 
 	export let recipeState: RecipeState;
 	export let viewState: ViewState;

@@ -3,14 +3,14 @@
 
 	import type { PageData } from './$types';
 
-	import { storeRecipe } from '@state';
-	import { recipeStateContextKey } from '@recipe';
-	import { readableViewState, viewStateContextKey } from '@view';
+	import { storeRecipe } from '$state';
+	import { recipeStateContextKey } from '$recipe';
+	import { readableViewState, viewStateContextKey } from '$view';
 
-	import Pan from '@components/Pan.svelte';
-	import Recipe from '@components/Recipe.svelte';
-	import { Menu } from '@components/menu';
-	import { HelpModal } from '@components/modals';
+	import Pan from '$components/Pan.svelte';
+	import Recipe from '$components/Recipe.svelte';
+	import { Menu } from '$components/menu';
+	import { HelpModal } from '$components/modals';
 
 	export let data: PageData;
 	const { recipe } = data;

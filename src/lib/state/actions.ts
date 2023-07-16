@@ -9,8 +9,8 @@ import type {
 	Prep,
 	PrepType,
 	Usage
-} from '@types';
-import type { FlatRecipe } from '@recipe';
+} from '$types';
+import type { FlatRecipe } from '$recipe';
 import type { Writable } from 'svelte/store';
 
 export enum ActionType {

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { checkNearAction } from '$lib/common/actions/checkNear';
-	import { Direction } from '@types';
+	import { Direction } from '$types';
 
-	import { type Terminal, terminalHeight } from '@view';
+	import { type Terminal, terminalHeight } from '$view';
 
 	import TerminalComponent from './Terminal.svelte';
 

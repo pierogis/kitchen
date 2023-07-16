@@ -1,4 +1,4 @@
-import type { Coordinates } from '@types';
+import type { Coordinates } from '$types';
 import { writable, type Writable } from 'svelte/store';
 
 export type CursorState = {

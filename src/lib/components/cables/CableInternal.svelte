@@ -3,8 +3,8 @@
 	import { derived, type Readable } from 'svelte/store';
 	import { tweened } from 'svelte/motion';
 
-	import { Direction, type Coordinates } from '@types';
-	import { viewStateContextKey, type Cable, type ViewState } from '@view';
+	import { Direction, type Coordinates } from '$types';
+	import { viewStateContextKey, type Cable, type ViewState } from '$view';
 
 	export let cable: Cable;
 	const viewState: ViewState = getContext(viewStateContextKey);

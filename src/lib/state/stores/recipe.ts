@@ -12,10 +12,10 @@ import type {
 	Prep,
 	PrepType,
 	FlavorType
-} from '@types';
+} from '$types';
 
-import type { Action, ActionHandler, ActionType } from '@state/actions';
-import { dispatcher } from '@state/dispatcher';
+import type { Action, ActionHandler, ActionType } from '$state/actions';
+import { dispatcher } from '$state/dispatcher';
 
 export interface FlatRecipe {
 	recipeUuid: string;

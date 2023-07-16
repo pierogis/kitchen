@@ -2,9 +2,9 @@ import { get } from 'svelte/store';
 
 import { v4 as uuid } from 'uuid';
 
-import type { Flavor, FlavorType, Direction } from '@types';
-import type { RecipeState } from '@recipe';
-import { type Action, ActionType } from '@state/actions';
+import type { Flavor, FlavorType, Direction } from '$types';
+import type { RecipeState } from '$recipe';
+import { type Action, ActionType } from '$state/actions';
 
 export function dispatchAddFlavorActions(
 	recipeState: RecipeState,

@@ -4,8 +4,8 @@
 
 	import type * as THREE from 'three';
 
-	import type { ViewState } from '@view';
-	import type { RecipeState } from '@recipe';
+	import type { ViewState } from '$view';
+	import type { RecipeState } from '$recipe';
 
 	import { init, cook } from '$lib/common/cook';
 

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 
-	import { viewStateContextKey, type ViewState } from '@state/stores/view';
+	import { viewStateContextKey, type ViewState } from '$state/stores/view';
 
-	import { DragHeader } from '@components';
+	import { DragHeader } from '$components';
 
 	const viewState: ViewState = getContext(viewStateContextKey);
 	// delete node on close button

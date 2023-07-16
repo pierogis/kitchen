@@ -2,8 +2,8 @@ import { writable, type Writable } from 'svelte/store';
 
 import * as THREE from 'three';
 
-import { Direction, FlavorType, type Payload, type PayloadValue } from '@types';
-import type { RecipeState } from '@recipe';
+import { Direction, FlavorType, type Payload, type PayloadValue } from '$types';
+import type { RecipeState } from '$recipe';
 
 export interface Filling {
 	payload: Writable<Payload<FlavorType>>;
