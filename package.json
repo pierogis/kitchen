@@ -23,7 +23,7 @@
 		"postinstall": "prisma generate",
 		"package": "svelte-kit package",
 		"preview": "vite preview",
-		"db:generate:drizzle": "drizzle-kit generate:pg --force",
+		"db:generate:drizzle": "drizzle-kit generate:pg",
 		"db:migrate:drizzle": "tsx ./scripts/migrate.ts",
 		"db:seed:drizzle": "tsx ./scripts/seed/index.ts",
 		"test": "playwright test",
@@ -60,6 +60,7 @@
 		"svelte-check": "^3.4.6",
 		"three": "^0.141.0",
 		"tslib": "^2.6.0",
+		"tsx": "^3.12.7",
 		"typescript": "~5.1.6",
 		"vite": "^4.4.4"
 	},

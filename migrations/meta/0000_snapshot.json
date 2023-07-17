@@ -1,0 +1,937 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "id": "cc264248-5a1e-4bce-b18e-d3a263e45ee8",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "calls_for": {
+      "name": "calls_for",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipe_uuid": {
+          "name": "recipe_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usage_uuid": {
+          "name": "usage_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "calls_for_recipe_uuid_usage_uuid_unique": {
+          "name": "calls_for_recipe_uuid_usage_uuid_unique",
+          "columns": [
+            "recipe_uuid",
+            "usage_uuid"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "calls_for_recipe_uuid_recipes_uuid_fk": {
+          "name": "calls_for_recipe_uuid_recipes_uuid_fk",
+          "tableFrom": "calls_for",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "calls_for_usage_uuid_usages_uuid_fk": {
+          "name": "calls_for_usage_uuid_usages_uuid_fk",
+          "tableFrom": "calls_for",
+          "tableTo": "usages",
+          "columnsFrom": [
+            "usage_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "calls_for_uuid_unique": {
+          "name": "calls_for_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        }
+      }
+    },
+    "connections": {
+      "name": "connections",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_ingredient_uuid": {
+          "name": "parent_ingredient_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "in_flavor_uuid": {
+          "name": "in_flavor_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "out_flavor_uuid": {
+          "name": "out_flavor_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "in_usage_uuid": {
+          "name": "in_usage_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "out_usage_uuid": {
+          "name": "out_usage_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "flavor_type": {
+          "name": "flavor_type",
+          "type": "flavor_type",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "connections_parent_ingredient_uuid_in_flavor_uuid_out_flavor_uuid_in_usage_uuid_out_usage_uuid_unique": {
+          "name": "connections_parent_ingredient_uuid_in_flavor_uuid_out_flavor_uuid_in_usage_uuid_out_usage_uuid_unique",
+          "columns": [
+            "parent_ingredient_uuid",
+            "in_flavor_uuid",
+            "out_flavor_uuid",
+            "in_usage_uuid",
+            "out_usage_uuid"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "connections_parent_ingredient_uuid_ingredients_uuid_fk": {
+          "name": "connections_parent_ingredient_uuid_ingredients_uuid_fk",
+          "tableFrom": "connections",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "parent_ingredient_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "connections_in_flavor_uuid_flavors_uuid_fk": {
+          "name": "connections_in_flavor_uuid_flavors_uuid_fk",
+          "tableFrom": "connections",
+          "tableTo": "flavors",
+          "columnsFrom": [
+            "in_flavor_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "connections_out_flavor_uuid_flavors_uuid_fk": {
+          "name": "connections_out_flavor_uuid_flavors_uuid_fk",
+          "tableFrom": "connections",
+          "tableTo": "flavors",
+          "columnsFrom": [
+            "out_flavor_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "connections_in_usage_uuid_usages_uuid_fk": {
+          "name": "connections_in_usage_uuid_usages_uuid_fk",
+          "tableFrom": "connections",
+          "tableTo": "usages",
+          "columnsFrom": [
+            "in_usage_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "connections_out_usage_uuid_usages_uuid_fk": {
+          "name": "connections_out_usage_uuid_usages_uuid_fk",
+          "tableFrom": "connections",
+          "tableTo": "usages",
+          "columnsFrom": [
+            "out_usage_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "connections_uuid_unique": {
+          "name": "connections_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        },
+        "connections_in_flavor_uuid_unique": {
+          "name": "connections_in_flavor_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "in_flavor_uuid"
+          ]
+        },
+        "connections_in_usage_uuid_unique": {
+          "name": "connections_in_usage_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "in_usage_uuid"
+          ]
+        }
+      }
+    },
+    "flavors": {
+      "name": "flavors",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "flavor_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "options": {
+          "name": "options",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ingredient_uuid": {
+          "name": "ingredient_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prep_uuid": {
+          "name": "prep_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "directions": {
+          "name": "directions",
+          "type": "direction[]",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "flavors_ingredient_uuid_ingredients_uuid_fk": {
+          "name": "flavors_ingredient_uuid_ingredients_uuid_fk",
+          "tableFrom": "flavors",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "flavors_prep_uuid_preps_uuid_fk": {
+          "name": "flavors_prep_uuid_preps_uuid_fk",
+          "tableFrom": "flavors",
+          "tableTo": "preps",
+          "columnsFrom": [
+            "prep_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "flavors_uuid_unique": {
+          "name": "flavors_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        },
+        "flavors_type_unique": {
+          "name": "flavors_type_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "type"
+          ]
+        }
+      }
+    },
+    "ingredients": {
+      "name": "ingredients",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_ingredient_uuid": {
+          "name": "parent_ingredient_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ingredients_parent_ingredient_uuid_ingredients_uuid_fk": {
+          "name": "ingredients_parent_ingredient_uuid_ingredients_uuid_fk",
+          "tableFrom": "ingredients",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "parent_ingredient_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ingredients_uuid_unique": {
+          "name": "ingredients_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        }
+      }
+    },
+    "locations": {
+      "name": "locations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "call_for_uuid": {
+          "name": "call_for_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "x": {
+          "name": "x",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "y": {
+          "name": "y",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "locations_call_for_uuid_calls_for_uuid_fk": {
+          "name": "locations_call_for_uuid_calls_for_uuid_fk",
+          "tableFrom": "locations",
+          "tableTo": "calls_for",
+          "columnsFrom": [
+            "call_for_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "locations_call_for_uuid_unique": {
+          "name": "locations_call_for_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "call_for_uuid"
+          ]
+        }
+      }
+    },
+    "parameters": {
+      "name": "parameters",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "number": {
+          "name": "number",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "text": {
+          "name": "text",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "color": {
+          "name": "color",
+          "type": "varchar(6)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image": {
+          "name": "image",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recipe_uuid": {
+          "name": "recipe_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "flavor_uuid": {
+          "name": "flavor_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usage_uuid": {
+          "name": "usage_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "parameters_recipe_uuid_flavor_uuid_unique": {
+          "name": "parameters_recipe_uuid_flavor_uuid_unique",
+          "columns": [
+            "recipe_uuid",
+            "flavor_uuid"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "parameters_recipe_uuid_recipes_uuid_fk": {
+          "name": "parameters_recipe_uuid_recipes_uuid_fk",
+          "tableFrom": "parameters",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "parameters_flavor_uuid_flavors_uuid_fk": {
+          "name": "parameters_flavor_uuid_flavors_uuid_fk",
+          "tableFrom": "parameters",
+          "tableTo": "flavors",
+          "columnsFrom": [
+            "flavor_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "parameters_usage_uuid_usages_uuid_fk": {
+          "name": "parameters_usage_uuid_usages_uuid_fk",
+          "tableFrom": "parameters",
+          "tableTo": "usages",
+          "columnsFrom": [
+            "usage_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "parameters_uuid_unique": {
+          "name": "parameters_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        },
+        "parameters_recipe_uuid_unique": {
+          "name": "parameters_recipe_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recipe_uuid"
+          ]
+        },
+        "parameters_flavor_uuid_unique": {
+          "name": "parameters_flavor_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "flavor_uuid"
+          ]
+        },
+        "parameters_usage_uuid_unique": {
+          "name": "parameters_usage_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "usage_uuid"
+          ]
+        }
+      }
+    },
+    "preps": {
+      "name": "preps",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_uuid": {
+          "name": "ingredient_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "preps_ingredient_uuid_ingredients_uuid_fk": {
+          "name": "preps_ingredient_uuid_ingredients_uuid_fk",
+          "tableFrom": "preps",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "preps_uuid_unique": {
+          "name": "preps_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        }
+      }
+    },
+    "recipes": {
+      "name": "recipes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "main_call_for_uuid": {
+          "name": "main_call_for_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recipes_main_call_for_uuid_calls_for_uuid_fk": {
+          "name": "recipes_main_call_for_uuid_calls_for_uuid_fk",
+          "tableFrom": "recipes",
+          "tableTo": "calls_for",
+          "columnsFrom": [
+            "main_call_for_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "recipes_uuid_unique": {
+          "name": "recipes_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        },
+        "recipes_main_call_for_uuid_unique": {
+          "name": "recipes_main_call_for_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "main_call_for_uuid"
+          ]
+        }
+      }
+    },
+    "shaders": {
+      "name": "shaders",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipe_uuid": {
+          "name": "recipe_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_uuid": {
+          "name": "ingredient_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_flavor_uuid": {
+          "name": "image_flavor_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vertex_source": {
+          "name": "vertex_source",
+          "type": "varchar(16384)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fragment_source": {
+          "name": "fragment_source",
+          "type": "varchar(16384)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "shaders_recipe_uuid_recipes_uuid_fk": {
+          "name": "shaders_recipe_uuid_recipes_uuid_fk",
+          "tableFrom": "shaders",
+          "tableTo": "recipes",
+          "columnsFrom": [
+            "recipe_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "shaders_ingredient_uuid_ingredients_uuid_fk": {
+          "name": "shaders_ingredient_uuid_ingredients_uuid_fk",
+          "tableFrom": "shaders",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "shaders_image_flavor_uuid_flavors_uuid_fk": {
+          "name": "shaders_image_flavor_uuid_flavors_uuid_fk",
+          "tableFrom": "shaders",
+          "tableTo": "flavors",
+          "columnsFrom": [
+            "image_flavor_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "shaders_uuid_unique": {
+          "name": "shaders_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        },
+        "shaders_recipe_uuid_unique": {
+          "name": "shaders_recipe_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recipe_uuid"
+          ]
+        },
+        "shaders_ingredient_uuid_unique": {
+          "name": "shaders_ingredient_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "ingredient_uuid"
+          ]
+        },
+        "shaders_image_flavor_uuid_unique": {
+          "name": "shaders_image_flavor_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "image_flavor_uuid"
+          ]
+        }
+      }
+    },
+    "usages": {
+      "name": "usages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_uuid": {
+          "name": "ingredient_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_unsage_uuid": {
+          "name": "parent_unsage_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "usages_ingredient_uuid_ingredients_uuid_fk": {
+          "name": "usages_ingredient_uuid_ingredients_uuid_fk",
+          "tableFrom": "usages",
+          "tableTo": "ingredients",
+          "columnsFrom": [
+            "ingredient_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "usages_parent_unsage_uuid_usages_uuid_fk": {
+          "name": "usages_parent_unsage_uuid_usages_uuid_fk",
+          "tableFrom": "usages",
+          "tableTo": "usages",
+          "columnsFrom": [
+            "parent_unsage_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "usages_uuid_unique": {
+          "name": "usages_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "uuid"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {
+    "direction": {
+      "name": "direction",
+      "values": {
+        "In": "In",
+        "Out": "Out"
+      }
+    },
+    "flavor_type": {
+      "name": "flavor_type",
+      "values": {
+        "Number": "Number",
+        "Color": "Color",
+        "Text": "Text",
+        "Image": "Image"
+      }
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
