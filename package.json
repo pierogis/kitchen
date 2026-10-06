@@ -34,15 +34,13 @@
 		"lint:fix": "pnpm run format && eslint --fix --ignore-path .gitignore .",
 		"db:migrate": "prisma migrate dev",
 		"db:seed": "prisma db seed",
-		"db:reset": "prisma migrate reset",
-		"tauri": "tauri"
+		"db:reset": "prisma migrate reset"
 	},
 	"devDependencies": {
 		"@pierogis/svelte-tweakpane": "^0.0.1",
 		"@playwright/test": "^1.36.1",
 		"@sveltejs/adapter-auto": "^2.1.0",
 		"@sveltejs/kit": "^1.22.3",
-		"@tauri-apps/cli": "^1.4.0",
 		"@tweakpane/core": "^1.1.9",
 		"@types/three": "^0.141.0",
 		"@types/uuid": "^8.3.4",
